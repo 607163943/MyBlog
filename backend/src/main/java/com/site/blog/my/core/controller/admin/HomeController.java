@@ -30,7 +30,6 @@ public class HomeController {
     @GetMapping("/total")
     public Result<HomeTotalVO> adminHomeTotal() {
         HomeTotalVO homeTotalVO = HomeTotalVO.builder()
-                .path("index")
                 .categoryCount(categoryService.getTotalCategories())
                 .blogCount(blogService.getTotalBlogs())
                 .linkCount(linkService.getTotalLinks())

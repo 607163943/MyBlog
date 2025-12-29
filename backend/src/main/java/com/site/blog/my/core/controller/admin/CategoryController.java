@@ -2,8 +2,10 @@ package com.site.blog.my.core.controller.admin;
 
 import com.site.blog.my.core.service.CategoryService;
 import com.site.blog.my.core.util.PageQueryUtil;
+import com.site.blog.my.core.util.PageResult;
 import com.site.blog.my.core.util.Result;
 import com.site.blog.my.core.util.ResultGenerator;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -35,14 +37,15 @@ public class CategoryController {
     /**
      * 分类列表
      */
-    @RequestMapping(value = "/categories/list", method = RequestMethod.GET)
+    @ApiOperation("分页查询分类")
+    @RequestMapping(value = "/category/list", method = RequestMethod.GET)
     @ResponseBody
-    public Result list(@RequestParam Map<String, Object> params) {
+    public com.site.blog.my.core.result.Result<PageResult> list(@RequestParam Map<String, Object> params) {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
-            return ResultGenerator.genFailResult("参数异常！");
+            return com.site.blog.my.core.result.Result.error(400,"参数异常！");
         }
         PageQueryUtil pageUtil = new PageQueryUtil(params);
-        return ResultGenerator.genSuccessResult(categoryService.getBlogCategoryPage(pageUtil));
+        return com.site.blog.my.core.result.Result.success(categoryService.getBlogCategoryPage(pageUtil));
     }
 
     /**

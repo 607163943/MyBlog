@@ -2,8 +2,11 @@ package com.site.blog.my.core.controller.admin;
 
 import com.site.blog.my.core.service.CommentService;
 import com.site.blog.my.core.util.PageQueryUtil;
+import com.site.blog.my.core.util.PageResult;
 import com.site.blog.my.core.util.Result;
 import com.site.blog.my.core.util.ResultGenerator;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -19,6 +22,7 @@ import java.util.Map;
  * @email 2449207463@qq.com
  * @link http://13blog.site
  */
+@Api(tags = "评论管理")
 @Controller
 @RequestMapping("/admin")
 public class CommentController {
@@ -26,14 +30,15 @@ public class CommentController {
     @Resource
     private CommentService commentService;
 
-    @GetMapping("/comments/list")
+    @ApiOperation("分页查询评论")
+    @GetMapping("/comment/list")
     @ResponseBody
-    public Result list(@RequestParam Map<String, Object> params) {
+    public com.site.blog.my.core.result.Result<PageResult> list(@RequestParam Map<String, Object> params) {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
-            return ResultGenerator.genFailResult("参数异常！");
+            return com.site.blog.my.core.result.Result.error(400,"参数异常！");
         }
         PageQueryUtil pageUtil = new PageQueryUtil(params);
-        return ResultGenerator.genSuccessResult(commentService.getCommentsPage(pageUtil));
+        return com.site.blog.my.core.result.Result.success(commentService.getCommentsPage(pageUtil));
     }
 
     @PostMapping("/comments/checkDone")

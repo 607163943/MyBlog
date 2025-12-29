@@ -18,32 +18,45 @@
     <!-- Theme style -->
     <link rel="stylesheet" href="public/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="public/plugins/editormd/css/editormd.css">
-<link rel="stylesheet" href="public/plugins/tagsinput/jquery.tagsinput.css">
-<link rel="stylesheet" href="public/plugins/select2/select2.css">
-</head>
-<body class="hold-transition sidebar-mini">
-<div id="app"></div>
+    <link rel="stylesheet" href="public/plugins/tagsinput/jquery.tagsinput.css">
+    <link rel="stylesheet" href="public/plugins/select2/select2.css">
+    <style>
+      .ui-jqgrid tr.jqgrow td {
+            white-space: normal !important;
+            height: auto;
+            vertical-align: text-top;
+            padding-top: 2px;
+        }
+    </style>
+    </head>
+  <body class="hold-transition sidebar-mini">
+    <div id="app"></div>
 
-<!-- jQuery -->
-<script src="public/plugins/jquery/jquery.min.js"></script>
-<!-- jQuery UI 1.11.4 -->
-<script src="public/plugins/jQueryUI/jquery-ui.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="public/dist/js/adminlte.min.js"></script>
-<!-- editor.md -->
-<script src="/public/plugins/editormd/editormd.min.js"></script>
-<!-- tagsinput -->
-<script src="public/plugins/tagsinput/jquery.tagsinput.min.js"></script>
-<!-- Select2 -->
-<script src="public/plugins/select2/select2.full.min.js"></script>
-<!-- sweetalert -->
-<script src="public/plugins/sweetalert/sweetalert.min.js"></script>
-<!-- ajaxupload -->
-<script src="public/plugins/ajaxupload/ajaxupload.js"></script>
-<script src="public/dist/js/public.js"></script>
-<script src="public/dist/js/edit.js"></script>
-<script type="module" src="/src/main.js"></script>
-</body>
+    <!-- jQuery -->
+    <script src="public/plugins/jquery/jquery.min.js"></script>
+    <!-- jQuery UI 1.11.4 -->
+    <script src="public/plugins/jQueryUI/jquery-ui.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="public/dist/js/adminlte.min.js"></script>
+    <!-- editor.md -->
+    <script src="public/plugins/editormd/editormd.min.js"></script>
+    <!-- tagsinput -->
+    <script src="public/plugins/tagsinput/jquery.tagsinput.min.js"></script>
+    <!-- Select2 -->
+    <script src="public/plugins/select2/select2.full.min.js"></script>
+    <!-- sweetalert -->
+    <script src="public/plugins/sweetalert/sweetalert.min.js"></script>
+    <!-- ajaxupload -->
+    <script src="public/plugins/ajaxupload/ajaxupload.js"></script>
+    <!-- jqgrid -->
+    <script src="public/plugins/jqgrid-5.7.0/jquery.jqGrid.min.js"></script>
+    <script src="public/plugins/jqgrid-5.7.0/grid.locale-cn.js"></script>
+    <!-- image-picker -->
+    <script th:src="@{/admin/plugins/image-picker/query.masonry.min.js}"></script>
+    <script th:src="@{/admin/plugins/image-picker/image-picker.min.js}"></script>
+    <script src="public/dist/js/public.js"></script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

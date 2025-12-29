@@ -1,9 +1,7 @@
 <script setup>
-import { useLayoutStore } from '@/stores/modules/layout'
-import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
-const layoutStore = useLayoutStore()
-const { path } = storeToRefs(layoutStore)
+const route = useRoute()
 </script>
 
 <template>
@@ -90,48 +88,72 @@ const { path } = storeToRefs(layoutStore)
                        with font-awesome or any other icon font library -->
             <li class="nav-header">Dashboard</li>
             <li class="nav-item">
-              <a href="/" class="nav-link" :class="{ active: path === 'index' }">
+              <a
+                @click="$router.push('/admin/home')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/home' }"
+              >
                 <i class="nav-icon fa fa-dashboard"></i>
                 <p>Dashboard</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/blogs/edit" class="nav-link" :class="{ active: path === 'edit' }">
+              <a
+                @click="$router.push('/admin/article/edit')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/article/edit' }"
+              >
                 <i class="nav-icon fa fa fa-pencil-square-o"></i>
                 <p>发布博客</p>
               </a>
             </li>
             <li class="nav-header">管理模块</li>
             <li class="nav-item">
-              <a href="/admin/blogs" class="nav-link" :class="{ active: path === 'blogs' }">
+              <a
+                @click="$router.push('/admin/article')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/article' }"
+              >
                 <i class="fa fa-list-alt nav-icon" aria-hidden="true"></i>
                 <p>博客管理</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/comments" class="nav-link" :class="{ active: path === 'comments' }">
+              <a
+                @click="$router.push('/admin/comment')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/comment' }"
+              >
                 <i class="fa fa-comments nav-icon" aria-hidden="true"></i>
                 <p>评论管理</p>
               </a>
             </li>
             <li class="nav-item">
               <a
-                href="/admin/categories"
+                @click="$router.push('/admin/category')"
                 class="nav-link"
-                :class="{ active: path === 'categories' }"
+                :class="{ active: route.path === '/admin/category' }"
               >
                 <i class="fa fa-bookmark nav-icon" aria-hidden="true"></i>
                 <p>分类管理</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/tags" class="nav-link" :class="{ active: path === 'tags' }">
+              <a
+                @click="$router.push('/admin/tags')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/tags' }"
+              >
                 <i class="fa fa-tags nav-icon" aria-hidden="true"></i>
                 <p>标签管理</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/links" class="nav-link" :class="{ active: path === 'links' }">
+              <a
+                @click="$router.push('/admin/links')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/links' }"
+              >
                 <i class="fa fa-heart nav-icon" aria-hidden="true"></i>
                 <p>友情链接</p>
               </a>
@@ -139,22 +161,26 @@ const { path } = storeToRefs(layoutStore)
             <li class="nav-header">系统管理</li>
             <li class="nav-item">
               <a
-                href="/admin/configurations"
+                @click="$router.push('/admin/configurations')"
                 class="nav-link"
-                :class="{ active: path === 'configurations' }"
+                :class="{ active: route.path === '/admin/configurations' }"
               >
                 <i class="fa fa-wrench nav-icon"></i>
                 <p>系统配置</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/profile" class="nav-link" :class="{ active: path === 'profile' }">
+              <a
+                @click="$router.push('/admin/profile')"
+                class="nav-link"
+                :class="{ active: route.path === '/admin/profile' }"
+              >
                 <i class="fa fa-user-secret nav-icon"></i>
                 <p>修改密码</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="/admin/logout" class="nav-link">
+              <a @click="$router.push('/admin/logout')" class="nav-link">
                 <i class="fa fa-sign-out nav-icon"></i>
                 <p>安全退出</p>
               </a>

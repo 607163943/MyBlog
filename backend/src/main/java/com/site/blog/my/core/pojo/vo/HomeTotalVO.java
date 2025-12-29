@@ -2,16 +2,17 @@ package com.site.blog.my.core.pojo.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode(callSuper = true)
 @ApiModel("首页数据统计")
-@SuperBuilder
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HomeTotalVO extends BaseAdminVO {
+public class HomeTotalVO {
     @ApiModelProperty("分类数量")
     private int categoryCount;
     @ApiModelProperty("博客数量")
