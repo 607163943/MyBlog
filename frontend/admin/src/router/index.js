@@ -7,10 +7,21 @@ import Comment from '../views/comment/index.vue'
 import Category from '../views/category/index.vue'
 import Tag from '../views/tag/index.vue'
 import Link from '../views/link/index.vue'
+import Config from '../views/config/index.vue'
+import Profile from '../views/profile/index.vue'
+import Login from '../views/login/index.vue'
+import RequestError from '../views/error/request-error.vue'
+import NotFindError from '../views/error/notfind-error.vue'
+import ServerError from '../views/error/server-error.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login
+    },
     {
       path: '/',
       name: 'Layout',
@@ -51,8 +62,33 @@ const router = createRouter({
           path: '/admin/link',
           name: 'Link',
           component: Link
+        },
+        {
+          path: '/admin/config',
+          name: 'Config',
+          component: Config
+        },
+        {
+          path: '/admin/profile',
+          name: 'Profile',
+          component: Profile
         }
       ]
+    },
+    {
+      path: '/error/400',
+      name: 'RequestError',
+      component: RequestError
+    },
+    {
+      path: '/error/404',
+      name: 'NotFindError',
+      component: NotFindError
+    },
+    {
+      path: '/error/500',
+      name: 'ServerError',
+      component: ServerError
     }
   ]
 })

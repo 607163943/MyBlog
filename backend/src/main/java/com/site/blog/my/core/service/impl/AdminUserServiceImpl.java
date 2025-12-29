@@ -2,6 +2,7 @@ package com.site.blog.my.core.service.impl;
 
 import com.site.blog.my.core.mapper.AdminUserMapper;
 import com.site.blog.my.core.entity.AdminUser;
+import com.site.blog.my.core.pojo.vo.UserInfoVO;
 import com.site.blog.my.core.service.AdminUserService;
 import com.site.blog.my.core.util.MD5Util;
 import org.springframework.stereotype.Service;
@@ -59,5 +60,16 @@ public class AdminUserServiceImpl implements AdminUserService {
             }
         }
         return false;
+    }
+
+    @Override
+    public UserInfoVO getUserInfo() {
+        // TODO：暂时写死，后面改成从数据库中获取
+        AdminUser adminUser= adminUserMapper.selectByPrimaryKey(1);
+        return UserInfoVO.builder()
+                .id(adminUser.getAdminUserId())
+                .username(adminUser.getLoginUserName())
+                .nickname(adminUser.getNickName())
+                .build();
     }
 }

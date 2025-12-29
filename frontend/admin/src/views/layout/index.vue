@@ -161,9 +161,9 @@ const route = useRoute()
             <li class="nav-header">系统管理</li>
             <li class="nav-item">
               <a
-                @click="$router.push('/admin/configurations')"
+                @click="$router.push('/admin/config')"
                 class="nav-link"
-                :class="{ active: route.path === '/admin/configurations' }"
+                :class="{ active: route.path === '/admin/config' }"
               >
                 <i class="fa fa-wrench nav-icon"></i>
                 <p>系统配置</p>

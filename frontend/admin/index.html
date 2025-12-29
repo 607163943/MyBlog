@@ -27,9 +27,23 @@
             vertical-align: text-top;
             padding-top: 2px;
         }
+
+        canvas {
+            display: block;
+            vertical-align: bottom;
+        }
+        #particles {
+            background-color: #F7FAFC;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
     </style>
     </head>
-  <body class="hold-transition sidebar-mini">
+  <body class="hold-transition sidebar-mini hold-transition login-page">
+    <div id="particles"></div>
     <div id="app"></div>
 
     <!-- jQuery -->
@@ -54,8 +68,10 @@
     <script src="public/plugins/jqgrid-5.7.0/jquery.jqGrid.min.js"></script>
     <script src="public/plugins/jqgrid-5.7.0/grid.locale-cn.js"></script>
     <!-- image-picker -->
-    <script th:src="@{/admin/plugins/image-picker/query.masonry.min.js}"></script>
-    <script th:src="@{/admin/plugins/image-picker/image-picker.min.js}"></script>
+    <script src="public/plugins/image-picker/query.masonry.min.js"></script>
+    <script src="public/plugins/image-picker/image-picker.min.js"></script>
+    <script src="public/dist/js/plugins/particles.js"></script>
+    <script src="public/dist/js/plugins/login-bg-particles.js"></script>
     <script src="public/dist/js/public.js"></script>
     <script type="module" src="/src/main.js"></script>
   </body>
