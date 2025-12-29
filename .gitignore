@@ -24,5 +24,6 @@
 /nbdist/
 /.nb-gradle/
 
+backend/target/**
 backend/src/main/resources/static
 backend/src/main/resources/templates
