@@ -5,6 +5,8 @@ import Layout from '../views/layout/index.vue'
 import Article from '../views/article/index.vue'
 import Comment from '../views/comment/index.vue'
 import Category from '../views/category/index.vue'
+import Tag from '../views/tag/index.vue'
+import Link from '../views/link/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +41,16 @@ const router = createRouter({
           path: '/admin/category',
           name: 'Category',
           component: Category
+        },
+        {
+          path: '/admin/tag',
+          name: 'Tag',
+          component: Tag
+        },
+        {
+          path: '/admin/link',
+          name: 'Link',
+          component: Link
         }
       ]
     }

@@ -140,9 +140,9 @@ const route = useRoute()
             </li>
             <li class="nav-item">
               <a
-                @click="$router.push('/admin/tags')"
+                @click="$router.push('/admin/tag')"
                 class="nav-link"
-                :class="{ active: route.path === '/admin/tags' }"
+                :class="{ active: route.path === '/admin/tag' }"
               >
                 <i class="fa fa-tags nav-icon" aria-hidden="true"></i>
                 <p>标签管理</p>
@@ -150,9 +150,9 @@ const route = useRoute()
             </li>
             <li class="nav-item">
               <a
-                @click="$router.push('/admin/links')"
+                @click="$router.push('/admin/link')"
                 class="nav-link"
-                :class="{ active: route.path === '/admin/links' }"
+                :class="{ active: route.path === '/admin/link' }"
               >
                 <i class="fa fa-heart nav-icon" aria-hidden="true"></i>
                 <p>友情链接</p>

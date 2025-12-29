@@ -5,6 +5,7 @@ import com.site.blog.my.core.util.PageQueryUtil;
 import com.site.blog.my.core.util.PageResult;
 import com.site.blog.my.core.util.Result;
 import com.site.blog.my.core.util.ResultGenerator;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @email 2449207463@qq.com
  * @link http://13blog.site
  */
+@Api(tags = "分类管理")
 @Controller
 @RequestMapping("/admin")
 public class CategoryController {
