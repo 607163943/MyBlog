@@ -1,5 +1,5 @@
 <script setup>
-import { homeGetTotal } from '@/api/home'
+import { homeGetTotalService } from '@/api/home'
 import { ref } from 'vue'
 import { useLayoutStore } from '@/stores/modules/layout'
 
@@ -12,7 +12,7 @@ const tagCount = ref(0)
 const linkCount = ref(0)
 
 const getTotal = async () => {
-  const res = await homeGetTotal()
+  const res = await homeGetTotalService()
   layoutStore.setPath(res.data.data.path)
   blogCount.value = res.data.data.blogCount
   commentCount.value = res.data.data.commentCount

@@ -1,5 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { articleEditInitService } from '@/api/article'
+import { useLayoutStore } from '@/stores/modules/layout'
+
+const layoutStore = useLayoutStore()
 
 const blog = ref({
   blogId: 0,
@@ -13,7 +17,17 @@ const blog = ref({
   enableComment: 0
 })
 
+// 分类数组
 const categories = ref([])
+
+// 编辑器初始化
+const editInit = async () => {
+  const res = await articleEditInitService()
+  layoutStore.setPath(res.data.data.path)
+  categories.value = res.data.data.categories
+}
+
+editInit()
 </script>
 
 <template>

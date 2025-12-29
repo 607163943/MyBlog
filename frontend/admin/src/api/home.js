@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
 // 获取首页统计数据
-export const homeGetTotal = () => {
+export const homeGetTotalService = () => {
   return request.get('/home/total')
 }
