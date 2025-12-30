@@ -1,7 +1,7 @@
 package com.site.blog.my.core.controller.blog;
 
 import cn.hutool.captcha.ShearCaptcha;
-import com.site.blog.my.core.controller.vo.BlogDetailVO;
+import com.site.blog.my.core.pojo.vo.BlogDetailVO;
 import com.site.blog.my.core.entity.BlogComment;
 import com.site.blog.my.core.entity.BlogLink;
 import com.site.blog.my.core.service.*;
@@ -25,8 +25,6 @@ import java.util.Map;
 @Controller
 public class MyBlogController {
 
-    //public static String theme = "default";
-    //public static String theme = "yummy-jekyll";
     public static String theme = "amaze";
     @Resource
     private BlogService blogService;
@@ -38,8 +36,6 @@ public class MyBlogController {
     private CommentService commentService;
     @Resource
     private ConfigService configService;
-    @Resource
-    private CategoryService categoryService;
 
     /**
      * 首页
@@ -72,25 +68,11 @@ public class MyBlogController {
     }
 
     /**
-     * Categories页面(包括分类数据和标签数据)
-     *
-     * @return
-     */
-    @GetMapping({"/categories"})
-    public String categories(HttpServletRequest request) {
-        request.setAttribute("hotTags", tagService.getBlogTagCountForIndex());
-        request.setAttribute("categories", categoryService.getAllCategories());
-        request.setAttribute("pageName", "分类页面");
-        request.setAttribute("configurations", configService.getAllConfigs());
-        return "blog/" + theme + "/category";
-    }
-
-    /**
      * 详情页
      *
      * @return
      */
-    @GetMapping({"/blog/{blogId}", "/article/{blogId}"})
+    @GetMapping("/blog/{blogId}")
     public String detail(HttpServletRequest request, @PathVariable("blogId") Long blogId, @RequestParam(value = "commentPage", required = false, defaultValue = "1") Integer commentPage) {
         BlogDetailVO blogDetailVO = blogService.getBlogDetail(blogId);
         if (blogDetailVO != null) {

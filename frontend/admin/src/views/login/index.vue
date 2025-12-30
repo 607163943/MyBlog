@@ -48,8 +48,8 @@
               <img
                 alt="单击图片刷新！"
                 class="pointer"
-                th:src="@{/common/kaptcha}"
-                onclick="this.src = '/common/kaptcha?d=' + new Date() * 1"
+                th:src="/api/admin/captcha"
+                onclick="this.src = '/api/admin/captcha?d=' + new Date() * 1"
               />
             </div>
           </div>
