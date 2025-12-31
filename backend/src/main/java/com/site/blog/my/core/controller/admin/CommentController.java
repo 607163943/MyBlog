@@ -3,17 +3,16 @@ package com.site.blog.my.core.controller.admin;
 import com.site.blog.my.core.service.CommentService;
 import com.site.blog.my.core.util.PageQueryUtil;
 import com.site.blog.my.core.util.PageResult;
-import com.site.blog.my.core.util.Result;
-import com.site.blog.my.core.util.ResultGenerator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -41,51 +40,51 @@ public class CommentController {
         return com.site.blog.my.core.result.Result.success(commentService.getCommentsPage(pageUtil));
     }
 
-    @PostMapping("/comments/checkDone")
-    @ResponseBody
-    public Result checkDone(@RequestBody Integer[] ids) {
-        if (ids.length < 1) {
-            return ResultGenerator.genFailResult("参数异常！");
-        }
-        if (commentService.checkDone(ids)) {
-            return ResultGenerator.genSuccessResult();
-        } else {
-            return ResultGenerator.genFailResult("审核失败");
-        }
-    }
+    //@PostMapping("/comments/checkDone")
+    //@ResponseBody
+    //public Result checkDone(@RequestBody Integer[] ids) {
+    //    if (ids.length < 1) {
+    //        return ResultGenerator.genFailResult("参数异常！");
+    //    }
+    //    if (commentService.checkDone(ids)) {
+    //        return ResultGenerator.genSuccessResult();
+    //    } else {
+    //        return ResultGenerator.genFailResult("审核失败");
+    //    }
+    //}
 
-    @PostMapping("/comments/reply")
-    @ResponseBody
-    public Result checkDone(@RequestParam("commentId") Long commentId,
-                            @RequestParam("replyBody") String replyBody) {
-        if (commentId == null || commentId < 1 || !StringUtils.hasText(replyBody)) {
-            return ResultGenerator.genFailResult("参数异常！");
-        }
-        if (commentService.reply(commentId, replyBody)) {
-            return ResultGenerator.genSuccessResult();
-        } else {
-            return ResultGenerator.genFailResult("回复失败");
-        }
-    }
+    //@PostMapping("/comments/reply")
+    //@ResponseBody
+    //public Result checkDone(@RequestParam("commentId") Long commentId,
+    //                        @RequestParam("replyBody") String replyBody) {
+    //    if (commentId == null || commentId < 1 || !StringUtils.hasText(replyBody)) {
+    //        return ResultGenerator.genFailResult("参数异常！");
+    //    }
+    //    if (commentService.reply(commentId, replyBody)) {
+    //        return ResultGenerator.genSuccessResult();
+    //    } else {
+    //        return ResultGenerator.genFailResult("回复失败");
+    //    }
+    //}
 
-    @PostMapping("/comments/delete")
-    @ResponseBody
-    public Result delete(@RequestBody Integer[] ids) {
-        if (ids.length < 1) {
-            return ResultGenerator.genFailResult("参数异常！");
-        }
-        if (commentService.deleteBatch(ids)) {
-            return ResultGenerator.genSuccessResult();
-        } else {
-            return ResultGenerator.genFailResult("刪除失败");
-        }
-    }
+    //@PostMapping("/comments/delete")
+    //@ResponseBody
+    //public Result delete(@RequestBody Integer[] ids) {
+    //    if (ids.length < 1) {
+    //        return ResultGenerator.genFailResult("参数异常！");
+    //    }
+    //    if (commentService.deleteBatch(ids)) {
+    //        return ResultGenerator.genSuccessResult();
+    //    } else {
+    //        return ResultGenerator.genFailResult("刪除失败");
+    //    }
+    //}
 
-    @GetMapping("/comments")
-    public String list(HttpServletRequest request) {
-        request.setAttribute("path", "comments");
-        return "admin/comment";
-    }
+    //@GetMapping("/comments")
+    //public String list(HttpServletRequest request) {
+    //    request.setAttribute("path", "comments");
+    //    return "admin/comment";
+    //}
 
 
 }
