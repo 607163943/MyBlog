@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { homeGetDataService } from '@/api/home'
+import { tagGetArticleService } from '@/api/tag'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const configurations = ref({
   websiteName: '我的博客',
@@ -16,7 +19,7 @@ const newBlogs = ref({})
 const hotBlogs = ref({})
 
 const getBlogHomeData = async () => {
-  const res = await homeGetDataService()
+  const res = await tagGetArticleService(route.params.tagName)
   configurations.value = res.data.data.configurations
   blogPageResult.value = res.data.data.blogPageResult
   hotTags.value = res.data.data.hotTags

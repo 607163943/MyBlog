@@ -1,10 +1,8 @@
 <script setup>
 import { ref } from 'vue'
-import { articleGetDetailService } from '@/api/article'
-import { useRoute } from 'vue-router'
+import { aboutArticleService } from '@/api/about'
 import { isEmpty } from 'radash'
 
-const route = useRoute()
 const blogDetailVO = ref({})
 const commentPageResult = ref({})
 
@@ -17,9 +15,8 @@ const configurations = ref({
 })
 
 const getArticleDetail = async () => {
-  const res = await articleGetDetailService(route.params.articleId)
+  const res = await aboutArticleService()
   blogDetailVO.value = res.data.data.blogDetailVO
-  commentPageResult.value = res.data.data.commentPageResult
   configurations.value = res.data.data.configurations
 }
 
