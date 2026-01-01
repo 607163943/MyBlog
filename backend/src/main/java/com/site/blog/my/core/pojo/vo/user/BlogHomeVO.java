@@ -2,7 +2,7 @@ package com.site.blog.my.core.pojo.vo.user;
 
 import com.site.blog.my.core.entity.BlogTagCount;
 import com.site.blog.my.core.pojo.vo.SimpleBlogListVO;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

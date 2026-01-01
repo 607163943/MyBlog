@@ -1,7 +1,7 @@
 package com.site.blog.my.core.pojo.vo.user;
 
 import com.site.blog.my.core.pojo.vo.BlogDetailVO;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageResult;
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.site.blog.my.core.util;
+package com.site.blog.my.core.common.utils;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;

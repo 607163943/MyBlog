@@ -1,8 +1,9 @@
 package com.site.blog.my.core.controller.admin;
 
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.TagService;
-import com.site.blog.my.core.util.PageQueryUtil;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageQueryUtil;
+import com.site.blog.my.core.common.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
@@ -38,12 +39,12 @@ public class TagController {
     @ApiOperation("分页查询标签")
     @GetMapping("/tag/list")
     @ResponseBody
-    public com.site.blog.my.core.result.Result<PageResult> list(@RequestParam Map<String, Object> params) {
+    public Result<PageResult> list(@RequestParam Map<String, Object> params) {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
-            return com.site.blog.my.core.result.Result.error(400,"参数异常！");
+            return Result.error(400,"参数异常！");
         }
         PageQueryUtil pageUtil = new PageQueryUtil(params);
-        return com.site.blog.my.core.result.Result.success(tagService.getBlogTagPage(pageUtil));
+        return Result.success(tagService.getBlogTagPage(pageUtil));
     }
 
 

@@ -1,11 +1,11 @@
 package com.site.blog.my.core.controller.admin;
 
 import com.site.blog.my.core.pojo.vo.ArticleEditVO;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.BlogService;
 import com.site.blog.my.core.service.CategoryService;
-import com.site.blog.my.core.util.PageQueryUtil;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageQueryUtil;
+import com.site.blog.my.core.common.utils.PageResult;
 import io.swagger.annotations.Api;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;

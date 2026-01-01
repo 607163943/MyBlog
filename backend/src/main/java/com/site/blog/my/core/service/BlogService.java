@@ -3,8 +3,8 @@ package com.site.blog.my.core.service;
 import com.site.blog.my.core.pojo.vo.BlogDetailVO;
 import com.site.blog.my.core.pojo.vo.SimpleBlogListVO;
 import com.site.blog.my.core.entity.Blog;
-import com.site.blog.my.core.util.PageQueryUtil;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageQueryUtil;
+import com.site.blog.my.core.common.utils.PageResult;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.site.blog.my.core.service;
 
 import com.site.blog.my.core.entity.AdminUser;
-import com.site.blog.my.core.pojo.vo.UserInfoVO;
+import com.site.blog.my.core.pojo.vo.admin.UserInfo;
 
 public interface AdminUserService {
 
@@ -35,5 +35,5 @@ public interface AdminUserService {
      */
     Boolean updateName(Integer loginUserId, String loginUserName, String nickName);
 
-    UserInfoVO getUserInfo();
+    UserInfo getUserInfo();
 }

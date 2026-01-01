@@ -2,7 +2,7 @@ package com.site.blog.my.core.mapper;
 
 import com.site.blog.my.core.entity.BlogTag;
 import com.site.blog.my.core.entity.BlogTagCount;
-import com.site.blog.my.core.util.PageQueryUtil;
+import com.site.blog.my.core.common.utils.PageQueryUtil;
 import java.util.List;
 
 public interface BlogTagMapper {

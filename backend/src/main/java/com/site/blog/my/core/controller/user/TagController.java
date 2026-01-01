@@ -1,11 +1,11 @@
 package com.site.blog.my.core.controller.user;
 
 import com.site.blog.my.core.pojo.vo.user.BlogTagVO;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.BlogService;
 import com.site.blog.my.core.service.ConfigService;
 import com.site.blog.my.core.service.TagService;
-import com.site.blog.my.core.util.PageResult;
+import com.site.blog.my.core.common.utils.PageResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

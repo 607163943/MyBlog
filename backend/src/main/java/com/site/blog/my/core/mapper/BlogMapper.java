@@ -1,7 +1,7 @@
 package com.site.blog.my.core.mapper;
 
 import com.site.blog.my.core.entity.Blog;
-import com.site.blog.my.core.util.PageQueryUtil;
+import com.site.blog.my.core.common.utils.PageQueryUtil;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

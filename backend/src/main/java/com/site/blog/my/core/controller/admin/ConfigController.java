@@ -1,6 +1,6 @@
 package com.site.blog.my.core.controller.admin;
 
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.ConfigService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

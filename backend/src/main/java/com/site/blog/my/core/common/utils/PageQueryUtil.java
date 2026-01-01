@@ -1,4 +1,4 @@
-package com.site.blog.my.core.util;
+package com.site.blog.my.core.common.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

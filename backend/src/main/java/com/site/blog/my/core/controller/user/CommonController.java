@@ -2,10 +2,10 @@ package com.site.blog.my.core.controller.user;
 
 import cn.hutool.captcha.ShearCaptcha;
 import com.site.blog.my.core.entity.BlogComment;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.CommentService;
-import com.site.blog.my.core.util.MyBlogUtils;
-import com.site.blog.my.core.util.PatternUtil;
+import com.site.blog.my.core.common.utils.MyBlogUtils;
+import com.site.blog.my.core.common.utils.PatternUtil;
 import io.swagger.annotations.Api;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;

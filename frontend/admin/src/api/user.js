@@ -4,3 +4,8 @@ import request from '@/utils/request'
 export const userGetInfo = () => {
   return request.get('/user/info')
 }
+
+// 用户登录
+export const userLoginService = (data) => {
+  return request.post('/user/login', data)
+}

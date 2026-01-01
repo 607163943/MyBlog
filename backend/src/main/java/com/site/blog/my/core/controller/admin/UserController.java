@@ -1,13 +1,14 @@
 package com.site.blog.my.core.controller.admin;
 
-import com.site.blog.my.core.pojo.vo.UserInfoVO;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
+import com.site.blog.my.core.pojo.dto.UserLoginDTO;
+import com.site.blog.my.core.pojo.vo.admin.UserInfo;
+import com.site.blog.my.core.pojo.vo.admin.UserLoginVO;
 import com.site.blog.my.core.service.AdminUserService;
+import com.site.blog.my.core.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -18,10 +19,21 @@ public class UserController {
     @Resource
     private AdminUserService adminUserService;
 
+    @Resource
+    private IUserService userService;
+
     @ApiOperation("获取用户信息")
     @GetMapping("/info")
-    public Result<UserInfoVO> getUserInfo() {
+    public Result<UserInfo> getUserInfo() {
         return Result.success(adminUserService.getUserInfo());
+    }
+
+    @ApiOperation("用户登录")
+    @PostMapping("/login")
+    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
+        UserLoginVO userLoginVO = userService.login(userLoginDTO);
+
+        return Result.success(userLoginVO);
     }
 
     //@GetMapping("/profile")
@@ -68,42 +80,6 @@ public class UserController {
     //        return "success";
     //    } else {
     //        return "修改失败";
-    //    }
-    //}
-
-    //@GetMapping({"/login"})
-    //public String login() {
-    //    return "admin/login";
-    //}
-
-    //@PostMapping(value = "/login")
-    //public String login(@RequestParam("userName") String userName,
-    //                    @RequestParam("password") String password,
-    //                    @RequestParam("verifyCode") String verifyCode,
-    //                    HttpSession session) {
-    //    if (!StringUtils.hasText(verifyCode)) {
-    //        session.setAttribute("errorMsg", "验证码不能为空");
-    //        return "admin/login";
-    //    }
-    //    if (!StringUtils.hasText(userName) || !StringUtils.hasText(password)) {
-    //        session.setAttribute("errorMsg", "用户名或密码不能为空");
-    //        return "admin/login";
-    //    }
-    //    ShearCaptcha shearCaptcha = (ShearCaptcha) session.getAttribute("verifyCode");
-    //    if (shearCaptcha == null || !shearCaptcha.verify(verifyCode)) {
-    //        session.setAttribute("errorMsg", "验证码错误");
-    //        return "admin/login";
-    //    }
-    //    AdminUser adminUser = adminUserService.login(userName, password);
-    //    if (adminUser != null) {
-    //        session.setAttribute("loginUser", adminUser.getNickName());
-    //        session.setAttribute("loginUserId", adminUser.getAdminUserId());
-    //        //session过期时间设置为7200秒 即两小时
-    //        //session.setMaxInactiveInterval(60 * 60 * 2);
-    //        return "redirect:/admin/index";
-    //    } else {
-    //        session.setAttribute("errorMsg", "登陆失败");
-    //        return "admin/login";
     //    }
     //}
 

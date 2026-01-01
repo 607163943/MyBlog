@@ -1,70 +1,157 @@
-<script setup></script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { captchaCodeService } from '@/api/captcha'
+import { userLoginService } from '@/api/user'
+import { message } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const loginFormRef = ref(null)
+// 表单
+const loginForm = ref({
+  username: '',
+  password: '',
+  captchaCode: ''
+})
+
+// 验证码
+const captchaImageBase64 = ref('')
+
+const getCaptchaImage = async () => {
+  const res = await captchaCodeService()
+  captchaImageBase64.value = 'data:image/png;base64,' + res.data.data.imageBase64
+}
+
+// 校验规则
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  captchaCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+}
+
+// 登录
+const login = async () => {
+  // 进行校验
+  await loginFormRef.value.validate()
+  const res = await userLoginService(loginForm.value)
+  if (res.data.code === 200) {
+    message.success('登录成功')
+    router.push('/')
+  } else {
+    message.error(res.data.message)
+  }
+}
+
+onMounted(() => {
+  getCaptchaImage()
+})
+</script>
 <template>
-  <div class="login-box">
-    <div class="login-logo" style="color: #007bff">
-      <h1>personal blog</h1>
-    </div>
-    <!-- /.login-logo -->
-    <div class="card">
-      <div class="card-body login-card-body">
-        <p class="login-box-msg">your personal blog , enjoy it</p>
-        <form th:action="@{/admin/login}" method="post">
-          <div th:if="${not #strings.isEmpty(session.errorMsg)}" class="form-group">
-            <div class="alert alert-danger" th:text="${session.errorMsg}"></div>
-          </div>
-          <div class="form-group has-feedback">
-            <span class="fa fa-user form-control-feedback"></span>
-            <input
-              type="text"
-              id="userName"
-              name="userName"
-              class="form-control"
-              placeholder="请输入账号"
-              required="true"
-            />
-          </div>
-          <div class="form-group has-feedback">
-            <span class="fa fa-lock form-control-feedback"></span>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              class="form-control"
-              placeholder="请输入密码"
-              required="true"
-            />
-          </div>
-          <div class="row">
-            <div class="col-6">
-              <input
-                type="text"
-                class="form-control"
-                name="verifyCode"
-                placeholder="请输入验证码"
-                required="true"
-              />
-            </div>
-            <div class="col-6">
-              <img
-                alt="单击图片刷新！"
-                class="pointer"
-                th:src="/api/admin/captcha"
-                onclick="this.src = '/api/admin/captcha?d=' + new Date() * 1"
-              />
-            </div>
-          </div>
-          <div class="form-group has-feedback"></div>
-          <div class="row">
-            <div class="col-8"></div>
-            <div class="col-4">
-              <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
-            </div>
-          </div>
-        </form>
+  <div class="login-index">
+    <div class="left"></div>
+    <div class="right">
+      <div class="login-content">
+        <div class="login-head-text">MyBlog Admin</div>
+        <div class="login-title">登录</div>
+
+        <div class="login-form">
+          <a-form
+            layout="vertical"
+            ref="loginFormRef"
+            :rules="rules"
+            :model="loginForm"
+            autocomplete="off"
+          >
+            <a-form-item label="用户名" name="username">
+              <a-input size="large" v-model:value="loginForm.username" placeholder="请输入用户名">
+                <template #prefix>
+                  <UserOutlined />
+                </template>
+              </a-input>
+            </a-form-item>
+
+            <a-form-item label="密码" name="password">
+              <a-input-password
+                size="large"
+                v-model:value="loginForm.password"
+                placeholder="请输入密码"
+              >
+                <template #prefix>
+                  <LockOutlined />
+                </template>
+              </a-input-password>
+            </a-form-item>
+
+            <a-form-item label="验证码" name="captchaCode">
+              <a-row>
+                <a-col :span="12">
+                  <a-input
+                    size="large"
+                    v-model:value="loginForm.captchaCode"
+                    placeholder="请输入验证码"
+                  />
+                </a-col>
+                <a-col :span="6" :offset="2">
+                  <div>
+                    <img
+                      alt="单击图片刷新！"
+                      class="pointer"
+                      :src="captchaImageBase64"
+                      @click="getCaptchaImage"
+                    />
+                  </div>
+                </a-col>
+              </a-row>
+            </a-form-item>
+
+            <a-form-item>
+              <a-button style="width: 100%" size="large" type="primary" @click="login"
+                >登录</a-button
+              >
+            </a-form-item>
+          </a-form>
+        </div>
       </div>
-      <!-- /.login-card-body -->
     </div>
   </div>
 </template>
 
-<style lang="less"></style>
+<style lang="less">
+.login-index {
+  height: 100%;
+  display: flex;
+
+  .left {
+    flex: 1;
+    background-color: #ececec;
+  }
+
+  .right {
+    flex: 1;
+    padding: 24px;
+    background-color: #fff;
+  }
+}
+
+.login-content {
+  margin: 0 auto;
+  width: 400px;
+
+  .login-head-text {
+    text-align: center;
+    margin-top: 64px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #5099ff;
+  }
+
+  .login-title {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 24px;
+    font-weight: 700;
+    color: 333;
+  }
+}
+</style>

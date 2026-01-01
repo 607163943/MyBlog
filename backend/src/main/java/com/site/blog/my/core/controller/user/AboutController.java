@@ -2,7 +2,7 @@ package com.site.blog.my.core.controller.user;
 
 import com.site.blog.my.core.pojo.vo.BlogDetailVO;
 import com.site.blog.my.core.pojo.vo.user.BlogAboutVO;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.BlogService;
 import com.site.blog.my.core.service.ConfigService;
 import org.springframework.web.bind.annotation.GetMapping;

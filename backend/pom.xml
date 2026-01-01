@@ -29,32 +29,22 @@
     </properties>
 
     <dependencies>
-        <!--Thymeleaf-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
         <!--SpringBoot Web-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!--Spring Session-->
+        <!--MyBatisPlus-->
         <dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-core</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.14</version>
         </dependency>
-        <!--MyBatis-->
-        <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <!-- 验证码 -->
+        <!-- hutool-all -->
         <dependency>
             <groupId>cn.hutool</groupId>
-            <artifactId>hutool-captcha</artifactId>
-            <version>5.8.7</version>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.40</version>
         </dependency>
         <!-- commonmark core -->
         <dependency>

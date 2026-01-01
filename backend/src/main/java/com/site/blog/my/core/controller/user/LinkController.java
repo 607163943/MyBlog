@@ -2,7 +2,7 @@ package com.site.blog.my.core.controller.user;
 
 import com.site.blog.my.core.entity.BlogLink;
 import com.site.blog.my.core.pojo.vo.user.BlogLinkVO;
-import com.site.blog.my.core.result.Result;
+import com.site.blog.my.core.common.result.Result;
 import com.site.blog.my.core.service.ConfigService;
 import com.site.blog.my.core.service.LinkService;
 import io.swagger.annotations.Api;
