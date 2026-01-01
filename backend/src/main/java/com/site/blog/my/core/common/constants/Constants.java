@@ -1,4 +1,4 @@
-package com.site.blog.my.core.config;
+package com.site.blog.my.core.common.constants;
 
 /**
  * Created by 13 on 2019/5/24.
