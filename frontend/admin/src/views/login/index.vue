@@ -1,26 +1,29 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
-import { captchaCodeService } from '@/api/captcha'
-import { userLoginService } from '@/api/user'
+import { userLoginService, userCaptchaCodeService } from '@/api/user'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loginFormRef = ref(null)
 // 表单
 const loginForm = ref({
   username: '',
   password: '',
-  captchaCode: ''
+  captchaCode: '',
+  captchaKey: ''
 })
 
 // 验证码
 const captchaImageBase64 = ref('')
 
 const getCaptchaImage = async () => {
-  const res = await captchaCodeService()
+  const res = await userCaptchaCodeService()
   captchaImageBase64.value = 'data:image/png;base64,' + res.data.data.imageBase64
+  loginForm.value.captchaKey = res.data.data.captchaKey
 }
 
 // 校验规则
@@ -36,6 +39,8 @@ const login = async () => {
   await loginFormRef.value.validate()
   const res = await userLoginService(loginForm.value)
   if (res.data.code === 200) {
+    userStore.setToken(res.data.data.token)
+    userStore.setUserInfo(res.data.data.userInfo)
     message.success('登录成功')
     router.push('/')
   } else {

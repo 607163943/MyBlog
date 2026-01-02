@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useUserStore } from '@/stores'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -9,6 +10,10 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
+    const userStore = useUserStore()
+    if (userStore.token) {
+      config.headers.token = userStore.token
+    }
     return config
   },
   function (error) {

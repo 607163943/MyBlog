@@ -24,4 +24,4 @@ security:
     - /admin/**
   exclude-path:
     - /admin/user/login
-    - /admin/captcha
+    - /admin/user/captcha
