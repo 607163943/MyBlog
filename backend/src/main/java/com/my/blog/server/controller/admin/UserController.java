@@ -51,6 +51,13 @@ public class UserController {
 
     }
 
+    @ApiOperation("用户登出")
+    @PostMapping("/logout")
+    public Result<Object> logout() {
+        userService.logout();
+        return Result.success();
+    }
+
     //@GetMapping("/profile")
     //public String profile(HttpServletRequest request) {
     //    Integer loginUserId = (int) request.getSession().getAttribute("loginUserId");
@@ -96,13 +103,5 @@ public class UserController {
     //    } else {
     //        return "修改失败";
     //    }
-    //}
-
-    //@GetMapping("/logout")
-    //public String logout(HttpServletRequest request) {
-    //    request.getSession().removeAttribute("loginUserId");
-    //    request.getSession().removeAttribute("loginUser");
-    //    request.getSession().removeAttribute("errorMsg");
-    //    return "admin/login";
     //}
 }

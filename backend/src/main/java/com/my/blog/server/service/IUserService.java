@@ -19,4 +19,9 @@ public interface IUserService extends IService<User> {
      * @return 验证码数据
      */
     CaptchaVO captcha();
+
+    /**
+     * 用户登出
+     */
+    void logout();
 }

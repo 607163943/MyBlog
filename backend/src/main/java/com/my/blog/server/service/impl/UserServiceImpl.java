@@ -17,6 +17,7 @@ import com.my.blog.pojo.vo.admin.UserLoginVO;
 import com.my.blog.server.mapper.UserMapper;
 import com.my.blog.server.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -105,5 +106,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .imageBase64(imageBase64)
                 .captchaKey(uuid)
                 .build();
+    }
+
+    /**
+     * 用户登出
+     */
+    @Override
+    public void logout() {
+        // 获取登录用户数据
+        User user= (User) SecurityUtils.getSubject().getPrincipal();
+
+        // 清除缓存中的token
+        redisTemplate.opsForValue().getAndDelete("user:token:" + user.getId());
+
+        log.info("用户{},id:{}，登出成功！", user.getUsername(), user.getId());
     }
 }
