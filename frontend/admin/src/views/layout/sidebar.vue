@@ -1,156 +1,139 @@
 <script setup>
-import { defineOptions } from 'vue'
-import { useRoute } from 'vue-router'
+import { defineOptions, ref, h } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  PieChartOutlined,
+  DesktopOutlined,
+  UserOutlined,
+  TeamOutlined
+} from '@ant-design/icons-vue'
+
 defineOptions({
   name: 'LayoutSidebar'
 })
 
 const route = useRoute()
+const router = useRouter()
+
+const selectedKeys = ref(['1'])
+const openKeys = ref([])
+const items = ref([
+  {
+    key: '1',
+    icon: () => h(PieChartOutlined),
+    label: '首页',
+    title: '首页',
+    path: '/admin/home'
+  },
+  {
+    key: '2',
+    icon: () => h(DesktopOutlined),
+    label: '统计',
+    title: '统计',
+    path: '/admin/statistics'
+  },
+  {
+    key: '3',
+    icon: () => h(UserOutlined),
+    label: '业务管理',
+    title: '业务管理',
+    children: [
+      {
+        key: '3-1',
+        label: '分类管理',
+        title: '分类管理',
+        path: '/admin/category'
+      },
+      {
+        key: '3-2',
+        label: '文章管理',
+        title: '文章管理',
+        path: '/admin/article'
+      },
+      {
+        key: '3-3',
+        label: '标签管理',
+        title: '标签管理',
+        path: '/admin/tag'
+      }
+    ]
+  },
+  {
+    key: '4',
+    icon: () => h(TeamOutlined),
+    label: '系统管理',
+    title: '系统管理',
+    children: [
+      {
+        key: '4-1',
+        label: '用户管理',
+        title: '用户管理',
+        path: '/admin/user'
+      },
+      {
+        key: '4-2',
+        label: '系统字典',
+        title: '系统字典',
+        path: '/admin/dictionary'
+      }
+    ]
+  }
+])
+
+// 路由跳转
+const handlerMenuClick = ({ item }) => {
+  router.push(item.path)
+}
+
+// 获取当前激活菜单项key
+const getActiveKeys = () => {
+  for (let item of items.value) {
+    if (item.children) {
+      for (let child of item.children) {
+        if (child.path === route.path) {
+          selectedKeys.value = [child.key]
+          openKeys.value = [item.key]
+          return
+        }
+      }
+    } else {
+      if (item.path === route.path) {
+        selectedKeys.value = [item.key]
+        openKeys.value = []
+        return
+      }
+    }
+  }
+}
+
+getActiveKeys()
 </script>
 <template>
-  <!-- 引入工具栏sidebar-fragment -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
+  <!-- logo -->
+  <div class="side-menu-logo">
     <a href="/" class="brand-link">
-      <img
-        src="../../../public/dist/img/logo.png"
-        alt="ssm-cluster Logo"
-        class="brand-image img-circle elevation-3"
-        style="opacity: 0.8"
-      />
-      <span class="brand-text font-weight-light">my blog</span>
+      <img src="../../../public/dist/img/logo.png" />
     </a>
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <!-- Sidebar user panel (optional) -->
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <img
-            src="../../../public/dist/img/avatar5.png"
-            class="img-circle elevation-2"
-            alt="User Image"
-          />
-        </div>
-        <div class="info">
-          <!-- TODO：这里要从登录后的用户信息中获取用户名 -->
-          <a href="#" class="d-block" th:text="${session.loginUser}">十三</a>
-        </div>
-      </div>
-      <!-- Sidebar Menu -->
-      <nav class="mt-2">
-        <ul
-          class="nav nav-pills nav-sidebar flex-column"
-          data-widget="treeview"
-          role="menu"
-          data-accordion="false"
-        >
-          <!-- Add icons to the links using the .nav-icon class
-                       with font-awesome or any other icon font library -->
-          <li class="nav-header">Dashboard</li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/home')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/home' }"
-            >
-              <i class="nav-icon fa fa-dashboard"></i>
-              <p>Dashboard</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/article/edit')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/article/edit' }"
-            >
-              <i class="nav-icon fa fa fa-pencil-square-o"></i>
-              <p>发布博客</p>
-            </a>
-          </li>
-          <li class="nav-header">管理模块</li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/article')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/article' }"
-            >
-              <i class="fa fa-list-alt nav-icon" aria-hidden="true"></i>
-              <p>博客管理</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/comment')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/comment' }"
-            >
-              <i class="fa fa-comments nav-icon" aria-hidden="true"></i>
-              <p>评论管理</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/category')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/category' }"
-            >
-              <i class="fa fa-bookmark nav-icon" aria-hidden="true"></i>
-              <p>分类管理</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/tag')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/tag' }"
-            >
-              <i class="fa fa-tags nav-icon" aria-hidden="true"></i>
-              <p>标签管理</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/link')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/link' }"
-            >
-              <i class="fa fa-heart nav-icon" aria-hidden="true"></i>
-              <p>友情链接</p>
-            </a>
-          </li>
-          <li class="nav-header">系统管理</li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/config')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/config' }"
-            >
-              <i class="fa fa-wrench nav-icon"></i>
-              <p>系统配置</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              @click="$router.push('/admin/profile')"
-              class="nav-link"
-              :class="{ active: route.path === '/admin/profile' }"
-            >
-              <i class="fa fa-user-secret nav-icon"></i>
-              <p>修改密码</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a @click="$router.push('/admin/logout')" class="nav-link">
-              <i class="fa fa-sign-out nav-icon"></i>
-              <p>安全退出</p>
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <!-- /.sidebar-menu -->
-    </div>
-    <!-- /.sidebar -->
-  </aside>
+  </div>
+  <a-menu
+    @click="handlerMenuClick"
+    v-model:selectedKeys="selectedKeys"
+    v-model:openKeys="openKeys"
+    :items="items"
+    theme="dark"
+    mode="inline"
+  >
+  </a-menu>
 </template>
 
-<style lang="less"></style>
+<style lang="less">
+.side-menu-logo {
+  text-align: center;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 16px;
+  img {
+    width: 36px;
+  }
+}
+</style>

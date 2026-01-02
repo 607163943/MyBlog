@@ -7,9 +7,9 @@ defineOptions({
 
 <template>
   <footer class="main-footer">
-    <strong>Copyright &copy; 2018 <a href="##">13blog.site</a>.</strong>
+    <strong>Copyright &copy; 2025 <a href="##">myblog.site</a>.</strong>
     All rights reserved.
-    <div class="float-right d-none d-sm-inline-block"><b>my personal blog #Version</b> 1.0</div>
+    <div class="float-right d-none d-sm-inline-block"><b>my personal blog</b></div>
   </footer>
 </template>
 
