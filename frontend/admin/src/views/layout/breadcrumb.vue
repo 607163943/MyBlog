@@ -31,8 +31,8 @@ const items = [
     path: '/admin/tag'
   },
   {
-    label: '用户管理',
-    path: '/admin/user'
+    label: '个人中心',
+    path: '/admin/profile'
   },
   {
     label: '系统字典',
@@ -59,9 +59,15 @@ const createBreadcrumbList = (path) => {
   }
 }
 
-watch(route, () => {
-  createBreadcrumbList(route.path)
-})
+watch(
+  route,
+  () => {
+    createBreadcrumbList(route.path)
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup>
-import { defineOptions, ref, h } from 'vue'
+import { defineOptions, ref, h, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   PieChartOutlined,
@@ -65,12 +65,6 @@ const items = ref([
     title: '系统管理',
     children: [
       {
-        key: '4-1',
-        label: '用户管理',
-        title: '用户管理',
-        path: '/admin/user'
-      },
-      {
         key: '4-2',
         label: '系统字典',
         title: '系统字典',
@@ -87,6 +81,8 @@ const handlerMenuClick = ({ item }) => {
 
 // 获取当前激活菜单项key
 const getActiveKeys = () => {
+  selectedKeys.value = []
+  openKeys.value = []
   for (let item of items.value) {
     if (item.children) {
       for (let child of item.children) {
@@ -99,21 +95,26 @@ const getActiveKeys = () => {
     } else {
       if (item.path === route.path) {
         selectedKeys.value = [item.key]
-        openKeys.value = []
         return
       }
     }
   }
 }
 
-getActiveKeys()
+watch(
+  route,
+  () => {
+    getActiveKeys()
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 <template>
   <!-- logo -->
   <div class="side-menu-logo">
-    <a href="/" class="brand-link">
-      <img src="../../../public/dist/img/logo.png" />
-    </a>
+    <a href="/" class="brand-link">MyBlog </a>
   </div>
   <a-menu
     @click="handlerMenuClick"

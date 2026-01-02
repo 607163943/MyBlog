@@ -1,7 +1,5 @@
 package com.my.blog.server.controller.admin;
 
-import cn.hutool.captcha.CaptchaUtil;
-import cn.hutool.captcha.ShearCaptcha;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.dto.UserLoginDTO;
 import com.my.blog.pojo.vo.admin.CaptchaVO;

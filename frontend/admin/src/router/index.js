@@ -9,9 +9,8 @@ import Tag from '../views/tag/index.vue'
 import Config from '../views/config/index.vue'
 import Profile from '../views/profile/index.vue'
 import Login from '../views/login/index.vue'
-import RequestError from '../views/error/request-error.vue'
-import NotFindError from '../views/error/notfind-error.vue'
-import ServerError from '../views/error/server-error.vue'
+import { useUserStore } from '@/stores'
+import { isEmpty } from 'radash'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +18,10 @@ const router = createRouter({
     {
       path: '/login',
       name: 'Login',
-      component: Login
+      component: Login,
+      meta: {
+        loginRequired: false
+      }
     },
     {
       path: '/',
@@ -30,61 +32,81 @@ const router = createRouter({
         {
           path: '/admin/home',
           name: 'Home',
-          component: Home
+          component: Home,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/statistics',
           name: 'Statistics',
-          component: Statistics
+          component: Statistics,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/article/edit',
           name: 'ArticleEdit',
-          component: ArticleEdit
+          component: ArticleEdit,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/article',
           name: 'Article',
-          component: Article
+          component: Article,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/category',
           name: 'Category',
-          component: Category
+          component: Category,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/tag',
           name: 'Tag',
-          component: Tag
+          component: Tag,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/config',
           name: 'Config',
-          component: Config
+          component: Config,
+          meta: {
+            loginRequired: true
+          }
         },
         {
           path: '/admin/profile',
           name: 'Profile',
-          component: Profile
+          component: Profile,
+          meta: {
+            loginRequired: true
+          }
         }
       ]
-    },
-    {
-      path: '/error/400',
-      name: 'RequestError',
-      component: RequestError
-    },
-    {
-      path: '/error/404',
-      name: 'NotFindError',
-      component: NotFindError
-    },
-    {
-      path: '/error/500',
-      name: 'ServerError',
-      component: ServerError
     }
   ]
 })
 
 export default router
+
+router.beforeEach((to) => {
+  if (to.meta.loginRequired) {
+    const userStore = useUserStore()
+
+    if (isEmpty(userStore.token)) {
+      return { path: '/login' }
+    }
+  }
+  return true
+})
