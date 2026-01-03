@@ -15,8 +15,8 @@ redis:
 # JWT
 jwt:
   secret: myblog
-  # 过期时间 1天
-  expire: 86400
+  # 过期时间 1天 单位ms
+  expire: 86400000
 
 
 security:

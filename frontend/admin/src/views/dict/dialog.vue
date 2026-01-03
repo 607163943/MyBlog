@@ -1,6 +1,7 @@
 <script setup>
 import { defineOptions, defineExpose, ref, defineEmits } from 'vue'
 import { message } from 'ant-design-vue'
+import { dictAddService, dictUpdateService, dictByIdService } from '@/api/dict'
 defineOptions({
   name: 'DictDialog'
 })
@@ -11,6 +12,7 @@ const isEdit = ref(false)
 const dictDialogFormRef = ref(null)
 
 const dictDialogForm = ref({
+  id: '',
   dictType: '',
   status: '',
   remark: ''
@@ -24,10 +26,15 @@ const rules = {
 }
 
 // 打开对话框
-const openDialog = (obj) => {
+const openDialog = async (obj) => {
   if (obj) {
     // 编辑模式
     isEdit.value = true
+    // 获取字典数据
+    const res = await dictByIdService(obj.id)
+    if (res.data.code === 200) {
+      dictDialogForm.value = res.data.data
+    }
   } else {
     // 添加模式
     isEdit.value = false
@@ -44,24 +51,35 @@ const emit = defineEmits(['success'])
 const handleOk = async () => {
   await dictDialogFormRef.value.validate()
   loading.value = true
-  setTimeout(() => {
-    loading.value = false
-    open.value = false
-    message.success('操作成功')
 
-    // 重置对话框
-    dictDialogFormRef.value.resetFields()
-    emit('success')
-  }, 2000)
+  if (isEdit.value) {
+    console.log('test')
+  } else {
+    await dictAddService(dictDialogForm.value)
+  }
+  loading.value = false
+  open.value = false
+  message.success('操作成功')
+
+  // 重置对话框
+  dictDialogFormRef.value.resetFields()
+  emit('success')
 }
 
 const handleCancel = () => {
+  // 重置对话框
+  dictDialogFormRef.value.resetFields()
   open.value = false
 }
 </script>
 
 <template>
-  <a-modal v-model:open="open" :title="isEdit ? '编辑字典' : '新增字典'" @ok="handleOk">
+  <a-modal
+    v-model:open="open"
+    :title="isEdit ? '编辑字典' : '新增字典'"
+    @ok="handleOk"
+    @cancel="handleCancel"
+  >
     <template #footer>
       <a-button @click="handleCancel">取消</a-button>
       <a-button type="primary" :loading="loading" @click="handleOk">确定</a-button>
@@ -95,10 +113,10 @@ const handleCancel = () => {
         />
       </a-form-item>
 
-      <a-row>
+      <a-row v-if="isEdit">
         <a-col :span="24"> 辅助信息： </a-col>
       </a-row>
-      <a-row>
+      <a-row v-if="isEdit">
         <a-col :span="12">
           <div class="create-time">
             <span>创建时间：</span>

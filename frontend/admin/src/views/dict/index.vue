@@ -10,6 +10,7 @@ import {
   CheckOutlined
 } from '@ant-design/icons-vue'
 import DictDialog from './dialog.vue'
+import { dictPageQueryService } from '@/api/dict'
 
 const dictSearchForm = ref({
   dictType: '',
@@ -20,6 +21,7 @@ const search = (values) => {
   console.log('Success:', values)
 }
 
+// 表格字段设置
 const columns = [
   {
     title: '字典类型',
@@ -48,20 +50,8 @@ const columns = [
   }
 ]
 
-const data = [
-  {
-    dictType: '字典类型1',
-    remark: '备注1',
-    status: '0',
-    updateTime: '2026-01-01 10:00:00'
-  },
-  {
-    dictType: '字典类型2',
-    remark: '备注2',
-    status: '1',
-    updateTime: '2026-01-01 10:00:00'
-  }
-]
+// 表格数据
+const tableData = ref([])
 
 const rowSelection = {
   onChange: (selectedRowKeys, selectedRows) => {
@@ -81,6 +71,13 @@ const dictDialogRef = ref(null)
 const handleDictSuccess = () => {
   console.log('handleDictSuccess')
 }
+
+const pageQuery = async () => {
+  const res = await dictPageQueryService()
+  tableData.value = res.data.data.result
+}
+
+pageQuery()
 </script>
 
 <template>
@@ -131,7 +128,7 @@ const handleDictSuccess = () => {
     </div>
 
     <div class="dict-table">
-      <a-table :columns="columns" :data-source="data" :row-selection="rowSelection">
+      <a-table :columns="columns" :data-source="tableData" :row-selection="rowSelection">
         <!-- 表格内容 -->
         <template #bodyCell="{ column, record }">
           <!-- 字典类型 -->
@@ -142,8 +139,8 @@ const handleDictSuccess = () => {
           </template>
           <!-- 状态 -->
           <template v-if="column.key === 'status'">
-            <a-tag :color="record.status === '0' ? 'green' : 'red'">
-              {{ record.status === '0' ? '启用' : '禁用' }}
+            <a-tag :color="record.status === 0 ? 'green' : 'red'">
+              {{ record.status === 0 ? '启用' : '禁用' }}
             </a-tag>
           </template>
           <!-- 操作 -->
@@ -155,7 +152,7 @@ const handleDictSuccess = () => {
                 </template>
                 编辑
               </a-button>
-              <a-button type="link" danger v-if="record.status === '1'">
+              <a-button type="link" danger v-if="record.status === 0">
                 <template #icon>
                   <StopOutlined />
                 </template>

@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
@@ -46,9 +45,6 @@ public class LoginFilter extends AuthenticatingFilter {
         } catch (Exception e) {
             throw new AdminUserException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
         }
-
-        HttpServletResponse httpServletResponse = WebUtils.toHttp(servletResponse);
-        httpServletResponse.sendRedirect("/admin");
 
         return JWTToken.builder()
                 .token(token)
