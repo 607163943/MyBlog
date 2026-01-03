@@ -1,6 +1,8 @@
 package com.my.blog.server.filter;
 
 import cn.hutool.core.util.StrUtil;
+import com.my.blog.common.enums.ExceptionEnums;
+import com.my.blog.common.exception.admin.AdminUserException;
 import com.my.blog.common.utils.JWTUtils;
 import com.my.blog.common.utils.URLUtils;
 import com.my.blog.server.security.JWTToken;
@@ -13,6 +15,9 @@ import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 @Component
 public class LoginFilter extends AuthenticatingFilter {
 
@@ -22,24 +27,28 @@ public class LoginFilter extends AuthenticatingFilter {
     @Resource
     private URLUtils urlUtils;
 
-    public static final String Filter_NAME="login_filter";
+    public static final String Filter_NAME = "login_filter";
+
     @Override
-    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) {
+    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException {
         // 获取token
         HttpServletRequest httpServletRequest = WebUtils.toHttp(servletRequest);
         String token = httpServletRequest.getHeader("token");
 
         // 判空
-        if(StrUtil.isEmpty(token)) {
-            return null;
+        if (StrUtil.isEmpty(token)) {
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
         }
 
         // 校验
-        try{
+        try {
             jwtUtils.verifyJWT(token);
-        }catch (Exception e) {
-            return null;
+        } catch (Exception e) {
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
         }
+
+        HttpServletResponse httpServletResponse = WebUtils.toHttp(servletResponse);
+        httpServletResponse.sendRedirect("/admin");
 
         return JWTToken.builder()
                 .token(token)

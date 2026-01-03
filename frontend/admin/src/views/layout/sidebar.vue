@@ -2,10 +2,14 @@
 import { defineOptions, ref, h, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  PieChartOutlined,
-  DesktopOutlined,
-  UserOutlined,
-  TeamOutlined
+  HomeOutlined,
+  BarChartOutlined,
+  AppstoreOutlined,
+  FolderOutlined,
+  FileTextOutlined,
+  TagsOutlined,
+  SettingOutlined,
+  BookOutlined
 } from '@ant-design/icons-vue'
 
 defineOptions({
@@ -17,41 +21,45 @@ const router = useRouter()
 
 const selectedKeys = ref(['1'])
 const openKeys = ref([])
+
 const items = ref([
   {
     key: '1',
-    icon: () => h(PieChartOutlined),
+    icon: () => h(HomeOutlined),
     label: '首页',
     title: '首页',
     path: '/admin/home'
   },
   {
     key: '2',
-    icon: () => h(DesktopOutlined),
+    icon: () => h(BarChartOutlined),
     label: '统计',
     title: '统计',
     path: '/admin/statistics'
   },
   {
     key: '3',
-    icon: () => h(UserOutlined),
+    icon: () => h(AppstoreOutlined),
     label: '业务管理',
     title: '业务管理',
     children: [
       {
         key: '3-1',
+        icon: () => h(FolderOutlined),
         label: '分类管理',
         title: '分类管理',
         path: '/admin/category'
       },
       {
         key: '3-2',
+        icon: () => h(FileTextOutlined),
         label: '文章管理',
         title: '文章管理',
         path: '/admin/article'
       },
       {
         key: '3-3',
+        icon: () => h(TagsOutlined),
         label: '标签管理',
         title: '标签管理',
         path: '/admin/tag'
@@ -60,15 +68,16 @@ const items = ref([
   },
   {
     key: '4',
-    icon: () => h(TeamOutlined),
+    icon: () => h(SettingOutlined),
     label: '系统管理',
     title: '系统管理',
     children: [
       {
         key: '4-2',
+        icon: () => h(BookOutlined),
         label: '系统字典',
         title: '系统字典',
-        path: '/admin/dictionary'
+        path: '/admin/dict'
       }
     ]
   }

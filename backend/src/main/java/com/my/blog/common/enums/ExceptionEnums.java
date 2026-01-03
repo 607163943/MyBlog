@@ -10,7 +10,9 @@ public enum ExceptionEnums {
     ADMIN_USER_NOT_EXIST(1001, "用户不存在"),
     ADMIN_USER_PASSWORD_ERROR(1002, "密码错误"),
     ADMIN_USER_CAPTCHA_CODE_ERROR(1003, "验证码错误"),
-    ADMIN_USER_CAPTCHA_EXPIRED(1004, "验证码已过期");
+    ADMIN_USER_CAPTCHA_EXPIRED(1004, "验证码已过期"),
+    ADMIN_USER_LOGIN_TIMEOUT(1005, "登录超时"),
+    ADMIN_USER_NOT_LOGIN(1006, "用户未登录");
 
     private final Integer code;
     private final String msg;

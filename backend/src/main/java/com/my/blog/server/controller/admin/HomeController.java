@@ -20,11 +20,7 @@ public class HomeController {
     @Resource
     private CategoryService categoryService;
     @Resource
-    private LinkService linkService;
-    @Resource
     private TagService tagService;
-    @Resource
-    private CommentService commentService;
 
     @ApiOperation("获取首页统计数据")
     @GetMapping("/total")
@@ -32,9 +28,7 @@ public class HomeController {
         HomeTotalVO homeTotalVO = HomeTotalVO.builder()
                 .categoryCount(categoryService.getTotalCategories())
                 .blogCount(blogService.getTotalBlogs())
-                .linkCount(linkService.getTotalLinks())
                 .tagCount(tagService.getTotalTags())
-                .commentCount(commentService.getTotalComments())
                 .build();
         return Result.success(homeTotalVO);
     }

@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     /**
-     * 系统异常
+     * 系统异常处理
      *
-     * @param e 异常
+     * @param e 系统异常
      * @return 错误响应
      */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -33,9 +33,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 管理端用户异常
+     * 管理端用户异常处理
      *
-     * @param e 异常
+     * @param e 管理端用户异常
      * @return 错误响应
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -46,6 +46,11 @@ public class GlobalExceptionHandler {
         return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
     }
 
+    /**
+     * 参数校验异常处理
+     * @param e 参数校验异常
+     * @return 错误响应
+     */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
     public Result<Object> bindExceptionHandler(BindException e) {
@@ -59,9 +64,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 未知业务异常
+     * 未知业务异常处理
      *
-     * @param e 异常
+     * @param e 未知业务异常
      * @return 错误响应
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)

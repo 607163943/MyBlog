@@ -36,7 +36,7 @@ const items = [
   },
   {
     label: '系统字典',
-    path: '/admin/dictionary'
+    path: '/admin/dict'
   }
 ]
 
@@ -57,6 +57,8 @@ const createBreadcrumbList = (path) => {
       })
     }
   }
+
+  console.log(breadcrumbList.value)
 }
 
 watch(

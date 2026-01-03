@@ -34,8 +34,6 @@ public class BlogServiceImpl implements BlogService {
     private BlogTagMapper tagMapper;
     @Autowired
     private BlogTagRelationMapper blogTagRelationMapper;
-    @Autowired
-    private BlogCommentMapper blogCommentMapper;
 
     @Override
     @Transactional
@@ -330,11 +328,6 @@ public class BlogServiceImpl implements BlogService {
                 List<String> tags = Arrays.asList(blog.getBlogTags().split(","));
                 blogDetailVO.setBlogTags(tags);
             }
-            //设置评论数
-            Map params = new HashMap();
-            params.put("blogId", blog.getBlogId());
-            params.put("commentStatus", 1);//过滤审核通过的数据
-            blogDetailVO.setCommentCount(blogCommentMapper.getTotalBlogComments(params));
             return blogDetailVO;
         }
         return null;

@@ -16,28 +16,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import java.util.Map;
 
-/**
- * @author 13
- * @qq交流群 796794009
- * @email 2449207463@qq.com
- * @link http://13blog.site
- */
 @Api(tags = "标签管理")
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/tag")
 public class TagController {
 
     @Resource
     private TagService tagService;
 
-    //@GetMapping("/tags")
-    //public String tagPage(HttpServletRequest request) {
-    //    request.setAttribute("path", "tags");
-    //    return "admin/tag";
-    //}
 
     @ApiOperation("分页查询标签")
-    @GetMapping("/tag/list")
+    @GetMapping
     @ResponseBody
     public Result<PageResult> list(@RequestParam Map<String, Object> params) {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {

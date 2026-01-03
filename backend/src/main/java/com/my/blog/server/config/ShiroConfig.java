@@ -44,7 +44,7 @@ public class ShiroConfig {
     public DefaultShiroFilterChainDefinition defaultShiroFilterChainDefinition() {
         DefaultShiroFilterChainDefinition defaultShiroFilterChainDefinition = new DefaultShiroFilterChainDefinition();
         // 配置过滤器拦截规则
-        // 只拦截管理端请求，不拦截前台请求
+        // 所有请求都走过滤器
         defaultShiroFilterChainDefinition.addPathDefinition("/**", LoginFilter.Filter_NAME);
         return defaultShiroFilterChainDefinition;
     }

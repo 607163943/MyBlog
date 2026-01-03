@@ -1,10 +1,9 @@
 package com.my.blog.server.controller.user;
 
+import com.my.blog.common.result.Result;
 import com.my.blog.pojo.vo.BlogDetailVO;
 import com.my.blog.pojo.vo.user.ArticleDetailVO;
-import com.my.blog.common.result.Result;
 import com.my.blog.server.service.BlogService;
-import com.my.blog.server.service.CommentService;
 import com.my.blog.server.service.ConfigService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +15,6 @@ public class ArticleController {
     public static String theme = "amaze";
     @Resource
     private BlogService blogService;
-    @Resource
-    private CommentService commentService;
     @Resource
     private ConfigService configService;
     /**
@@ -35,7 +32,6 @@ public class ArticleController {
         BlogDetailVO blogDetailVO = blogService.getBlogDetail(blogId);
         if (blogDetailVO != null) {
             articleDetailVO.setBlogDetailVO(blogDetailVO);
-            articleDetailVO.setCommentPageResult(commentService.getCommentPageByBlogIdAndPageNum(blogId, commentPage));
         }
 
         return Result.success(articleDetailVO);

@@ -9,6 +9,7 @@ import Tag from '../views/tag/index.vue'
 import Config from '../views/config/index.vue'
 import Profile from '../views/profile/index.vue'
 import Login from '../views/login/index.vue'
+import Dict from '../views/dict/index.vue'
 import { useUserStore } from '@/stores'
 import { isEmpty } from 'radash'
 
@@ -89,6 +90,14 @@ const router = createRouter({
           path: '/admin/profile',
           name: 'Profile',
           component: Profile,
+          meta: {
+            loginRequired: true
+          }
+        },
+        {
+          path: '/admin/dict',
+          name: 'Dict',
+          component: Dict,
           meta: {
             loginRequired: true
           }

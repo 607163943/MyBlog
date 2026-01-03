@@ -17,10 +17,6 @@ public class HomeTotalVO {
     private int categoryCount;
     @ApiModelProperty("博客数量")
     private int blogCount;
-    @ApiModelProperty("友链数量")
-    private int linkCount;
     @ApiModelProperty("标签数量")
     private int tagCount;
-    @ApiModelProperty("评论数量")
-    private int commentCount;
 }
