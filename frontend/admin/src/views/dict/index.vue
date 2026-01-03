@@ -6,8 +6,10 @@ import {
   UndoOutlined,
   SearchOutlined,
   EditOutlined,
-  SmileOutlined
+  StopOutlined,
+  CheckOutlined
 } from '@ant-design/icons-vue'
+import DictDialog from './dialog.vue'
 
 const dictSearchForm = ref({
   dictType: '',
@@ -20,52 +22,44 @@ const search = (values) => {
 
 const columns = [
   {
-    name: 'Name',
-    dataIndex: 'name',
-    key: 'name'
+    title: '字典类型',
+    dataIndex: 'dictType',
+    key: 'dictType'
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age'
+    title: '备注',
+    dataIndex: 'remark',
+    key: 'remark'
   },
   {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address'
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status'
   },
   {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags'
+    title: '更新时间',
+    key: 'updateTime',
+    dataIndex: 'updateTime'
   },
   {
-    title: 'Action',
-    key: 'action'
+    title: '操作',
+    key: 'action',
+    width: 280
   }
 ]
 
 const data = [
   {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer']
+    dictType: '字典类型1',
+    remark: '备注1',
+    status: '0',
+    updateTime: '2026-01-01 10:00:00'
   },
   {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser']
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher']
+    dictType: '字典类型2',
+    remark: '备注2',
+    status: '1',
+    updateTime: '2026-01-01 10:00:00'
   }
 ]
 
@@ -77,19 +71,22 @@ const rowSelection = {
     name: record.name
   })
 }
+
+const handleDictTypeClick = (record) => {
+  console.log(record)
+}
+
+const dictDialogRef = ref(null)
+
+const handleDictSuccess = () => {
+  console.log('handleDictSuccess')
+}
 </script>
 
 <template>
   <div class="dict-container">
     <div class="dict-search">
-      <a-form
-        :model="dictSearchForm"
-        name="horizontal_login"
-        layout="inline"
-        autocomplete="off"
-        @finish="onFinish"
-        @finishFailed="onFinishFailed"
-      >
+      <a-form :model="dictSearchForm" name="horizontal_login" layout="inline" autocomplete="off">
         <a-form-item label="字典类型" name="dictType">
           <a-input v-model:value="dictSearchForm.dictType" placeholder="字典类型" />
         </a-form-item>
@@ -113,7 +110,7 @@ const rowSelection = {
     </div>
 
     <div class="dict-buttons">
-      <a-button type="primary" ghost>
+      <a-button type="primary" ghost @click="dictDialogRef.openDialog(null)">
         <template #icon>
           <PlusOutlined />
         </template>
@@ -134,57 +131,60 @@ const rowSelection = {
     </div>
 
     <div class="dict-table">
-      <div class="dict-table-content">
-        <a-table :columns="columns" :data-source="data" :row-selection="rowSelection">
-          <template #headerCell="{ column }">
-            <template v-if="column.key === 'name'">
-              <span>
-                <smile-outlined />
-                Name
-              </span>
-            </template>
+      <a-table :columns="columns" :data-source="data" :row-selection="rowSelection">
+        <!-- 表格内容 -->
+        <template #bodyCell="{ column, record }">
+          <!-- 字典类型 -->
+          <template v-if="column.key === 'dictType'">
+            <a-button type="link" @click="handleDictTypeClick(record)">{{
+              record.dictType
+            }}</a-button>
           </template>
+          <!-- 状态 -->
+          <template v-if="column.key === 'status'">
+            <a-tag :color="record.status === '0' ? 'green' : 'red'">
+              {{ record.status === '0' ? '启用' : '禁用' }}
+            </a-tag>
+          </template>
+          <!-- 操作 -->
+          <template v-if="column.key === 'action'">
+            <span>
+              <a-button type="link" @click="dictDialogRef.openDialog(record)">
+                <template #icon>
+                  <EditOutlined />
+                </template>
+                编辑
+              </a-button>
+              <a-button type="link" danger v-if="record.status === '1'">
+                <template #icon>
+                  <StopOutlined />
+                </template>
+                禁用
+              </a-button>
+              <a-button type="link" v-else style="color: #38aa88">
+                <template #icon>
+                  <CheckOutlined />
+                </template>
+                启用
+              </a-button>
+              <a-button type="link" danger>
+                <template #icon>
+                  <DeleteOutlined />
+                </template>
+                删除
+              </a-button>
+            </span>
+          </template>
+        </template>
 
-          <template #bodyCell="{ column, record }">
-            <template v-if="column.key === 'name'">
-              <a>
-                {{ record.name }}
-              </a>
-            </template>
-            <template v-else-if="column.key === 'tags'">
-              <span>
-                <a-tag
-                  v-for="tag in record.tags"
-                  :key="tag"
-                  :color="tag === 'loser' ? 'volcano' : tag.length > 5 ? 'geekblue' : 'green'"
-                >
-                  {{ tag.toUpperCase() }}
-                </a-tag>
-              </span>
-            </template>
-            <template v-else-if="column.key === 'action'">
-              <span>
-                <a-button type="link">内容管理</a-button>
-                <a-button type="link">
-                  <template #icon>
-                    <EditOutlined />
-                  </template>
-                  编辑
-                </a-button>
-                <a-button type="link" danger>禁用</a-button>
-                <a-button type="link" danger>
-                  <template #icon>
-                    <DeleteOutlined />
-                  </template>
-                  删除
-                </a-button>
-              </span>
-            </template>
-          </template>
-        </a-table>
-      </div>
-      <div class="dict-table-page"></div>
+        <!-- 空数据 -->
+        <template #emptyText>
+          <a-empty description="暂无数据" />
+        </template>
+      </a-table>
     </div>
+
+    <DictDialog ref="dictDialogRef" @success="handleDictSuccess" />
   </div>
 </template>
 
