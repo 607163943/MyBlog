@@ -9,16 +9,59 @@ import {
   StopOutlined,
   CheckOutlined
 } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 import DictDialog from './dialog.vue'
-import { dictPageQueryService } from '@/api/dict'
+import {
+  dictPageQueryService,
+  dictUpdateStatueService,
+  dictDeleteService,
+  dictBatchDeleteService
+} from '@/api/dict'
 
+const dictSearchFormRef = ref(null)
 const dictSearchForm = ref({
   dictType: '',
   status: ''
 })
 
-const search = (values) => {
-  console.log('Success:', values)
+const usingSearchForm = ref({
+  dictType: '',
+  status: '',
+  pageNum: 1,
+  pageSize: 10
+})
+
+const total = ref(0)
+
+// 搜索
+const search = () => {
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...dictSearchForm.value
+  }
+  pageQuery()
+}
+
+// 清空搜索表单
+const clearSearchForm = () => {
+  dictSearchFormRef.value.resetFields()
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...dictSearchForm.value
+  }
+  pageQuery()
+}
+
+// 处理表格批量删除字典
+const handlerDictBatchDelete = async () => {
+  const res = await dictBatchDeleteService(selectedTableRowKeys.value.join(','))
+  if (res.data.code === 200) {
+    message.success('删除成功')
+    // 重置分页
+    usingSearchForm.value.pageNum = 1
+    usingSearchForm.value.pageSize = 10
+    pageQuery()
+  }
 }
 
 // 表格字段设置
@@ -53,28 +96,51 @@ const columns = [
 // 表格数据
 const tableData = ref([])
 
-const rowSelection = {
-  onChange: (selectedRowKeys, selectedRows) => {
-    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-  },
-  getCheckboxProps: (record) => ({
-    name: record.name
-  })
+const selectedTableRowKeys = ref([])
+
+const onSelectChange = (selectedRowKeys) => {
+  selectedTableRowKeys.value = selectedRowKeys
 }
 
 const handleDictTypeClick = (record) => {
   console.log(record)
 }
 
-const dictDialogRef = ref(null)
+// 修改字典状态
+const handlerDictUpdateStatus = async (record) => {
+  const res = await dictUpdateStatueService(record.id)
+  if (res.data.code === 200) {
+    message.success('修改状态成功')
+    pageQuery()
+  }
+}
 
-const handleDictSuccess = () => {
-  console.log('handleDictSuccess')
+// 处理表格删除字典
+const handlerDictDelete = async (record) => {
+  const res = await dictDeleteService(record.id)
+  if (res.data.code === 200) {
+    message.success('删除成功')
+    // 重置分页
+    usingSearchForm.value.pageNum = 1
+    usingSearchForm.value.pageSize = 10
+    pageQuery()
+  }
 }
 
 const pageQuery = async () => {
-  const res = await dictPageQueryService()
-  tableData.value = res.data.data.result
+  const res = await dictPageQueryService(usingSearchForm.value)
+  let tempTableData = res.data.data.result
+  for (let i = 0; i < tempTableData.length; i++) {
+    tempTableData[i].key = +tempTableData[i].id
+  }
+  tableData.value = tempTableData
+  total.value = res.data.data.total
+}
+
+const dictDialogRef = ref(null)
+
+const handleDictSuccess = () => {
+  clearSearchForm()
 }
 
 pageQuery()
@@ -83,7 +149,7 @@ pageQuery()
 <template>
   <div class="dict-container">
     <div class="dict-search">
-      <a-form :model="dictSearchForm" name="horizontal_login" layout="inline" autocomplete="off">
+      <a-form :model="dictSearchForm" ref="dictSearchFormRef" layout="inline" autocomplete="off">
         <a-form-item label="字典类型" name="dictType">
           <a-input v-model:value="dictSearchForm.dictType" placeholder="字典类型" />
         </a-form-item>
@@ -96,13 +162,13 @@ pageQuery()
         </a-form-item>
       </a-form>
       <div class="dict-search-buttons">
-        <a-button type="primary">
+        <a-button type="primary" @click="search">
           <template #icon>
             <SearchOutlined />
           </template>
           查询
         </a-button>
-        <a-button style="margin-left: 12px">清空</a-button>
+        <a-button style="margin-left: 12px" @click="clearSearchForm">清空</a-button>
       </div>
     </div>
 
@@ -113,13 +179,20 @@ pageQuery()
         </template>
         新增
       </a-button>
-      <a-button type="primary" danger ghost style="margin-left: 12px">
+      <a-button
+        type="primary"
+        :disabled="selectedTableRowKeys.length === 0"
+        danger
+        ghost
+        style="margin-left: 12px"
+        @click="handlerDictBatchDelete"
+      >
         <template #icon>
           <DeleteOutlined />
         </template>
         删除
       </a-button>
-      <a-button style="margin-left: 12px">
+      <a-button style="margin-left: 12px" @click="pageQuery">
         <template #icon>
           <UndoOutlined />
         </template>
@@ -128,57 +201,85 @@ pageQuery()
     </div>
 
     <div class="dict-table">
-      <a-table :columns="columns" :data-source="tableData" :row-selection="rowSelection">
-        <!-- 表格内容 -->
-        <template #bodyCell="{ column, record }">
-          <!-- 字典类型 -->
-          <template v-if="column.key === 'dictType'">
-            <a-button type="link" @click="handleDictTypeClick(record)">{{
-              record.dictType
-            }}</a-button>
+      <div class="dict-table-content">
+        <a-table
+          :columns="columns"
+          :pagination="false"
+          :data-source="tableData"
+          :row-selection="{ selectedRowKeys: selectedTableRowKeys, onChange: onSelectChange }"
+        >
+          <!-- 表格内容 -->
+          <template #bodyCell="{ column, record }">
+            <!-- 字典类型 -->
+            <template v-if="column.key === 'dictType'">
+              <a-button type="link" @click="handleDictTypeClick(record)">{{
+                record.dictType
+              }}</a-button>
+            </template>
+            <!-- 状态 -->
+            <template v-if="column.key === 'status'">
+              <a-tag :color="record.status === 0 ? 'green' : 'red'">
+                {{ record.status === 0 ? '启用' : '禁用' }}
+              </a-tag>
+            </template>
+            <!-- 操作 -->
+            <template v-if="column.key === 'action'">
+              <span>
+                <a-button type="link" @click="dictDialogRef.openDialog(record)">
+                  <template #icon>
+                    <EditOutlined />
+                  </template>
+                  编辑
+                </a-button>
+                <a-button
+                  type="link"
+                  danger
+                  v-if="record.status === 0"
+                  @click="handlerDictUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <StopOutlined />
+                  </template>
+                  禁用
+                </a-button>
+                <a-button
+                  type="link"
+                  v-else
+                  style="color: #38aa88"
+                  @click="handlerDictUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <CheckOutlined />
+                  </template>
+                  启用
+                </a-button>
+                <a-button type="link" danger @click="handlerDictDelete(record)">
+                  <template #icon>
+                    <DeleteOutlined />
+                  </template>
+                  删除
+                </a-button>
+              </span>
+            </template>
           </template>
-          <!-- 状态 -->
-          <template v-if="column.key === 'status'">
-            <a-tag :color="record.status === 0 ? 'green' : 'red'">
-              {{ record.status === 0 ? '启用' : '禁用' }}
-            </a-tag>
-          </template>
-          <!-- 操作 -->
-          <template v-if="column.key === 'action'">
-            <span>
-              <a-button type="link" @click="dictDialogRef.openDialog(record)">
-                <template #icon>
-                  <EditOutlined />
-                </template>
-                编辑
-              </a-button>
-              <a-button type="link" danger v-if="record.status === 0">
-                <template #icon>
-                  <StopOutlined />
-                </template>
-                禁用
-              </a-button>
-              <a-button type="link" v-else style="color: #38aa88">
-                <template #icon>
-                  <CheckOutlined />
-                </template>
-                启用
-              </a-button>
-              <a-button type="link" danger>
-                <template #icon>
-                  <DeleteOutlined />
-                </template>
-                删除
-              </a-button>
-            </span>
-          </template>
-        </template>
 
-        <!-- 空数据 -->
-        <template #emptyText>
-          <a-empty description="暂无数据" />
-        </template>
-      </a-table>
+          <!-- 空数据 -->
+          <template #emptyText>
+            <a-empty description="暂无数据" />
+          </template>
+        </a-table>
+      </div>
+      <div class="dict-table-page">
+        <a-pagination
+          v-model:current="usingSearchForm.pageNum"
+          v-model:pageSize="usingSearchForm.pageSize"
+          :total="total"
+          :show-total="(total) => `总共 ${total} 条`"
+          show-less-items
+          show-size-changer
+          show-quick-jumper
+        />
+      </div>
     </div>
 
     <DictDialog ref="dictDialogRef" @success="handleDictSuccess" />
@@ -196,5 +297,11 @@ pageQuery()
 
 .dict-table {
   margin-top: 12px;
+
+  .dict-table-page {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
 }
 </style>

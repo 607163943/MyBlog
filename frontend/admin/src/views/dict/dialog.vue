@@ -2,6 +2,7 @@
 import { defineOptions, defineExpose, ref, defineEmits } from 'vue'
 import { message } from 'ant-design-vue'
 import { dictAddService, dictUpdateService, dictByIdService } from '@/api/dict'
+
 defineOptions({
   name: 'DictDialog'
 })
@@ -53,7 +54,7 @@ const handleOk = async () => {
   loading.value = true
 
   if (isEdit.value) {
-    console.log('test')
+    await dictUpdateService(dictDialogForm.value)
   } else {
     await dictAddService(dictDialogForm.value)
   }

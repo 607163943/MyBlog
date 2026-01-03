@@ -11,7 +11,7 @@ import Profile from '../views/profile/index.vue'
 import Login from '../views/login/index.vue'
 import Dict from '../views/dict/index.vue'
 import { useUserStore } from '@/stores'
-import { isEmpty } from 'radash'
+import { isEmpty } from 'es-toolkit/compat'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

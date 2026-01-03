@@ -3,6 +3,7 @@ package com.my.blog.server.handler;
 
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.MyBlogException;
+import com.my.blog.common.exception.admin.AdminDictException;
 import com.my.blog.common.exception.admin.AdminUserException;
 import com.my.blog.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AdminUserException.class)
     public Result<Object> adminUserExceptionHandler(AdminUserException e) {
         ExceptionEnums exceptionEnums = e.getExceptionEnums();
-        log.warn("管理端用户异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        log.warn("管理端用户模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
+    }
+
+    /**
+     * 管理端字典异常处理
+     * @param e 管理端字典异常
+     * @return 错误响应
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AdminDictException.class)
+    public Result<Object> adminDictExceptionHandler(AdminDictException e) {
+        ExceptionEnums exceptionEnums = e.getExceptionEnums();
+        log.warn("管理端字典模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
         return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
     }
 
@@ -73,7 +87,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MyBlogException.class)
     public Result<Object> myBlogExceptionHandler(MyBlogException e) {
         ExceptionEnums exceptionEnums = e.getExceptionEnums();
-        log.warn("未知业务异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        log.warn("未知业务模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
         return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
     }
 }

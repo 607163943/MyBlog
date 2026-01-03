@@ -26,4 +26,10 @@ public interface IDictService extends IService<Dict> {
      * @param adminDictDTO 字典数据
      */
     void updateDict(AdminDictDTO adminDictDTO);
+
+    /**
+     * 修改字典状态
+     * @param id 字典id
+     */
+    void updateStatus(Long id);
 }

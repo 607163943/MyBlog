@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.groups.Default;
+import java.util.List;
 
 @Api(tags = "字典管理")
 @RequestMapping("/admin/dict")
@@ -51,6 +52,27 @@ public class DictController {
     @PutMapping
     public Result<Object> updateDict(@Validated({Default.class, UpdateValidGroup.class}) @RequestBody AdminDictDTO adminDictDTO) {
         dictService.updateDict(adminDictDTO);
+        return Result.success();
+    }
+
+    @ApiOperation("根据id修改字典状态")
+    @PatchMapping("/{id}/status")
+    public Result<Object> updateStatus(@PathVariable Long id) {
+        dictService.updateStatus(id);
+        return Result.success();
+    }
+
+    @ApiOperation("根据id删除字典")
+    @DeleteMapping("/{id}")
+    public Result<Object> deleteById(@PathVariable Long id) {
+        dictService.removeById(id);
+        return Result.success();
+    }
+
+    @ApiOperation("批量删除字典")
+    @DeleteMapping
+    public Result<Object> deleteByIds(@RequestParam List<Long> ids) {
+        dictService.removeBatchByIds(ids);
         return Result.success();
     }
 }

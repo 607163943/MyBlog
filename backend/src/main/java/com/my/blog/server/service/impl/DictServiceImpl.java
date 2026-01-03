@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.blog.common.enums.ExceptionEnums;
+import com.my.blog.common.exception.admin.AdminDictException;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.utils.PageQueryUtils;
 import com.my.blog.pojo.dto.admin.AdminDictDTO;
@@ -65,6 +67,12 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
      */
     @Override
     public void addDict(AdminDictDTO adminDictDTO) {
+        // 检测是否存在同名字典
+        Long count = lambdaQuery().eq(Dict::getDictType, adminDictDTO.getDictType()).count();
+        if(count>0) {
+            throw new AdminDictException(ExceptionEnums.ADMIN_DICT_EXIST);
+        }
+
         Dict dict = BeanUtil.copyProperties(adminDictDTO, Dict.class);
         // 新字典提供空json串即可
         dict.setDictJson("{}");
@@ -78,7 +86,26 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
      */
     @Override
     public void updateDict(AdminDictDTO adminDictDTO) {
+        // 检测修改后是否存在同名字典
+        Long count = lambdaQuery().eq(Dict::getDictType, adminDictDTO.getDictType())
+                .notIn(Dict::getId, adminDictDTO.getId())
+                .count();
+        if(count>0) {
+            throw new AdminDictException(ExceptionEnums.ADMIN_DICT_EXIST);
+        }
+
         Dict dict = BeanUtil.copyProperties(adminDictDTO, Dict.class);
+        updateById(dict);
+    }
+
+    /**
+     * 修改字典状态
+     * @param id 字典id
+     */
+    @Override
+    public void updateStatus(Long id) {
+        Dict dict = getById(id);
+        dict.setStatus(dict.getStatus() == 0 ? 1 : 0);
         updateById(dict);
     }
 }
