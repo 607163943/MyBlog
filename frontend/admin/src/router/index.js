@@ -10,6 +10,7 @@ import Config from '../views/config/index.vue'
 import Profile from '../views/profile/index.vue'
 import Login from '../views/login/index.vue'
 import Dict from '../views/dict/index.vue'
+import DictValue from '../views/dict/dict-value/index.vue'
 import { useUserStore } from '@/stores'
 import { isEmpty } from 'es-toolkit/compat'
 
@@ -98,6 +99,14 @@ const router = createRouter({
           path: '/admin/dict',
           name: 'Dict',
           component: Dict,
+          meta: {
+            loginRequired: true
+          }
+        },
+        {
+          path: '/admin/dict-value/:dictId',
+          name: 'DictValue',
+          component: DictValue,
           meta: {
             loginRequired: true
           }

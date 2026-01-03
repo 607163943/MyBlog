@@ -33,6 +33,14 @@ public class DictController {
         return Result.success(pageResult);
     }
 
+    @ApiOperation("查询所有字典")
+    @GetMapping("/all")
+    public Result<List<AdminDictVO>> dictAll() {
+        List<Dict> dictList = dictService.list();
+        List<AdminDictVO> adminDictVOS = BeanUtil.copyToList(dictList, AdminDictVO.class);
+        return Result.success(adminDictVOS);
+    }
+
     @ApiOperation("根据id查询字典")
     @GetMapping("/{id}")
     public Result<AdminDictVO> getById(@PathVariable Long id) {

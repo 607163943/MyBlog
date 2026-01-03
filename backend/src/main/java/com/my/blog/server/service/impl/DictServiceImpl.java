@@ -74,8 +74,6 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
         }
 
         Dict dict = BeanUtil.copyProperties(adminDictDTO, Dict.class);
-        // 新字典提供空json串即可
-        dict.setDictJson("{}");
         save(dict);
     }
 

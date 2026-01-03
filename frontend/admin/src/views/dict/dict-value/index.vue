@@ -6,31 +6,33 @@ import {
   UndoOutlined,
   SearchOutlined,
   EditOutlined,
-  StopOutlined,
-  CheckOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
-import DictDialog from './dialog.vue'
-import {
-  dictPageQueryService,
-  dictUpdateStatueService,
-  dictDeleteService,
-  dictBatchDeleteService
-} from '@/api/dict'
-import { useRouter } from 'vue-router'
+import DictValueDialog from './dialog.vue'
+import { dictDeleteService, dictBatchDeleteService, dictAllService } from '@/api/dict'
+import { dictValuePageQueryService } from '@/api/dict-value'
+import { useRoute } from 'vue-router'
 
-const router = useRouter()
+const route = useRoute()
 
-const dictSearchFormRef = ref(null)
-const dictSearchForm = ref({
-  dictType: '',
-  status: ''
+const dictValueSearchFormRef = ref(null)
+const dictList = ref([])
+
+const getAllDict = async () => {
+  const res = await dictAllService()
+  if (res.data.code === 200) {
+    dictList.value = res.data.data
+  }
+}
+const dictValueSearchForm = ref({
+  label: '',
+  dictId: Number.parseInt(route.params.dictId)
 })
 
 const usingSearchForm = ref({
-  dictType: '',
-  status: '',
+  label: '',
+  dictId: Number.parseInt(route.params.dictId),
   pageNum: 1,
   pageSize: 10
 })
@@ -41,17 +43,17 @@ const total = ref(0)
 const search = () => {
   usingSearchForm.value = {
     ...usingSearchForm.value,
-    ...dictSearchForm.value
+    ...dictValueSearchForm.value
   }
   pageQuery()
 }
 
 // 清空搜索表单
 const clearSearchForm = () => {
-  dictSearchFormRef.value.resetFields()
+  dictValueSearchFormRef.value.resetFields()
   usingSearchForm.value = {
     ...usingSearchForm.value,
-    ...dictSearchForm.value
+    ...dictValueSearchForm.value
   }
   pageQuery()
 }
@@ -79,24 +81,14 @@ const handlerDictBatchDelete = async () => {
 // 表格字段设置
 const columns = [
   {
-    title: '字典类型',
-    dataIndex: 'dictType',
-    key: 'dictType'
+    title: '字典内容值',
+    dataIndex: 'value',
+    key: 'value'
   },
   {
-    title: '备注',
-    dataIndex: 'remark',
-    key: 'remark'
-  },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status'
-  },
-  {
-    title: '更新时间',
-    key: 'updateTime',
-    dataIndex: 'updateTime'
+    title: '字典内容标签',
+    dataIndex: 'label',
+    key: 'label'
   },
   {
     title: '操作',
@@ -112,22 +104,6 @@ const selectedTableRowKeys = ref([])
 
 const onSelectChange = (selectedRowKeys) => {
   selectedTableRowKeys.value = selectedRowKeys
-}
-
-// 跳转到该字典内容编辑处
-const handleDictTypeClick = (record) => {
-  router.push({
-    path: '/admin/dict-value/' + record.id
-  })
-}
-
-// 修改字典状态
-const handlerDictUpdateStatus = async (record) => {
-  const res = await dictUpdateStatueService(record.id)
-  if (res.data.code === 200) {
-    message.success('修改状态成功')
-    pageQuery()
-  }
 }
 
 // 处理表格删除字典
@@ -151,7 +127,7 @@ const handlerDictDelete = async (record) => {
 }
 
 const pageQuery = async () => {
-  const res = await dictPageQueryService(usingSearchForm.value)
+  const res = await dictValuePageQueryService(usingSearchForm.value)
   let tempTableData = res.data.data.result
   for (let i = 0; i < tempTableData.length; i++) {
     tempTableData[i].key = +tempTableData[i].id
@@ -166,25 +142,32 @@ const handleDictSuccess = () => {
   clearSearchForm()
 }
 
+getAllDict()
 pageQuery()
 </script>
 
 <template>
-  <div class="dict-container">
-    <div class="dict-search">
-      <a-form :model="dictSearchForm" ref="dictSearchFormRef" layout="inline" autocomplete="off">
-        <a-form-item label="字典类型" name="dictType">
-          <a-input v-model:value="dictSearchForm.dictType" placeholder="字典类型" />
+  <div class="dict-value-container">
+    <div class="dict-value-search">
+      <a-form
+        :model="dictValueSearchForm"
+        ref="dictValueSearchFormRef"
+        layout="inline"
+        autocomplete="off"
+      >
+        <a-form-item label="字典内容标签" name="label">
+          <a-input v-model:value="dictValueSearchForm.label" placeholder="字典内容标签" />
         </a-form-item>
 
-        <a-form-item label="状态" name="status">
-          <a-select v-model:value="dictSearchForm.status" style="width: 180px">
-            <a-select-option value="0">启用</a-select-option>
-            <a-select-option value="1">禁用</a-select-option>
+        <a-form-item label="字典类型" name="dictId">
+          <a-select v-model:value="dictValueSearchForm.dictId" style="width: 180px">
+            <a-select-option v-for="dict in dictList" :key="dict.id" :value="dict.id">{{
+              dict.dictType
+            }}</a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
-      <div class="dict-search-buttons">
+      <div class="dict-value-search-buttons">
         <a-button type="primary" @click="search">
           <template #icon>
             <SearchOutlined />
@@ -195,7 +178,7 @@ pageQuery()
       </div>
     </div>
 
-    <div class="dict-buttons">
+    <div class="dict-value-buttons">
       <a-button type="primary" ghost @click="dictDialogRef.openDialog(null)">
         <template #icon>
           <PlusOutlined />
@@ -223,8 +206,8 @@ pageQuery()
       </a-button>
     </div>
 
-    <div class="dict-table">
-      <div class="dict-table-content">
+    <div class="dict-value-table">
+      <div class="dict-value-table-content">
         <a-table
           :columns="columns"
           :pagination="false"
@@ -233,18 +216,6 @@ pageQuery()
         >
           <!-- 表格内容 -->
           <template #bodyCell="{ column, record }">
-            <!-- 字典类型 -->
-            <template v-if="column.key === 'dictType'">
-              <a-button type="link" @click="handleDictTypeClick(record)">{{
-                record.dictType
-              }}</a-button>
-            </template>
-            <!-- 状态 -->
-            <template v-if="column.key === 'status'">
-              <a-tag :color="record.status === 0 ? 'green' : 'red'">
-                {{ record.status === 0 ? '启用' : '禁用' }}
-              </a-tag>
-            </template>
             <!-- 操作 -->
             <template v-if="column.key === 'action'">
               <span>
@@ -253,28 +224,6 @@ pageQuery()
                     <EditOutlined />
                   </template>
                   编辑
-                </a-button>
-                <a-button
-                  type="link"
-                  danger
-                  v-if="record.status === 0"
-                  @click="handlerDictUpdateStatus(record)"
-                >
-                  <template #icon>
-                    <StopOutlined />
-                  </template>
-                  禁用
-                </a-button>
-                <a-button
-                  type="link"
-                  v-else
-                  style="color: #38aa88"
-                  @click="handlerDictUpdateStatus(record)"
-                >
-                  <template #icon>
-                    <CheckOutlined />
-                  </template>
-                  启用
                 </a-button>
                 <a-button type="link" danger @click="handlerDictDelete(record)">
                   <template #icon>
@@ -292,7 +241,7 @@ pageQuery()
           </template>
         </a-table>
       </div>
-      <div class="dict-table-page">
+      <div class="dict-value-table-page">
         <a-pagination
           v-model:current="usingSearchForm.pageNum"
           v-model:pageSize="usingSearchForm.pageSize"
@@ -305,23 +254,23 @@ pageQuery()
       </div>
     </div>
 
-    <DictDialog ref="dictDialogRef" @success="handleDictSuccess" />
+    <DictValueDialog ref="dictDialogRef" @success="handleDictSuccess" />
   </div>
 </template>
 
 <style lang="less">
-.dict-search-buttons {
+.dict-value-search-buttons {
   margin-top: 10px;
 }
 
-.dict-buttons {
+.dict-value-buttons {
   margin-top: 12px;
 }
 
-.dict-table {
+.dict-value-table {
   margin-top: 12px;
 
-  .dict-table-page {
+  .dict-value-table-page {
     display: flex;
     justify-content: flex-end;
     margin-top: 12px;

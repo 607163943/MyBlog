@@ -21,8 +21,6 @@ public class AdminDictPageQueryVO {
     private Integer status;
     @ApiModelProperty("备注")
     private String remark;
-    @ApiModelProperty("创建时间")
-    private LocalDateTime createTime;
     @ApiModelProperty("修改时间")
     private LocalDateTime updateTime;
 }
