@@ -1,6 +1,8 @@
 package com.my.blog.server.security;
 
 import com.baomidou.mybatisplus.extension.toolkit.Db;
+import com.my.blog.common.enums.ExceptionEnums;
+import com.my.blog.common.exception.admin.AdminUserLoginException;
 import com.my.blog.common.utils.JWTUtils;
 import com.my.blog.pojo.po.User;
 import org.apache.shiro.authc.AuthenticationException;
@@ -37,15 +39,15 @@ public class LoginRealm extends AuthenticatingRealm {
         // redis令牌再校验
         Object redisTokenObj = redisTemplate.opsForValue().get("user:token:" + userId);
         if(redisTokenObj==null) {
-            return null;
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
         }
         String redisToken = (String) redisTokenObj;
         if(!redisToken.equals(token)) {
-            return null;
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
         }
 
         if(userId==null) {
-            return null;
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
         }
 
         // 获取用户数据

@@ -53,36 +53,49 @@ const handleOk = async () => {
   loading.value = true
 
   if (isEdit.value) {
-    Modal.confirm({
-      title: '编辑标签',
-      icon: createVNode(ExclamationCircleOutlined),
-      content: '确定要保存该标签吗？',
-      async onOk() {
+    handleUpdate()
+  } else {
+    handleAdd()
+  }
+}
+
+// 修改
+const handleUpdate = async () => {
+  Modal.confirm({
+    title: '编辑标签',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '确定要保存该标签吗？',
+    async onOk() {
+      try {
         await tagUpdateService(tagDialogForm.value)
         message.success('操作成功')
-
+        emit('success')
+      } finally {
         loading.value = false
         open.value = false
 
         // 重置对话框
         tagDialogFormRef.value.resetFields()
-        emit('success')
-      },
-      onCancel() {
-        loading.value = false
-        open.value = false
       }
-    })
-  } else {
+    },
+    onCancel() {
+      loading.value = false
+      open.value = false
+    }
+  })
+}
+
+// 添加
+const handleAdd = async () => {
+  try {
     await tagAddService(tagDialogForm.value)
     message.success('操作成功')
-
+    emit('success')
+  } finally {
     loading.value = false
     open.value = false
-
     // 重置对话框
     tagDialogFormRef.value.resetFields()
-    emit('success')
   }
 }
 

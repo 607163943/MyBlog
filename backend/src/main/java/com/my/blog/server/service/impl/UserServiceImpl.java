@@ -22,6 +22,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -76,6 +77,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 生成令牌
         String token = jwtUtils.createJWTWithUserId(user.getId());
+
+        // 更新用户登陆时间
+        user.setLastLoginTime(LocalDateTime.now());
+        updateById(user);
 
         // 令牌存入Redis 1天过期
         redisTemplate.opsForValue().set("user:token:" + user.getId(), token, 1, TimeUnit.DAYS);

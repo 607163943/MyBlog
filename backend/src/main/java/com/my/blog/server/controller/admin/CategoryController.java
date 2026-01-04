@@ -1,46 +1,29 @@
 package com.my.blog.server.controller.admin;
 
 import com.my.blog.common.result.Result;
-import com.my.blog.server.service.CategoryService;
 import com.my.blog.common.utils.PageQueryUtil;
 import com.my.blog.common.utils.PageResult;
+import com.my.blog.server.service.CategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Map;
 
-/**
- * @author 13
- * @qq交流群 796794009
- * @email 2449207463@qq.com
- * @link http://13blog.site
- */
 @Api(tags = "分类管理")
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/admin/category")
 public class CategoryController {
 
     @Resource
     private CategoryService categoryService;
-
-    //@GetMapping("/categories")
-    //public String categoryPage(HttpServletRequest request) {
-    //    request.setAttribute("path", "categories");
-    //    return "admin/category";
-    //}
-
     /**
      * 分类列表
      */
     @ApiOperation("分页查询分类")
-    @RequestMapping(value = "/category/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     public Result<PageResult> list(@RequestParam Map<String, Object> params) {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {

@@ -1,6 +1,6 @@
 package com.my.blog.server.handler;
 
-import com.my.blog.common.exception.admin.AdminUserException;
+import com.my.blog.common.exception.admin.AdminUserLoginException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -25,9 +25,9 @@ public class GlobalFilterExceptionHandler extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             // 业务异常做单独处理
-            if(e.getCause() instanceof AdminUserException) {
-                AdminUserException adminUserException = (AdminUserException) e.getCause();
-                handlerExceptionResolver.resolveException(request, response, null, adminUserException);
+            if(e.getCause() instanceof AdminUserLoginException) {
+                AdminUserLoginException adminUserLoginException = (AdminUserLoginException) e.getCause();
+                handlerExceptionResolver.resolveException(request, response, null, adminUserLoginException);
             } else {
                 handlerExceptionResolver.resolveException(request, response, null, e);
             }

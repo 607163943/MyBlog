@@ -4,6 +4,7 @@ package com.my.blog.server.handler;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.MyBlogException;
 import com.my.blog.common.exception.admin.AdminUserException;
+import com.my.blog.common.exception.admin.AdminUserLoginException;
 import com.my.blog.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class GlobalExceptionHandler {
     public Result<Object> exceptionHandler(Exception e) {
         log.error("服务器错误：{}", e.getMessage());
         e.printStackTrace();
-        return Result.error(500, "服务器错误");
+        return Result.error(500, "系统错误，请联系管理员");
     }
 
     /**
@@ -43,6 +44,19 @@ public class GlobalExceptionHandler {
     public Result<Object> adminUserExceptionHandler(AdminUserException e) {
         ExceptionEnums exceptionEnums = e.getExceptionEnums();
         log.warn("管理端用户模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
+    }
+
+    /**
+     * 管理端用户登录异常处理
+     * @param e 管理端用户登录异常
+     * @return 错误响应
+     */
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AdminUserLoginException.class)
+    public Result<Object> adminUserLoginExceptionHandler(AdminUserLoginException e) {
+        ExceptionEnums exceptionEnums = e.getExceptionEnums();
+        log.warn("管理端用户认证异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
         return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
     }
 

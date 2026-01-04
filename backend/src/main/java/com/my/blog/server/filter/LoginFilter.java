@@ -2,7 +2,7 @@ package com.my.blog.server.filter;
 
 import cn.hutool.core.util.StrUtil;
 import com.my.blog.common.enums.ExceptionEnums;
-import com.my.blog.common.exception.admin.AdminUserException;
+import com.my.blog.common.exception.admin.AdminUserLoginException;
 import com.my.blog.common.utils.JWTUtils;
 import com.my.blog.common.utils.URLUtils;
 import com.my.blog.server.security.JWTToken;
@@ -36,14 +36,14 @@ public class LoginFilter extends AuthenticatingFilter {
 
         // 判空
         if (StrUtil.isEmpty(token)) {
-            throw new AdminUserException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
         }
 
         // 校验
         try {
             jwtUtils.verifyJWT(token);
         } catch (Exception e) {
-            throw new AdminUserException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
         }
 
         return JWTToken.builder()

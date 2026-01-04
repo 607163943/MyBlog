@@ -1,400 +1,328 @@
 <script setup>
-$(function () {
-  $('#jqGrid').jqGrid({
-    url: '/api/admin/category/list',
-    datatype: 'json',
-    colModel: [
-      { label: 'id', name: 'categoryId', index: 'categoryId', width: 50, key: true, hidden: true },
-      { label: '分类名称', name: 'categoryName', index: 'categoryName', width: 240 },
-      {
-        label: '分类图标',
-        name: 'categoryIcon',
-        index: 'categoryIcon',
-        width: 120,
-        formatter: imgFormatter
-      },
-      { label: '添加时间', name: 'createTime', index: 'createTime', width: 120 }
-    ],
-    height: 560,
-    rowNum: 10,
-    rowList: [10, 20, 50],
-    styleUI: 'Bootstrap',
-    loadtext: '信息读取中...',
-    rownumbers: false,
-    rownumWidth: 20,
-    autowidth: true,
-    multiselect: true,
-    pager: '#jqGridPager',
-    jsonReader: {
-      root: 'data.list',
-      page: 'data.currPage',
-      total: 'data.totalPage',
-      records: 'data.totalCount'
-    },
-    prmNames: {
-      page: 'page',
-      rows: 'limit',
-      order: 'order'
-    },
-    gridComplete: function () {
-      //隐藏grid底部滚动条
-      $('#jqGrid').closest('.ui-jqgrid-bdiv').css({ 'overflow-x': 'hidden' })
-    }
-  })
+import { ref, createVNode } from 'vue'
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  UndoOutlined,
+  SearchOutlined,
+  EditOutlined,
+  StopOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined
+} from '@ant-design/icons-vue'
+import { message, Modal } from 'ant-design-vue'
+import CategoryDialog from './dialog.vue'
+import {
+  categoryPageQueryService,
+  categoryUpdateStatueService,
+  categoryDeleteService,
+  categoryBatchDeleteService
+} from '@/api/category'
 
-  jQuery('select.image-picker').imagepicker({
-    hide_select: false
-  })
-
-  jQuery('select.image-picker.show-labels').imagepicker({
-    hide_select: false,
-    show_label: true
-  })
-  $(window).resize(function () {
-    $('#jqGrid').setGridWidth($('.card-body').width())
-  })
-  var container = jQuery('select.image-picker.masonry').next('ul.thumbnails')
-  container.imagesLoaded(function () {
-    container.masonry({
-      itemSelector: 'li'
-    })
-  })
+const categorySearchFormRef = ref(null)
+const categorySearchForm = ref({
+  name: '',
+  status: '',
+  isAsc: true
 })
 
-function imgFormatter(cellvalue) {
-  return (
-    "<a href='" +
-    cellvalue +
-    "'> <img src='" +
-    cellvalue +
-    '\' height="64" width="64" alt=\'icon\'/></a>'
-  )
+const usingSearchForm = ref({
+  name: '',
+  status: '',
+  isAsc: true,
+  pageNum: 1,
+  pageSize: 10
+})
+
+const total = ref(0)
+
+// 搜索
+const search = () => {
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...categorySearchForm.value
+  }
+  pageQuery()
 }
 
-/**
- * jqGrid重新加载
- */
-function reload() {
-  var page = $('#jqGrid').jqGrid('getGridParam', 'page')
-  $('#jqGrid')
-    .jqGrid('setGridParam', {
-      page: page
-    })
-    .trigger('reloadGrid')
+// 清空搜索表单
+const clearSearchForm = () => {
+  categorySearchFormRef.value.resetFields()
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...categorySearchForm.value
+  }
+  pageQuery()
 }
 
-function categoryAdd() {
-  reset()
-  $('.modal-title').html('分类添加')
-  $('#categoryModal').modal('show')
-}
-
-//绑定modal上的保存按钮
-$('#saveButton').click(function () {
-  var categoryName = $('#categoryName').val()
-  if (!validCN_ENString2_18(categoryName)) {
-    $('#edit-error-msg').css('display', 'block')
-    $('#edit-error-msg').html('请输入符合规范的分类名称！')
-  } else {
-    var params = $('#categoryForm').serialize()
-    var url = '/admin/categories/save'
-    var id = getSelectedRowWithoutAlert()
-    if (id != null) {
-      url = '/admin/categories/update'
-    }
-    $.ajax({
-      type: 'POST', //方法类型
-      url: url,
-      data: params,
-      success: function (result) {
-        if (result.resultCode == 200) {
-          $('#categoryModal').modal('hide')
-          swal('保存成功', {
-            icon: 'success'
-          })
-          reload()
-        } else {
-          $('#categoryModal').modal('hide')
-          swal(result.message, {
-            icon: 'error'
-          })
-        }
-      },
-      error: function () {
-        swal('操作失败', {
-          icon: 'error'
-        })
+// 处理表格批量删除分类
+const handlerBatchDelete = async () => {
+  Modal.confirm({
+    title: '批量删除分类',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '确定要删除这些选中分类吗？',
+    async onOk() {
+      const res = await categoryBatchDeleteService(selectedTableRowKeys.value.join(','))
+      if (res.data.code === 200) {
+        message.success('删除成功')
+        // 重置分页
+        usingSearchForm.value.pageNum = 1
+        usingSearchForm.value.pageSize = 10
+        pageQuery()
       }
-    })
-  }
-})
-
-function categoryEdit() {
-  reset()
-  var id = getSelectedRow()
-  if (id == null) {
-    return
-  }
-  $('.modal-title').html('分类编辑')
-  $('#categoryModal').modal('show')
-  $('#categoryId').val(id)
-}
-
-function deleteCagegory() {
-  var ids = getSelectedRows()
-  if (ids == null) {
-    return
-  }
-  swal({
-    title: '确认弹框',
-    text: '确认要删除数据吗?',
-    icon: 'warning',
-    buttons: true,
-    dangerMode: true
-  }).then((flag) => {
-    if (flag) {
-      $.ajax({
-        type: 'POST',
-        url: '/admin/categories/delete',
-        contentType: 'application/json',
-        data: JSON.stringify(ids),
-        success: function (r) {
-          if (r.resultCode == 200) {
-            swal('删除成功', {
-              icon: 'success'
-            })
-            $('#jqGrid').trigger('reloadGrid')
-          } else {
-            swal(r.message, {
-              icon: 'error'
-            })
-          }
-        }
-      })
-    }
+    },
+    onCancel() {}
   })
 }
 
-function reset() {
-  $('#categoryName').val('')
-  $('#categoryIcon option:first').prop('selected', 'selected')
+// 表格字段设置
+const columns = [
+  {
+    title: '分类名称',
+    dataIndex: 'name',
+    key: 'name'
+  },
+  {
+    title: '排序',
+    dataIndex: 'sort',
+    key: 'sort'
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status'
+  },
+  {
+    title: '文章数',
+    dataIndex: 'articleCount',
+    key: 'articleCount'
+  },
+  {
+    title: '操作',
+    key: 'action',
+    width: 280
+  }
+]
+
+// 表格数据
+const tableData = ref([])
+
+const selectedTableRowKeys = ref([])
+
+const onSelectChange = (selectedRowKeys) => {
+  selectedTableRowKeys.value = selectedRowKeys
 }
+
+// 修改状态
+const handlerUpdateStatus = async (record) => {
+  const res = await categoryUpdateStatueService(record.id)
+  if (res.data.code === 200) {
+    message.success('修改状态成功')
+    pageQuery()
+  }
+}
+
+// 处理表格删除
+const handlerDelete = async (record) => {
+  Modal.confirm({
+    title: '删除分类',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '确定要删除该分类吗？',
+    async onOk() {
+      const res = await categoryDeleteService(record.id)
+      if (res.data.code === 200) {
+        message.success('删除成功')
+        // 重置分页
+        usingSearchForm.value.pageNum = 1
+        usingSearchForm.value.pageSize = 10
+        pageQuery()
+      }
+    },
+    onCancel() {}
+  })
+}
+
+const pageQuery = async () => {
+  const res = await categoryPageQueryService(usingSearchForm.value)
+  let tempTableData = res.data.data.result
+  for (let i = 0; i < tempTableData.length; i++) {
+    tempTableData[i].key = +tempTableData[i].id
+  }
+  tableData.value = tempTableData
+  total.value = res.data.data.total
+}
+
+const categoryDialogRef = ref(null)
+
+const handleSuccess = () => {
+  clearSearchForm()
+}
+
+pageQuery()
 </script>
 
 <template>
-  <div class="content-wrapper">
-    <!-- Content Header (图标header) -->
-    <div class="content-header">
-      <div class="container-fluid"></div>
-      <!-- /.container-fluid -->
-    </div>
-    <!-- Main content -->
-    <div class="content">
-      <div class="container-fluid">
-        <div class="card card-primary card-outline">
-          <div class="card-header">
-            <h3 class="card-title">分类管理</h3>
-          </div>
-          <!-- /.card-body -->
-          <div class="card-body">
-            <div class="grid-btn">
-              <button class="btn btn-info" onclick="categoryAdd()">
-                <i class="fa fa-plus"></i>&nbsp;新增
-              </button>
-              <button class="btn btn-info" onclick="categoryEdit()">
-                <i class="fa fa-pencil-square-o"></i>&nbsp;修改
-              </button>
-              <button class="btn btn-danger" onclick="deleteCagegory()">
-                <i class="fa fa-trash-o"></i>&nbsp;删除
-              </button>
-            </div>
-            <br />
-            <table id="jqGrid" class="table table-bordered"></table>
-            <div id="jqGridPager"></div>
-          </div>
-          <!-- /.card-body -->
-        </div>
-      </div>
-      <!-- /.container-fluid -->
-    </div>
-    <!-- /.content -->
-    <div class="content">
-      <!-- 模态框（Modal） -->
-      <div
-        class="modal fade"
-        id="categoryModal"
-        tabindex="-1"
-        role="dialog"
-        aria-labelledby="categoryModalLabel"
+  <div class="category-container">
+    <div class="category-search">
+      <a-form
+        :model="categorySearchForm"
+        ref="categorySearchFormRef"
+        layout="inline"
+        autocomplete="off"
       >
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <h6 class="modal-title" id="categoryModalLabel">Modal</h6>
-            </div>
-            <div class="modal-body">
-              <form id="categoryForm">
-                <div class="form-group">
-                  <div class="alert alert-danger" id="edit-error-msg" style="display: none">
-                    错误信息展示栏。
-                  </div>
-                </div>
-                <input type="hidden" class="form-control" id="categoryId" name="categoryId" />
-                <div class="form-group">
-                  <label for="categoryName" class="control-label">分类名称:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="categoryName"
-                    name="categoryName"
-                    placeholder="请输入分类名称"
-                    required="true"
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="categoryIcon" class="control-label">分类图标:</label>
-                  <select
-                    class="form-control select2 image-picker"
-                    id="categoryIcon"
-                    name="categoryIcon"
-                  >
-                    <option
-                      data-img-src="/admin/dist/img/category/00.png"
-                      value="/admin/dist/img/category/00.png"
-                    >
-                      默认图标
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/01.png"
-                      value="/admin/dist/img/category/01.png"
-                    >
-                      图标1
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/02.png"
-                      value="/admin/dist/img/category/02.png"
-                    >
-                      图标2
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/03.png"
-                      value="/admin/dist/img/category/03.png"
-                    >
-                      图标3
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/04.png"
-                      value="/admin/dist/img/category/04.png"
-                    >
-                      图标4
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/05.png"
-                      value="/admin/dist/img/category/05.png"
-                    >
-                      图标5
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/06.png"
-                      value="/admin/dist/img/category/06.png"
-                    >
-                      图标6
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/07.png"
-                      value="/admin/dist/img/category/07.png"
-                    >
-                      图标7
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/08.png"
-                      value="/admin/dist/img/category/08.png"
-                    >
-                      图标8
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/09.png"
-                      value="/admin/dist/img/category/09.png"
-                    >
-                      图标9
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/10.png"
-                      value="/admin/dist/img/category/10.png"
-                    >
-                      图标10
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/11.png"
-                      value="/admin/dist/img/category/11.png"
-                    >
-                      图标11
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/12.png"
-                      value="/admin/dist/img/category/12.png"
-                    >
-                      图标12
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/13.png"
-                      value="/admin/dist/img/category/13.png"
-                    >
-                      图标13
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/14.png"
-                      value="/admin/dist/img/category/14.png"
-                    >
-                      图标14
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/15.png"
-                      value="/admin/dist/img/category/15.png"
-                    >
-                      图标15
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/16.png"
-                      value="/admin/dist/img/category/16.png"
-                    >
-                      图标16
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/17.png"
-                      value="/admin/dist/img/category/17.png"
-                    >
-                      图标17
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/18.png"
-                      value="/admin/dist/img/category/18.png"
-                    >
-                      图标18
-                    </option>
-                    <option
-                      data-img-src="/admin/dist/img/category/19.png"
-                      value="/admin/dist/img/category/19.png"
-                    >
-                      图标19
-                    </option>
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-              <button type="button" class="btn btn-primary" id="saveButton">确认</button>
-            </div>
-          </div>
-        </div>
+        <a-form-item label="分类名称" name="name">
+          <a-input v-model:value="categorySearchForm.name" placeholder="分类名称" />
+        </a-form-item>
+
+        <a-form-item label="状态" name="status">
+          <a-select v-model:value="categorySearchForm.status" style="width: 180px">
+            <a-select-option value="0">启用</a-select-option>
+            <a-select-option value="1">禁用</a-select-option>
+          </a-select>
+        </a-form-item>
+
+        <a-form-item label="排序" name="isAsc">
+          <a-select v-model:value="categorySearchForm.isAsc" style="width: 180px">
+            <a-select-option :value="true">升序</a-select-option>
+            <a-select-option :value="false">降序</a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+      <div class="category-search-buttons">
+        <a-button type="primary" @click="search">
+          <template #icon>
+            <SearchOutlined />
+          </template>
+          查询
+        </a-button>
+        <a-button style="margin-left: 12px" @click="clearSearchForm">清空</a-button>
       </div>
-      <!-- /.modal -->
     </div>
+
+    <div class="category-buttons">
+      <a-button type="primary" ghost @click="categoryDialogRef.openDialog(null)">
+        <template #icon>
+          <PlusOutlined />
+        </template>
+        新增
+      </a-button>
+      <a-button
+        type="primary"
+        :disabled="selectedTableRowKeys.length === 0"
+        danger
+        ghost
+        style="margin-left: 12px"
+        @click="handlerBatchDelete"
+      >
+        <template #icon>
+          <DeleteOutlined />
+        </template>
+        删除
+      </a-button>
+      <a-button style="margin-left: 12px" @click="pageQuery">
+        <template #icon>
+          <UndoOutlined />
+        </template>
+        刷新
+      </a-button>
+    </div>
+
+    <div class="category-table">
+      <div class="category-table-content">
+        <a-table
+          :columns="columns"
+          :pagination="false"
+          :data-source="tableData"
+          :row-selection="{ selectedRowKeys: selectedTableRowKeys, onChange: onSelectChange }"
+        >
+          <!-- 表格内容 -->
+          <template #bodyCell="{ column, record }">
+            <!-- 状态 -->
+            <template v-if="column.key === 'status'">
+              <a-tag :color="record.status === 0 ? 'green' : 'red'">
+                {{ record.status === 0 ? '启用' : '禁用' }}
+              </a-tag>
+            </template>
+            <!-- 操作 -->
+            <template v-if="column.key === 'action'">
+              <span>
+                <a-button type="link" @click="categoryDialogRef.openDialog(record)">
+                  <template #icon>
+                    <EditOutlined />
+                  </template>
+                  编辑
+                </a-button>
+                <a-button
+                  type="link"
+                  danger
+                  v-if="record.status === 0"
+                  @click="handlerUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <StopOutlined />
+                  </template>
+                  禁用
+                </a-button>
+                <a-button
+                  type="link"
+                  v-else
+                  style="color: #38aa88"
+                  @click="handlerUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <CheckOutlined />
+                  </template>
+                  启用
+                </a-button>
+                <a-button type="link" danger @click="handlerDelete(record)">
+                  <template #icon>
+                    <DeleteOutlined />
+                  </template>
+                  删除
+                </a-button>
+              </span>
+            </template>
+          </template>
+
+          <!-- 空数据 -->
+          <template #emptyText>
+            <a-empty description="暂无数据" />
+          </template>
+        </a-table>
+      </div>
+      <div class="category-table-page">
+        <a-pagination
+          v-model:current="usingSearchForm.pageNum"
+          v-model:pageSize="usingSearchForm.pageSize"
+          :total="total"
+          show-less-items
+          :show-total="(total) => `总共 ${total} 条`"
+          show-size-changer
+          show-quick-jumper
+        />
+      </div>
+    </div>
+
+    <CategoryDialog ref="categoryDialogRef" @success="handleSuccess" />
   </div>
 </template>
 
-<style lang="less"></style>
+<style lang="less">
+.category-search-buttons {
+  margin-top: 10px;
+}
+
+.category-buttons {
+  margin-top: 12px;
+}
+
+.category-table {
+  margin-top: 12px;
+
+  .category-table-page {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+}
+</style>
