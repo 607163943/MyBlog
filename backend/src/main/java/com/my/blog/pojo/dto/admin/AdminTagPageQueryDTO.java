@@ -7,14 +7,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@ApiModel("标签分页查询参数")
 @EqualsAndHashCode(callSuper = true)
-@ApiModel("字典分页查询参数")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminDictPageQueryDTO extends PageQueryDTO {
-    @ApiModelProperty("字典类型")
-    private String dictType;
-    @ApiModelProperty("字典状态 0启用 1禁用")
+public class AdminTagPageQueryDTO extends PageQueryDTO {
+    @ApiModelProperty("标签名称")
+    private String name;
+    @ApiModelProperty("标签状态")
     private Integer status;
 }

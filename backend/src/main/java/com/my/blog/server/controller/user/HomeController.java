@@ -1,11 +1,10 @@
 package com.my.blog.server.controller.user;
 
-import com.my.blog.pojo.vo.user.BlogHomeVO;
 import com.my.blog.common.result.Result;
+import com.my.blog.common.utils.PageResult;
+import com.my.blog.pojo.vo.user.BlogHomeVO;
 import com.my.blog.server.service.BlogService;
 import com.my.blog.server.service.ConfigService;
-import com.my.blog.server.service.TagService;
-import com.my.blog.common.utils.PageResult;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +18,6 @@ import javax.annotation.Resource;
 public class HomeController {
     @Resource
     private BlogService blogService;
-    @Resource
-    private TagService tagService;
     @Resource
     private ConfigService configService;
 
@@ -36,7 +33,6 @@ public class HomeController {
                 .blogPageResult(blogPageResult)
                 .newBlogs(blogService.getBlogListForIndexPage(1))
                 .hotBlogs(blogService.getBlogListForIndexPage(0))
-                .hotTags(tagService.getBlogTagCountForIndex())
                 .pageName("首页")
                 .configurations(configService.getAllConfigs())
                 .build();

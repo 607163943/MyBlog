@@ -2,7 +2,7 @@
 import { defineOptions, defineExpose, ref, defineEmits, createVNode } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
-import { dictAddService, dictUpdateService, dictByIdService } from '@/api/dict'
+import { dictAddService, dictUpdateService, dictByIdService } from '@/api/tag'
 
 defineOptions({
   name: 'DictDialog'
@@ -62,19 +62,30 @@ const handleOk = async () => {
       async onOk() {
         await dictUpdateService(dictDialogForm.value)
         message.success('操作成功')
+
+        loading.value = false
+        open.value = false
+
+        // 重置对话框
+        dictDialogFormRef.value.resetFields()
+        emit('success')
       },
-      onCancel() {}
+      onCancel() {
+        loading.value = false
+        open.value = false
+      }
     })
   } else {
     await dictAddService(dictDialogForm.value)
     message.success('操作成功')
-  }
-  loading.value = false
-  open.value = false
 
-  // 重置对话框
-  dictDialogFormRef.value.resetFields()
-  emit('success')
+    loading.value = false
+    open.value = false
+
+    // 重置对话框
+    dictDialogFormRef.value.resetFields()
+    emit('success')
+  }
 }
 
 const handleCancel = () => {

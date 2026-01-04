@@ -4,12 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   HomeOutlined,
   BarChartOutlined,
-  AppstoreOutlined,
   FolderOutlined,
   FileTextOutlined,
-  TagsOutlined,
-  SettingOutlined,
-  BookOutlined
+  TagsOutlined
 } from '@ant-design/icons-vue'
 
 defineOptions({
@@ -39,47 +36,24 @@ const items = ref([
   },
   {
     key: '3',
-    icon: () => h(AppstoreOutlined),
-    label: '业务管理',
-    title: '业务管理',
-    children: [
-      {
-        key: '3-1',
-        icon: () => h(FolderOutlined),
-        label: '分类管理',
-        title: '分类管理',
-        path: '/admin/category'
-      },
-      {
-        key: '3-2',
-        icon: () => h(FileTextOutlined),
-        label: '文章管理',
-        title: '文章管理',
-        path: '/admin/article'
-      },
-      {
-        key: '3-3',
-        icon: () => h(TagsOutlined),
-        label: '标签管理',
-        title: '标签管理',
-        path: '/admin/tag'
-      }
-    ]
+    icon: () => h(FolderOutlined),
+    label: '分类管理',
+    title: '分类管理',
+    path: '/admin/category'
   },
   {
     key: '4',
-    icon: () => h(SettingOutlined),
-    label: '系统管理',
-    title: '系统管理',
-    children: [
-      {
-        key: '4-2',
-        icon: () => h(BookOutlined),
-        label: '系统字典',
-        title: '系统字典',
-        path: '/admin/dict'
-      }
-    ]
+    icon: () => h(FileTextOutlined),
+    label: '文章管理',
+    title: '文章管理',
+    path: '/admin/article'
+  },
+  {
+    key: '5',
+    icon: () => h(TagsOutlined),
+    label: '标签管理',
+    title: '标签管理',
+    path: '/admin/tag'
   }
 ])
 

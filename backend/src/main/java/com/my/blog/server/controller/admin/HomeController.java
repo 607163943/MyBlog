@@ -19,8 +19,6 @@ public class HomeController {
     private BlogService blogService;
     @Resource
     private CategoryService categoryService;
-    @Resource
-    private TagService tagService;
 
     @ApiOperation("获取首页统计数据")
     @GetMapping("/total")
@@ -28,7 +26,6 @@ public class HomeController {
         HomeTotalVO homeTotalVO = HomeTotalVO.builder()
                 .categoryCount(categoryService.getTotalCategories())
                 .blogCount(blogService.getTotalBlogs())
-                .tagCount(tagService.getTotalTags())
                 .build();
         return Result.success(homeTotalVO);
     }

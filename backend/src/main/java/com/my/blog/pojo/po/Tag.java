@@ -7,21 +7,17 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@TableName("tb_sys_dict")
+@TableName("tb_tag")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Dict {
+public class Tag {
     // id
     private Long id;
-    // 字典类型
-    private String dictType;
-    // 状态(0启用 1禁用)
+    // 标签名
+    private String name;
+    // 状态 0启用 1禁用
     private Integer status;
-    // 版本
-    private Integer version;
-    // 备注
-    private String remark;
     // 创建时间
     private LocalDateTime createTime;
     // 修改时间

@@ -8,19 +8,17 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@ApiModel("字典VO")
+@ApiModel("标签VO")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminDictVO {
+public class AdminTagVO {
     @ApiModelProperty("id")
-    private Integer id;
-    @ApiModelProperty("字典类型")
-    private String dictType;
-    @ApiModelProperty("状态 0启用 1禁用")
+    private Long id;
+    @ApiModelProperty("标签名称")
+    private String name;
+    @ApiModelProperty("标签状态")
     private Integer status;
-    @ApiModelProperty("备注")
-    private String remark;
     @ApiModelProperty("创建时间")
     private LocalDateTime createTime;
     @ApiModelProperty("修改时间")

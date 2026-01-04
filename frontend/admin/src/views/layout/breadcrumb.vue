@@ -33,14 +33,6 @@ const items = [
   {
     label: '个人中心',
     path: '/admin/profile'
-  },
-  {
-    label: '系统字典',
-    path: '/admin/dict'
-  },
-  {
-    label: '系统字典内容',
-    path: '/admin/dict-value'
   }
 ]
 

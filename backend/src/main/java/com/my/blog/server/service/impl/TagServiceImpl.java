@@ -1,63 +1,109 @@
 package com.my.blog.server.service.impl;
 
-import com.my.blog.server.mapper.BlogTagMapper;
-import com.my.blog.server.mapper.BlogTagRelationMapper;
-import com.my.blog.pojo.entity.BlogTag;
-import com.my.blog.pojo.entity.BlogTagCount;
-import com.my.blog.server.service.TagService;
-import com.my.blog.common.utils.PageQueryUtil;
-import com.my.blog.common.utils.PageResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.blog.common.enums.ExceptionEnums;
+import com.my.blog.common.exception.admin.AdminTagException;
+import com.my.blog.common.result.PageResult;
+import com.my.blog.common.utils.PageQueryUtils;
+import com.my.blog.pojo.dto.admin.AdminTagDTO;
+import com.my.blog.pojo.dto.admin.AdminTagPageQueryDTO;
+import com.my.blog.pojo.po.Tag;
+import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
+import com.my.blog.server.mapper.TagMapper;
+import com.my.blog.server.service.ITagService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-public class TagServiceImpl implements TagService {
-
-    @Autowired
-    private BlogTagMapper blogTagMapper;
-    @Autowired
-    private BlogTagRelationMapper relationMapper;
-
+public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagService {
+    @Resource
+    private PageQueryUtils pageQueryUtils;
+    /**
+     * 分页查询标签
+     *
+     * @param adminTagPageQueryDTO 查询条件
+     * @return 分页结果
+     */
     @Override
-    public PageResult getBlogTagPage(PageQueryUtil pageUtil) {
-        List<BlogTag> tags = blogTagMapper.findTagList(pageUtil);
-        int total = blogTagMapper.getTotalTags(pageUtil);
-        PageResult pageResult = new PageResult(tags, total, pageUtil.getLimit(), pageUtil.getPage());
-        return pageResult;
+    public PageResult<AdminTagPageQueryVO> pageQuery(AdminTagPageQueryDTO adminTagPageQueryDTO) {
+        // 参数校验和初始化
+        pageQueryUtils.checkAndInitPageQuery(adminTagPageQueryDTO);
+
+        // 构建分页条件
+        Page<Tag> page = new Page<>();
+        page.setCurrent(adminTagPageQueryDTO.getPageNum());
+        page.setSize(adminTagPageQueryDTO.getPageSize());
+
+        // 查询
+        page = lambdaQuery()
+                .like(StrUtil.isNotEmpty(adminTagPageQueryDTO.getName()),
+                        Tag::getName,
+                        adminTagPageQueryDTO.getName())
+                .eq(adminTagPageQueryDTO.getStatus() != null,
+                        Tag::getStatus,
+                        adminTagPageQueryDTO.getStatus())
+                .page(page);
+
+        // 构建VO数据
+        List<AdminTagPageQueryVO> adminTagPageQueryVOS = BeanUtil.copyToList(page.getRecords(), AdminTagPageQueryVO.class);
+
+        return PageResult.<AdminTagPageQueryVO>builder()
+                .pageSize(page.getPages())
+                .pageNum(page.getCurrent())
+                .total(page.getTotal())
+                .result(adminTagPageQueryVOS)
+                .build();
     }
 
+    /**
+     * 添加标签
+     *
+      * @param adminTagDTO 标签数据
+     */
     @Override
-    public int getTotalTags() {
-        return blogTagMapper.getTotalTags(null);
-    }
-
-    @Override
-    public Boolean saveTag(String tagName) {
-        BlogTag temp = blogTagMapper.selectByTagName(tagName);
-        if (temp == null) {
-            BlogTag blogTag = new BlogTag();
-            blogTag.setTagName(tagName);
-            return blogTagMapper.insertSelective(blogTag) > 0;
+    public void addTag(AdminTagDTO adminTagDTO) {
+        // 检测是否存在同名标签
+        Long count = lambdaQuery().eq(Tag::getName, adminTagDTO.getName()).count();
+        if(count>0) {
+            throw new AdminTagException(ExceptionEnums.ADMIN_TAG_EXIST);
         }
-        return false;
+
+        Tag tag = BeanUtil.copyProperties(adminTagDTO, Tag.class);
+        save(tag);
     }
 
+    /**
+     * 修改标签
+     *
+     * @param adminTagDTO 标签数据
+     */
     @Override
-    public Boolean deleteBatch(Integer[] ids) {
-        //已存在关联关系不删除
-        List<Long> relations = relationMapper.selectDistinctTagIds(ids);
-        if (!CollectionUtils.isEmpty(relations)) {
-            return false;
+    public void updateTag(AdminTagDTO adminTagDTO) {
+        // 检测修改后是否存在同名标签
+        Long count = lambdaQuery().eq(Tag::getName, adminTagDTO.getName())
+                .notIn(Tag::getId, adminTagDTO.getId())
+                .count();
+        if(count>0) {
+            throw new AdminTagException(ExceptionEnums.ADMIN_TAG_EXIST);
         }
-        //删除tag
-        return blogTagMapper.deleteBatch(ids) > 0;
+
+        Tag tag = BeanUtil.copyProperties(adminTagDTO, Tag.class);
+        updateById(tag);
     }
 
+    /**
+     * 修改标签状态
+     * @param id 标签id
+     */
     @Override
-    public List<BlogTagCount> getBlogTagCountForIndex() {
-        return blogTagMapper.getTagCount();
+    public void updateStatus(Long id) {
+        Tag tag = getById(id);
+        tag.setStatus(tag.getStatus() == 0 ? 1 : 0);
+        updateById(tag);
     }
 }

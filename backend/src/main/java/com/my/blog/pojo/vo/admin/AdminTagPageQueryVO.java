@@ -6,17 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@ApiModel("字典值分页查询结果")
+@ApiModel("标签分页查询结果")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminDictValuePageQueryVO {
+public class AdminTagPageQueryVO {
     @ApiModelProperty("id")
     private Long id;
-    @ApiModelProperty("字典id")
-    private Long dictId;
-    @ApiModelProperty("字典值")
-    private Integer dictValue;
-    @ApiModelProperty("字典标签")
-    private String dictLabel;
+    @ApiModelProperty("标签名称")
+    private String name;
+    @ApiModelProperty("标签状态")
+    private Integer status;
 }
