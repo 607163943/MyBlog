@@ -11,25 +11,22 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
-import DictDialog from './dialog.vue'
+import TagDialog from './dialog.vue'
 import {
-  dictPageQueryService,
-  dictUpdateStatueService,
-  dictDeleteService,
-  dictBatchDeleteService
+  tagPageQueryService,
+  tagUpdateStatueService,
+  tagDeleteService,
+  tagBatchDeleteService
 } from '@/api/tag'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
-
-const dictSearchFormRef = ref(null)
-const dictSearchForm = ref({
-  dictType: '',
+const tagSearchFormRef = ref(null)
+const tagSearchForm = ref({
+  name: '',
   status: ''
 })
 
 const usingSearchForm = ref({
-  dictType: '',
+  name: '',
   status: '',
   pageNum: 1,
   pageSize: 10
@@ -41,29 +38,29 @@ const total = ref(0)
 const search = () => {
   usingSearchForm.value = {
     ...usingSearchForm.value,
-    ...dictSearchForm.value
+    ...tagSearchForm.value
   }
   pageQuery()
 }
 
 // 清空搜索表单
 const clearSearchForm = () => {
-  dictSearchFormRef.value.resetFields()
+  tagSearchFormRef.value.resetFields()
   usingSearchForm.value = {
     ...usingSearchForm.value,
-    ...dictSearchForm.value
+    ...tagSearchForm.value
   }
   pageQuery()
 }
 
-// 处理表格批量删除字典
+// 处理表格批量删除标签
 const handlerDictBatchDelete = async () => {
   Modal.confirm({
-    title: '批量删除字典',
+    title: '批量删除标签',
     icon: createVNode(ExclamationCircleOutlined),
-    content: '确定要删除这些选中字典吗？',
+    content: '确定要删除这些选中标签吗？',
     async onOk() {
-      const res = await dictBatchDeleteService(selectedTableRowKeys.value.join(','))
+      const res = await tagBatchDeleteService(selectedTableRowKeys.value.join(','))
       if (res.data.code === 200) {
         message.success('删除成功')
         // 重置分页
@@ -79,24 +76,14 @@ const handlerDictBatchDelete = async () => {
 // 表格字段设置
 const columns = [
   {
-    title: '字典类型',
-    dataIndex: 'dictType',
-    key: 'dictType'
-  },
-  {
-    title: '备注',
-    dataIndex: 'remark',
-    key: 'remark'
+    title: '标签名称',
+    dataIndex: 'name',
+    key: 'name'
   },
   {
     title: '状态',
     dataIndex: 'status',
     key: 'status'
-  },
-  {
-    title: '更新时间',
-    key: 'updateTime',
-    dataIndex: 'updateTime'
   },
   {
     title: '操作',
@@ -114,30 +101,23 @@ const onSelectChange = (selectedRowKeys) => {
   selectedTableRowKeys.value = selectedRowKeys
 }
 
-// 跳转到该字典内容编辑处
-const handleDictTypeClick = (record) => {
-  router.push({
-    path: '/admin/dict-value/' + record.id
-  })
-}
-
-// 修改字典状态
+// 修改标签状态
 const handlerDictUpdateStatus = async (record) => {
-  const res = await dictUpdateStatueService(record.id)
+  const res = await tagUpdateStatueService(record.id)
   if (res.data.code === 200) {
     message.success('修改状态成功')
     pageQuery()
   }
 }
 
-// 处理表格删除字典
+// 处理表格删除标签
 const handlerDictDelete = async (record) => {
   Modal.confirm({
-    title: '删除字典',
+    title: '删除标签',
     icon: createVNode(ExclamationCircleOutlined),
-    content: '确定要删除该字典吗？',
+    content: '确定要删除该标签吗？',
     async onOk() {
-      const res = await dictDeleteService(record.id)
+      const res = await tagDeleteService(record.id)
       if (res.data.code === 200) {
         message.success('删除成功')
         // 重置分页
@@ -151,7 +131,7 @@ const handlerDictDelete = async (record) => {
 }
 
 const pageQuery = async () => {
-  const res = await dictPageQueryService(usingSearchForm.value)
+  const res = await tagPageQueryService(usingSearchForm.value)
   let tempTableData = res.data.data.result
   for (let i = 0; i < tempTableData.length; i++) {
     tempTableData[i].key = +tempTableData[i].id
@@ -160,9 +140,9 @@ const pageQuery = async () => {
   total.value = res.data.data.total
 }
 
-const dictDialogRef = ref(null)
+const tagDialogRef = ref(null)
 
-const handleDictSuccess = () => {
+const handleTagSuccess = () => {
   clearSearchForm()
 }
 
@@ -170,21 +150,21 @@ pageQuery()
 </script>
 
 <template>
-  <div class="dict-container">
-    <div class="dict-search">
-      <a-form :model="dictSearchForm" ref="dictSearchFormRef" layout="inline" autocomplete="off">
-        <a-form-item label="字典类型" name="dictType">
-          <a-input v-model:value="dictSearchForm.dictType" placeholder="字典类型" />
+  <div class="tag-container">
+    <div class="tag-search">
+      <a-form :model="tagSearchForm" ref="tagSearchFormRef" layout="inline" autocomplete="off">
+        <a-form-item label="标签名称" name="name">
+          <a-input v-model:value="tagSearchForm.name" placeholder="标签名称" />
         </a-form-item>
 
         <a-form-item label="状态" name="status">
-          <a-select v-model:value="dictSearchForm.status" style="width: 180px">
+          <a-select v-model:value="tagSearchForm.status" style="width: 180px">
             <a-select-option value="0">启用</a-select-option>
             <a-select-option value="1">禁用</a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
-      <div class="dict-search-buttons">
+      <div class="tag-search-buttons">
         <a-button type="primary" @click="search">
           <template #icon>
             <SearchOutlined />
@@ -195,8 +175,8 @@ pageQuery()
       </div>
     </div>
 
-    <div class="dict-buttons">
-      <a-button type="primary" ghost @click="dictDialogRef.openDialog(null)">
+    <div class="tag-buttons">
+      <a-button type="primary" ghost @click="tagDialogRef.openDialog(null)">
         <template #icon>
           <PlusOutlined />
         </template>
@@ -223,8 +203,8 @@ pageQuery()
       </a-button>
     </div>
 
-    <div class="dict-table">
-      <div class="dict-table-content">
+    <div class="tag-table">
+      <div class="tag-table-content">
         <a-table
           :columns="columns"
           :pagination="false"
@@ -233,12 +213,6 @@ pageQuery()
         >
           <!-- 表格内容 -->
           <template #bodyCell="{ column, record }">
-            <!-- 字典类型 -->
-            <template v-if="column.key === 'dictType'">
-              <a-button type="link" @click="handleDictTypeClick(record)">{{
-                record.dictType
-              }}</a-button>
-            </template>
             <!-- 状态 -->
             <template v-if="column.key === 'status'">
               <a-tag :color="record.status === 0 ? 'green' : 'red'">
@@ -248,7 +222,7 @@ pageQuery()
             <!-- 操作 -->
             <template v-if="column.key === 'action'">
               <span>
-                <a-button type="link" @click="dictDialogRef.openDialog(record)">
+                <a-button type="link" @click="tagDialogRef.openDialog(record)">
                   <template #icon>
                     <EditOutlined />
                   </template>
@@ -292,7 +266,7 @@ pageQuery()
           </template>
         </a-table>
       </div>
-      <div class="dict-table-page">
+      <div class="tag-table-page">
         <a-pagination
           v-model:current="usingSearchForm.pageNum"
           v-model:pageSize="usingSearchForm.pageSize"
@@ -305,23 +279,23 @@ pageQuery()
       </div>
     </div>
 
-    <DictDialog ref="dictDialogRef" @success="handleDictSuccess" />
+    <TagDialog ref="tagDialogRef" @success="handleTagSuccess" />
   </div>
 </template>
 
 <style lang="less">
-.dict-search-buttons {
+.tag-search-buttons {
   margin-top: 10px;
 }
 
-.dict-buttons {
+.tag-buttons {
   margin-top: 12px;
 }
 
-.dict-table {
+.tag-table {
   margin-top: 12px;
 
-  .dict-table-page {
+  .tag-table-page {
     display: flex;
     justify-content: flex-end;
     margin-top: 12px;

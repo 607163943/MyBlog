@@ -2,29 +2,27 @@
 import { defineOptions, defineExpose, ref, defineEmits, createVNode } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
-import { dictAddService, dictUpdateService, dictByIdService } from '@/api/tag'
+import { tagAddService, tagUpdateService, tagByIdService } from '@/api/tag'
 
 defineOptions({
-  name: 'DictDialog'
+  name: 'TagDialog'
 })
 
 const loading = ref(false)
 const open = ref(false)
 const isEdit = ref(false)
-const dictDialogFormRef = ref(null)
+const tagDialogFormRef = ref(null)
 
-const dictDialogForm = ref({
+const tagDialogForm = ref({
   id: '',
-  dictType: '',
-  status: '',
-  remark: ''
+  name: '',
+  status: ''
 })
 
 // 表单校验规则
 const rules = {
-  dictType: [{ required: true, message: '请输入字典类型', trigger: 'blur' }],
-  status: [{ required: true, message: '请选择是否启用', trigger: 'change' }],
-  remark: [{ required: true, message: '请输入备注', trigger: 'blur' }]
+  name: [{ required: true, message: '请输入标签名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择是否启用', trigger: 'change' }]
 }
 
 // 打开对话框
@@ -32,10 +30,10 @@ const openDialog = async (obj) => {
   if (obj) {
     // 编辑模式
     isEdit.value = true
-    // 获取字典数据
-    const res = await dictByIdService(obj.id)
+    // 获取标签数据
+    const res = await tagByIdService(obj.id)
     if (res.data.code === 200) {
-      dictDialogForm.value = res.data.data
+      tagDialogForm.value = res.data.data
     }
   } else {
     // 添加模式
@@ -51,23 +49,23 @@ defineExpose({
 const emit = defineEmits(['success'])
 
 const handleOk = async () => {
-  await dictDialogFormRef.value.validate()
+  await tagDialogFormRef.value.validate()
   loading.value = true
 
   if (isEdit.value) {
     Modal.confirm({
-      title: '编辑字典',
+      title: '编辑标签',
       icon: createVNode(ExclamationCircleOutlined),
-      content: '确定要保存该字典吗？',
+      content: '确定要保存该标签吗？',
       async onOk() {
-        await dictUpdateService(dictDialogForm.value)
+        await tagUpdateService(tagDialogForm.value)
         message.success('操作成功')
 
         loading.value = false
         open.value = false
 
         // 重置对话框
-        dictDialogFormRef.value.resetFields()
+        tagDialogFormRef.value.resetFields()
         emit('success')
       },
       onCancel() {
@@ -76,21 +74,21 @@ const handleOk = async () => {
       }
     })
   } else {
-    await dictAddService(dictDialogForm.value)
+    await tagAddService(tagDialogForm.value)
     message.success('操作成功')
 
     loading.value = false
     open.value = false
 
     // 重置对话框
-    dictDialogFormRef.value.resetFields()
+    tagDialogFormRef.value.resetFields()
     emit('success')
   }
 }
 
 const handleCancel = () => {
   // 重置对话框
-  dictDialogFormRef.value.resetFields()
+  tagDialogFormRef.value.resetFields()
   open.value = false
 }
 </script>
@@ -98,7 +96,7 @@ const handleCancel = () => {
 <template>
   <a-modal
     v-model:open="open"
-    :title="isEdit ? '编辑字典' : '新增字典'"
+    :title="isEdit ? '编辑标签' : '新增标签'"
     @ok="handleOk"
     @cancel="handleCancel"
   >
@@ -109,49 +107,23 @@ const handleCancel = () => {
 
     <!-- 表单 -->
     <a-form
-      ref="dictDialogFormRef"
+      ref="tagDialogFormRef"
       :rules="rules"
-      :model="dictDialogForm"
+      :model="tagDialogForm"
       autocomplete="off"
       :label-col="{ span: 4 }"
       style="margin-top: 12px"
     >
-      <a-form-item label="字典类型" name="dictType">
-        <a-input v-model:value="dictDialogForm.dictType" placeholder="字典类型" />
+      <a-form-item label="标签名称" name="name">
+        <a-input v-model:value="tagDialogForm.name" placeholder="标签名称" />
       </a-form-item>
 
       <a-form-item label="是否启用" name="status">
-        <a-radio-group v-model:value="dictDialogForm.status">
+        <a-radio-group v-model:value="tagDialogForm.status">
           <a-radio :value="0">启用</a-radio>
           <a-radio :value="1">禁用</a-radio>
         </a-radio-group>
       </a-form-item>
-
-      <a-form-item label="备注" name="remark">
-        <a-textarea
-          v-model:value="dictDialogForm.remark"
-          placeholder="备注"
-          :auto-size="{ minRows: 2, maxRows: 5 }"
-        />
-      </a-form-item>
-
-      <a-row v-if="isEdit">
-        <a-col :span="24"> 辅助信息： </a-col>
-      </a-row>
-      <a-row v-if="isEdit">
-        <a-col :span="12">
-          <div class="create-time">
-            <span>创建时间：</span>
-            <span>{{ dictDialogForm.createTime }}</span>
-          </div>
-        </a-col>
-        <a-col :span="12">
-          <div class="update-time">
-            <span>更新时间：</span>
-            <span>{{ dictDialogForm.updateTime }}</span>
-          </div>
-        </a-col>
-      </a-row>
     </a-form>
   </a-modal>
 </template>
