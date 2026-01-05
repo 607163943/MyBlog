@@ -79,7 +79,7 @@ public class TagController {
         return Result.success();
     }
 
-    @ApiOperation("批量删除字典")
+    @ApiOperation("批量删除标签")
     @DeleteMapping
     public Result<Object> deleteByIds(@RequestParam List<Long> ids) {
         // 空集合不处理

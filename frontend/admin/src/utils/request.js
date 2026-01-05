@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores'
 import { message } from 'ant-design-vue'
-import router from '@/router'
+import { useRouter } from 'vue-router'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -36,7 +36,8 @@ instance.interceptors.response.use(
     // 对响应错误做点什么
     const res = error.response
     // 用户未认证
-    if (res.code === 401) {
+    if (res.status === 401) {
+      const router = useRouter()
       // 清除用户信息
       const userStore = useUserStore()
       userStore.setUserInfo(null)

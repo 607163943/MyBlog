@@ -1,11 +1,10 @@
 package com.my.blog.server.controller.admin;
 
-import com.my.blog.pojo.vo.ArticleEditVO;
 import com.my.blog.common.result.Result;
-import com.my.blog.server.service.BlogService;
-import com.my.blog.server.service.CategoryService;
 import com.my.blog.common.utils.PageQueryUtil;
 import com.my.blog.common.utils.PageResult;
+import com.my.blog.pojo.vo.ArticleEditVO;
+import com.my.blog.server.service.BlogService;
 import io.swagger.annotations.Api;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +18,10 @@ import java.util.Map;
 public class ArticleController {
 
     @Resource
-    private CategoryService categoryService;
-
-    @Resource
     private BlogService blogService;
     @GetMapping("/edit")
     public Result<ArticleEditVO> edit() {
         ArticleEditVO articleEditVO = ArticleEditVO.builder()
-                .categories(categoryService.getAllCategories())
                 .build();
         return Result.success(articleEditVO);
     }

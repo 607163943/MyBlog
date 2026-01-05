@@ -1,5 +1,5 @@
 <script setup>
-import { defineOptions, defineExpose, ref, defineEmits, createVNode } from 'vue'
+import { defineOptions, defineExpose, ref, defineEmits, createVNode, nextTick } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import { tagAddService, tagUpdateService, tagByIdService } from '@/api/tag'
@@ -33,13 +33,16 @@ const openDialog = async (obj) => {
     // 获取标签数据
     const res = await tagByIdService(obj.id)
     if (res.data.code === 200) {
-      tagDialogForm.value = res.data.data
+      open.value = true
+      nextTick(() => {
+        tagDialogForm.value = res.data.data
+      })
     }
   } else {
     // 添加模式
     isEdit.value = false
+    open.value = true
   }
-  open.value = true
 }
 
 defineExpose({
@@ -127,6 +130,7 @@ const handleCancel = () => {
       :label-col="{ span: 4 }"
       style="margin-top: 12px"
     >
+      <a-form-item name="id"></a-form-item>
       <a-form-item label="标签名称" name="name">
         <a-input v-model:value="tagDialogForm.name" placeholder="标签名称" />
       </a-form-item>

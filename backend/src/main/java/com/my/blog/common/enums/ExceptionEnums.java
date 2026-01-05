@@ -14,7 +14,9 @@ public enum ExceptionEnums {
     ADMIN_USER_LOGIN_TIMEOUT(1005, "登录超时"),
     ADMIN_USER_NOT_LOGIN(1006, "用户未登录"),
 
-    ADMIN_TAG_EXIST(2001, "标签已存在");
+    ADMIN_TAG_EXIST(2001, "标签已存在"),
+
+    ADMIN_CATEGORY_EXIST(3001, "分类已存在");
 
     private final Integer code;
     private final String msg;

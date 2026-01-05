@@ -1,5 +1,5 @@
 <script setup>
-import { defineOptions, defineExpose, ref, defineEmits, createVNode } from 'vue'
+import { defineOptions, defineExpose, ref, defineEmits, createVNode, nextTick } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { categoryAddService, categoryUpdateService, categoryByIdService } from '@/api/category'
@@ -61,13 +61,16 @@ const openDialog = async (obj) => {
     // 获取标签数据
     const res = await categoryByIdService(obj.id)
     if (res.data.code === 200) {
-      categoryDialogForm.value = res.data.data
+      open.value = true
+      nextTick(() => {
+        categoryDialogForm.value = res.data.data
+      })
     }
   } else {
     // 添加模式
     isEdit.value = false
+    open.value = true
   }
-  open.value = true
 }
 
 defineExpose({
@@ -155,6 +158,7 @@ const handleCancel = () => {
       :label-col="{ span: 4 }"
       style="margin-top: 12px"
     >
+      <a-form-item name="id"></a-form-item>
       <a-form-item label="分类名称" name="name">
         <a-input v-model:value="categoryDialogForm.name" placeholder="分类名称" />
       </a-form-item>
@@ -179,7 +183,7 @@ const handleCancel = () => {
       </a-form-item>
 
       <a-form-item label="排序" name="sort">
-        <a-input-number v-model:value="categoryDialogForm.sort" placeholder="排序" />
+        <a-input-number v-model:value="categoryDialogForm.sort" placeholder="排序" :min="0" />
       </a-form-item>
 
       <a-form-item label="是否启用" name="status">

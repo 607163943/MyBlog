@@ -23,13 +23,13 @@ const categorySearchFormRef = ref(null)
 const categorySearchForm = ref({
   name: '',
   status: '',
-  isAsc: true
+  isAsc: 0
 })
 
 const usingSearchForm = ref({
   name: '',
   status: '',
-  isAsc: true,
+  isAsc: 0,
   pageNum: 1,
   pageSize: 10
 })
@@ -93,8 +93,7 @@ const columns = [
     key: 'status'
   },
   {
-    title: '文章数',
-    dataIndex: 'articleCount',
+    title: '文章数(总/发布)',
     key: 'articleCount'
   },
   {
@@ -176,15 +175,15 @@ pageQuery()
 
         <a-form-item label="状态" name="status">
           <a-select v-model:value="categorySearchForm.status" style="width: 180px">
-            <a-select-option value="0">启用</a-select-option>
-            <a-select-option value="1">禁用</a-select-option>
+            <a-select-option :value="0">启用</a-select-option>
+            <a-select-option :value="1">禁用</a-select-option>
           </a-select>
         </a-form-item>
 
         <a-form-item label="排序" name="isAsc">
           <a-select v-model:value="categorySearchForm.isAsc" style="width: 180px">
-            <a-select-option :value="true">升序</a-select-option>
-            <a-select-option :value="false">降序</a-select-option>
+            <a-select-option :value="0">升序</a-select-option>
+            <a-select-option :value="1">降序</a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
@@ -242,6 +241,10 @@ pageQuery()
               <a-tag :color="record.status === 0 ? 'green' : 'red'">
                 {{ record.status === 0 ? '启用' : '禁用' }}
               </a-tag>
+            </template>
+            <!-- 文章数 -->
+            <template v-if="column.key === 'articleCount'">
+              <span>{{ record.articleCount }} / {{ record.publishedArticleCount }}</span>
             </template>
             <!-- 操作 -->
             <template v-if="column.key === 'action'">

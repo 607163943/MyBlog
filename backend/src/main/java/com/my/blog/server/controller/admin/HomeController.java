@@ -17,14 +17,11 @@ import javax.annotation.Resource;
 public class HomeController {
     @Resource
     private BlogService blogService;
-    @Resource
-    private CategoryService categoryService;
 
     @ApiOperation("获取首页统计数据")
     @GetMapping("/total")
     public Result<HomeTotalVO> adminHomeTotal() {
         HomeTotalVO homeTotalVO = HomeTotalVO.builder()
-                .categoryCount(categoryService.getTotalCategories())
                 .blogCount(blogService.getTotalBlogs())
                 .build();
         return Result.success(homeTotalVO);

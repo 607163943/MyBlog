@@ -3,6 +3,8 @@ package com.my.blog.server.handler;
 
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.MyBlogException;
+import com.my.blog.common.exception.admin.AdminCategoryException;
+import com.my.blog.common.exception.admin.AdminTagException;
 import com.my.blog.common.exception.admin.AdminUserException;
 import com.my.blog.common.exception.admin.AdminUserLoginException;
 import com.my.blog.common.result.Result;
@@ -57,6 +59,32 @@ public class GlobalExceptionHandler {
     public Result<Object> adminUserLoginExceptionHandler(AdminUserLoginException e) {
         ExceptionEnums exceptionEnums = e.getExceptionEnums();
         log.warn("管理端用户认证异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
+    }
+
+    /**
+     * 管理端标签异常处理
+     * @param e 管理端标签异常
+     * @return 错误响应
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AdminTagException.class)
+    public Result<Object> adminTagExceptionHandler(AdminTagException e) {
+        ExceptionEnums exceptionEnums = e.getExceptionEnums();
+        log.warn("管理端标签模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
+        return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
+    }
+
+    /**
+     * 管理端分类异常处理
+     * @param e 管理端分类异常
+     * @return 错误响应
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AdminCategoryException.class)
+    public Result<Object> adminCategoryExceptionHandler(AdminCategoryException e) {
+        ExceptionEnums exceptionEnums = e.getExceptionEnums();
+        log.warn("管理端分类模块异常：code:{} msg:{}", exceptionEnums.getCode(), exceptionEnums.getMsg());
         return Result.error(exceptionEnums.getCode(), exceptionEnums.getMsg());
     }
 

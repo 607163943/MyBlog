@@ -51,7 +51,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         String captchaCode = captchaCodeObj.toString();
-        if (!userLoginDTO.getCaptchaCode().equals(captchaCode)) {
+        // 忽略大小写
+        if (!userLoginDTO.getCaptchaCode().equalsIgnoreCase(captchaCode)) {
             // 验证码错误
             throw new AdminUserException(ExceptionEnums.ADMIN_USER_CAPTCHA_CODE_ERROR);
         }
