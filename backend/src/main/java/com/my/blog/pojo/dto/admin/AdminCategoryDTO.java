@@ -33,4 +33,7 @@ public class AdminCategoryDTO {
     @ApiModelProperty("状态")
     @NotNull(message = "状态不能为空")
     private Integer status;
+
+    @ApiModelProperty("上传封面关联id")
+    private Long uploadFileRefId;
 }

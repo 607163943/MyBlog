@@ -17,6 +17,7 @@ public enum ExceptionEnums {
     ADMIN_TAG_EXIST(2001, "标签已存在"),
 
     ADMIN_CATEGORY_EXIST(3001, "分类已存在"),
+    ADMIN_CATEGORY_COVER_NOT_EXIST(3002, "分类封面不存在"),
     ADMIN_UPLOAD_MD5_CREATE_ERROR(4001, "创建文件MD5值生成失败");
 
     private final Integer code;

@@ -19,7 +19,7 @@ public class UploadFileRef {
     // 业务类型
     private Integer bizType;
     // 业务id
-    private Integer bizId;
+    private Long bizId;
     // 文件id
     private Long uploadFileId;
     // 状态

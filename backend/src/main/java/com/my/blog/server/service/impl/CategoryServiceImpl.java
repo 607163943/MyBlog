@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.blog.common.constants.BizTypeConstant;
+import com.my.blog.common.constants.UploadFileRefStatus;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminCategoryException;
 import com.my.blog.common.result.PageResult;
@@ -12,10 +14,13 @@ import com.my.blog.common.utils.PageQueryUtils;
 import com.my.blog.pojo.dto.admin.AdminCategoryDTO;
 import com.my.blog.pojo.dto.admin.AdminCategoryPageQueryDTO;
 import com.my.blog.pojo.po.Category;
+import com.my.blog.pojo.po.UploadFileRef;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 import com.my.blog.server.mapper.CategoryMapper;
 import com.my.blog.server.service.ICategoryService;
+import com.my.blog.server.service.IUploadFileRefService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -24,6 +29,9 @@ import java.util.List;
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements ICategoryService {
     @Resource
     private PageQueryUtils pageQueryUtils;
+
+    @Resource
+    private IUploadFileRefService uploadFileRefService;
     /**
      * 分页查询分类
      *
@@ -76,9 +84,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      *
      * @param adminCategoryDTO 分类数据
      */
+    @Transactional
     @Override
     public void addCategory(AdminCategoryDTO adminCategoryDTO) {
-        // 检测是否存在同名标签
+        // 检测是否存在同名分类
         Long count = lambdaQuery().eq(Category::getName, adminCategoryDTO.getName()).count();
         if(count>0) {
             throw new AdminCategoryException(ExceptionEnums.ADMIN_CATEGORY_EXIST);
@@ -86,6 +95,25 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         Category category = BeanUtil.copyProperties(adminCategoryDTO, Category.class);
         save(category);
+
+        // 标记引用文件状态为已使用，同时更新业务标记
+        if(adminCategoryDTO.getUploadFileRefId()!=null) {
+            UploadFileRef uploadFileRef = uploadFileRefService.lambdaQuery()
+                    .eq(UploadFileRef::getId, adminCategoryDTO.getUploadFileRefId())
+                    .one();
+
+            if(uploadFileRef==null) {
+                throw new AdminCategoryException(ExceptionEnums.ADMIN_CATEGORY_COVER_NOT_EXIST);
+            }
+
+            // 更新为使用
+            uploadFileRef.setStatus(UploadFileRefStatus.USE);
+            // 补充业务数据
+            uploadFileRef.setBizType(BizTypeConstant.CATEGORY_COVER);
+            uploadFileRef.setBizId(category.getId());
+
+            uploadFileRefService.updateById(uploadFileRef);
+        }
     }
 
     /**
@@ -93,6 +121,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      *
      * @param adminCategoryDTO 分类数据
      */
+    @Transactional
     @Override
     public void updateCategory(AdminCategoryDTO adminCategoryDTO) {
         // 检测修改后是否存在同名标签
@@ -105,6 +134,35 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         Category category = BeanUtil.copyProperties(adminCategoryDTO, Category.class);
         updateById(category);
+
+        // 标记引用文件状态为已使用，同时更新业务标记，旧文件标记为未使用
+        if(adminCategoryDTO.getUploadFileRefId()!=null) {
+            UploadFileRef uploadFileRef=uploadFileRefService.lambdaQuery()
+                    .eq(UploadFileRef::getBizId,adminCategoryDTO.getId())
+                    .one();
+            // 旧文件标记为未使用
+            if(uploadFileRef!=null) {
+                uploadFileRef.setStatus(UploadFileRefStatus.NOT_USE);
+                uploadFileRefService.updateById(uploadFileRef);
+            }
+
+            // 标记引用文件状态为已使用，同时更新业务标记
+            uploadFileRef = uploadFileRefService.lambdaQuery()
+                    .eq(UploadFileRef::getId, adminCategoryDTO.getUploadFileRefId())
+                    .one();
+
+            if(uploadFileRef==null) {
+                throw new AdminCategoryException(ExceptionEnums.ADMIN_CATEGORY_COVER_NOT_EXIST);
+            }
+
+            // 更新为使用
+            uploadFileRef.setStatus(UploadFileRefStatus.USE);
+            // 补充业务数据
+            uploadFileRef.setBizType(BizTypeConstant.CATEGORY_COVER);
+            uploadFileRef.setBizId(category.getId());
+
+            uploadFileRefService.updateById(uploadFileRef);
+        }
     }
 
     /**
