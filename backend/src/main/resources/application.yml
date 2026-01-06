@@ -37,12 +37,11 @@ dromara:
     aliyun-oss:
       - platform: aliyun-oss-1 # 存储平台标识
         enable-storage: true  # 启用存储
-        access-key: ??
-        secret-key: ??
-        end-point: ??
-        bucket-name: ??
-        domain: ?? # 访问域名，注意“/”结尾，例如：https://abc.oss-cn-shanghai.aliyuncs.com/
-        base-path: test/ # 基础路径
+        access-key: ${ali-yun-oss.access-key}
+        secret-key: ${ali-yun-oss.secret-key}
+        end-point: ${ali-yun-oss.end-point}
+        bucket-name: ${ali-yun-oss.bucket-name}
+        domain: ${ali-yun-oss.domain} # 访问域名，注意“/”结尾，例如：https://abc.oss-cn-shanghai.aliyuncs.com/
 
 # JWT
 jwt:

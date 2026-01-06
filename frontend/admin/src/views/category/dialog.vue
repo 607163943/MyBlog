@@ -168,8 +168,8 @@ const handleCancel = () => {
       :label-col="{ span: 4 }"
       style="margin-top: 12px"
     >
-      <a-form-item name="id"></a-form-item>
-      <a-form-item name="uploadFileRefId"></a-form-item>
+      <a-form-item name="id" style="display: none"></a-form-item>
+      <a-form-item name="uploadFileRefId" style="display: none"></a-form-item>
       <a-form-item label="分类名称" name="name">
         <a-input v-model:value="categoryDialogForm.name" placeholder="分类名称" />
       </a-form-item>
@@ -178,7 +178,6 @@ const handleCancel = () => {
         <a-upload
           :maxCount="1"
           v-model:file-list="fileList"
-          :isImageUrl="true"
           list-type="picture-card"
           class="avatar-uploader"
           :show-upload-list="false"
@@ -216,8 +215,8 @@ const handleCancel = () => {
 .avatar-uploader {
   img {
     border-radius: 8px;
-    width: 128px;
-    height: 128px;
+    width: 102px;
+    height: 102px;
   }
 }
 .ant-upload-select-picture-card i {

@@ -130,7 +130,7 @@ const handleCancel = () => {
       :label-col="{ span: 4 }"
       style="margin-top: 12px"
     >
-      <a-form-item name="id"></a-form-item>
+      <a-form-item name="id" style="display: none"></a-form-item>
       <a-form-item label="标签名称" name="name">
         <a-input v-model:value="tagDialogForm.name" placeholder="标签名称" />
       </a-form-item>

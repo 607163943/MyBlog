@@ -1,10 +1,12 @@
 package com.my.blog;
 
+import org.dromara.x.file.storage.spring.EnableFileStorage;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
+@EnableFileStorage
 @EnableSwagger2WebMvc
 @MapperScan({"com.my.blog.server.mapper"})
 @SpringBootApplication

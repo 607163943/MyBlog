@@ -14,4 +14,11 @@ public class TestUtils {
         System.out.println(IdUtil.randomUUID());
         System.out.println(IdUtil.simpleUUID());
     }
+
+    @Test
+    void testGetFileExt() {
+        String file="test.png";
+        String ext = file.substring(file.lastIndexOf(".")+1);
+        System.out.println(ext);
+    }
 }
