@@ -3,6 +3,7 @@ import { defineOptions, defineExpose, ref, defineEmits, createVNode, nextTick } 
 import { message, Modal } from 'ant-design-vue'
 import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { categoryAddService, categoryUpdateService, categoryByIdService } from '@/api/category'
+import { uploadImageService } from '@/api/upload'
 
 defineOptions({
   name: 'CategoryDialog'
@@ -18,30 +19,39 @@ const categoryDialogForm = ref({
   name: '',
   cover: '',
   sort: '',
-  status: ''
+  status: '',
+  uploadFileRefId: ''
 })
 const fileList = ref([])
 
 // 图片上传后操作
-// TODO：需要后端实现图片上传接口
 const handleChange = (info) => {
   // 添加待上传图片
   fileList.value = [info.file]
-  categoryDialogForm.value.cover = URL.createObjectURL(info.file)
 }
 
 // 上传图片前置操作
-const beforeUpload = (file) => {
+const beforeUpload = async (file) => {
   const isJpgOrPng =
     file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png'
   if (!isJpgOrPng) {
     message.error('只能上传JPG、JPEG、PNG文件!')
+    return false
   }
   const isLt2M = file.size / 1024 / 1024 < 10
   if (!isLt2M) {
     message.error('图片大小不能超过10MB!')
+    return false
   }
 
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const res = await uploadImageService(formData)
+  if (res.data.code === 200) {
+    categoryDialogForm.value.cover = res.data.data.url
+    categoryDialogForm.value.uploadFileRefId = res.data.data.uploadFileRefId
+  }
   // 禁用自动上传
   return false
 }
@@ -159,6 +169,7 @@ const handleCancel = () => {
       style="margin-top: 12px"
     >
       <a-form-item name="id"></a-form-item>
+      <a-form-item name="uploadFileRefId"></a-form-item>
       <a-form-item label="分类名称" name="name">
         <a-input v-model:value="categoryDialogForm.name" placeholder="分类名称" />
       </a-form-item>
