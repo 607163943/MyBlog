@@ -3,7 +3,6 @@ package com.my.blog.pojo.vo;
 import java.io.Serializable;
 
 public class SimpleBlogListVO implements Serializable {
-
     private Long blogId;
 
     private String blogTitle;
