@@ -56,6 +56,8 @@ public class UploadFileServiceImpl extends ServiceImpl<UploadFileMapper, UploadF
             uploadFile = UploadFile.builder()
                     .originalName(multipartFile.getOriginalFilename())
                     .url(fileInfo.getUrl())
+                    .path(fileInfo.getPath())
+                    .objectFileName(fileInfo.getFilename())
                     .md5(md5String)
                     .build();
             save(uploadFile);
@@ -89,7 +91,7 @@ public class UploadFileServiceImpl extends ServiceImpl<UploadFileMapper, UploadF
 
         return fileStorageService.of(multipartFile)
                 // 年月日作为目录开头
-                .setPath(localDateTime.getYear() + "/" + localDateTime.getMonth() + "/" + localDateTime.getDayOfMonth() + "/")
+                .setPath(localDateTime.getYear() + "/" + localDateTime.getMonthValue() + "/" + localDateTime.getDayOfMonth() + "/")
                 // md5值+原扩展名作为保存文件名
                 .setSaveFilename(md5String + "." + ext)
                 .upload();

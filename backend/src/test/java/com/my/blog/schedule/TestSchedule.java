@@ -1,48 +1,32 @@
-package com.my.blog.server.schedule;
+package com.my.blog.schedule;
 
+import com.my.blog.MyBlogApplication;
 import com.my.blog.common.constants.CommonConstant;
-import com.my.blog.common.constants.UploadFileRefStatus;
 import com.my.blog.pojo.po.UploadFile;
 import com.my.blog.pojo.po.UploadFileRef;
 import com.my.blog.server.service.IUploadFileRefService;
 import com.my.blog.server.service.IUploadFileService;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//@Component
-public class OssImageClearSchedule {
+@SpringBootTest(classes = MyBlogApplication.class)
+public class TestSchedule {
+    @Resource
+    private FileStorageService fileStorageService;
+
     @Resource
     private IUploadFileRefService uploadFileRefService;
     @Resource
     private IUploadFileService uploadFileService;
 
-    @Resource
-    private FileStorageService fileStorageService;
-
-    /**
-     * 每小时清理一次超过24小时的文件引用
-     */
-    @Scheduled(cron = "* * 0/1 * * ? ")
-    public void clearUploadFileRef() {
-        // 删除超过24小时的未使用文件引用数据
-        uploadFileRefService.lambdaUpdate()
-                .eq(UploadFileRef::getStatus, UploadFileRefStatus.NOT_USE)
-                // 今天往前退24小时，在这之前的都是创建超过24小时的
-                .lt(UploadFileRef::getCreateTime, LocalDateTime.now().minusHours(24))
-                .remove();
-    }
-
-    /**
-     * 每小时清理一次超过24小时未使用的文件
-     */
-    @Scheduled(cron = "* * 0/1 * * ? ")
-    public void clearUploadFile() {
+    @Test
+    public void testClearUploadFile() {
         // 查询所有有引用的文件id
         List<UploadFileRef> uploadFileRefs = uploadFileRefService.lambdaQuery().list();
         List<Long> uploadFileIds = uploadFileRefs.stream().map(UploadFileRef::getUploadFileId).collect(Collectors.toList());

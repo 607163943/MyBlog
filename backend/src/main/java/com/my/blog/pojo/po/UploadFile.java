@@ -18,6 +18,10 @@ public class UploadFile {
     private Long id;
     // 文件名
     private String originalName;
+    // 文件存储名
+    private String objectFileName;
+    // 文件存储目录
+    private String path;
     // 文件访问url
     private String url;
     // 文件md5
