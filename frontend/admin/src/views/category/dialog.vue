@@ -207,25 +207,27 @@ const handleCancel = () => {
 </template>
 
 <style lang="less">
-.avatar-uploader > .ant-upload {
-  width: 128px;
-  height: 128px;
-}
-
-.avatar-uploader {
-  img {
-    border-radius: 8px;
-    width: 102px;
-    height: 102px;
+.category-container {
+  .avatar-uploader > .ant-upload {
+    width: 128px;
+    height: 128px;
   }
-}
-.ant-upload-select-picture-card i {
-  font-size: 32px;
-  color: #999;
-}
 
-.ant-upload-select-picture-card .ant-upload-text {
-  margin-top: 8px;
-  color: #666;
+  .avatar-uploader {
+    img {
+      border-radius: 8px;
+      width: 102px;
+      height: 102px;
+    }
+  }
+  .ant-upload-select-picture-card i {
+    font-size: 32px;
+    color: #999;
+  }
+
+  .ant-upload-select-picture-card .ant-upload-text {
+    margin-top: 8px;
+    color: #666;
+  }
 }
 </style>

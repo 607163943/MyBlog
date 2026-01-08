@@ -1,203 +1,378 @@
 <script setup>
-$(function () {
-  $('#jqGrid').jqGrid({
-    url: '/api/admin/article/list',
-    datatype: 'json',
-    colModel: [
-      { label: 'id', name: 'blogId', index: 'blogId', width: 50, key: true, hidden: true },
-      { label: '标题', name: 'blogTitle', index: 'blogTitle', width: 140 },
-      {
-        label: '预览图',
-        name: 'blogCoverImage',
-        index: 'blogCoverImage',
-        width: 120,
-        formatter: coverImageFormatter
-      },
-      { label: '浏览量', name: 'blogViews', index: 'blogViews', width: 60 },
-      {
-        label: '状态',
-        name: 'blogStatus',
-        index: 'blogStatus',
-        width: 60,
-        formatter: statusFormatter
-      },
-      { label: '博客分类', name: 'blogCategoryName', index: 'blogCategoryName', width: 60 },
-      { label: '添加时间', name: 'createTime', index: 'createTime', width: 90 }
-    ],
-    height: 700,
-    rowNum: 10,
-    rowList: [10, 20, 50],
-    styleUI: 'Bootstrap',
-    loadtext: '信息读取中...',
-    rownumbers: false,
-    rownumWidth: 20,
-    autowidth: true,
-    multiselect: true,
-    pager: '#jqGridPager',
-    jsonReader: {
-      root: 'data.list',
-      page: 'data.currPage',
-      total: 'data.totalPage',
-      records: 'data.totalCount'
-    },
-    prmNames: {
-      page: 'page',
-      rows: 'limit',
-      order: 'order'
-    },
-    gridComplete: function () {
-      //隐藏grid底部滚动条
-      $('#jqGrid').closest('.ui-jqgrid-bdiv').css({ 'overflow-x': 'hidden' })
-    }
-  })
+import { ref, createVNode } from 'vue'
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  UndoOutlined,
+  SearchOutlined,
+  EditOutlined,
+  StopOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined
+} from '@ant-design/icons-vue'
+import { message, Modal } from 'ant-design-vue'
+import {
+  articlePageQueryService,
+  articleUpdateStatueService,
+  articleDeleteService,
+  articleBatchDeleteService
+} from '@/api/article'
+import { categoryAllService } from '@/api/category'
+import { tagAllService } from '@/api/tag'
 
-  $(window).resize(function () {
-    $('#jqGrid').setGridWidth($('.card-body').width())
-  })
-
-  function coverImageFormatter(cellvalue) {
-    return "<img src='/public" + cellvalue + '\' height="120" width="160" alt=\'coverImage\'/>'
-  }
-
-  function statusFormatter(cellvalue) {
-    if (cellvalue == 0) {
-      return '<button type="button" class="btn btn-block btn-secondary btn-sm" style="width: 50%;">草稿</button>'
-    } else if (cellvalue == 1) {
-      return '<button type="button" class="btn btn-block btn-success btn-sm" style="width: 50%;">发布</button>'
-    }
-  }
+const articleSearchFormRef = ref(null)
+const articleSearchForm = ref({
+  title: '',
+  status: '',
+  categoryId: '',
+  tagId: ''
 })
 
-/**
- * 搜索功能
- */
-function search() {
-  //标题关键字
-  var keyword = $('#keyword').val()
-  if (!validLength(keyword, 20)) {
-    swal('搜索字段长度过大!', {
-      icon: 'error'
-    })
-    return false
+const usingSearchForm = ref({
+  title: '',
+  status: '',
+  categoryId: '',
+  tagId: '',
+  pageNum: 1,
+  pageSize: 10
+})
+
+const categoryList = ref([])
+const tagList = ref([])
+
+const getCategoryList = async () => {
+  const res = await categoryAllService()
+  categoryList.value = res.data.data
+}
+
+const getTagList = async () => {
+  const res = await tagAllService()
+  tagList.value = res.data.data
+}
+const total = ref(0)
+
+// 搜索
+const search = () => {
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...articleSearchForm.value
   }
-  //数据封装
-  var searchData = { keyword: keyword }
-  //传入查询条件参数
-  $('#jqGrid').jqGrid('setGridParam', { postData: searchData })
-  //点击搜索按钮默认都从第一页开始
-  $('#jqGrid').jqGrid('setGridParam', { page: 1 })
-  //提交post并刷新表格
-  $('#jqGrid').jqGrid('setGridParam', { url: '/admin/blogs/list' }).trigger('reloadGrid')
+  pageQuery()
 }
 
-/**
- * jqGrid重新加载
- */
-function reload() {
-  var page = $('#jqGrid').jqGrid('getGridParam', 'page')
-  $('#jqGrid')
-    .jqGrid('setGridParam', {
-      page: page
-    })
-    .trigger('reloadGrid')
-}
-
-function addBlog() {
-  window.location.href = '/admin/blogs/edit'
-}
-
-function editBlog() {
-  var id = getSelectedRow()
-  if (id == null) {
-    return
+// 清空搜索表单
+const clearSearchForm = () => {
+  articleSearchFormRef.value.resetFields()
+  usingSearchForm.value = {
+    ...usingSearchForm.value,
+    ...articleSearchForm.value
   }
-  window.location.href = '/admin/blogs/edit/' + id
+  pageQuery()
 }
 
-function deleteBlog() {
-  var ids = getSelectedRows()
-  if (ids == null) {
-    return
-  }
-  swal({
-    title: '确认弹框',
-    text: '确认要删除数据吗?',
-    icon: 'warning',
-    buttons: true,
-    dangerMode: true
-  }).then((flag) => {
-    if (flag) {
-      $.ajax({
-        type: 'POST',
-        url: '/admin/blogs/delete',
-        contentType: 'application/json',
-        data: JSON.stringify(ids),
-        success: function (r) {
-          if (r.resultCode == 200) {
-            swal('删除成功', {
-              icon: 'success'
-            })
-            $('#jqGrid').trigger('reloadGrid')
-          } else {
-            swal(r.message, {
-              icon: 'error'
-            })
-          }
-        }
-      })
-    }
+// 处理表格批量删除分类
+const handlerBatchDelete = async () => {
+  Modal.confirm({
+    title: '批量删除文章',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '确定要删除这些选中文章吗？',
+    async onOk() {
+      const res = await articleBatchDeleteService(selectedTableRowKeys.value.join(','))
+      if (res.data.code === 200) {
+        message.success('删除成功')
+        // 重置分页
+        usingSearchForm.value.pageNum = 1
+        usingSearchForm.value.pageSize = 10
+        pageQuery()
+      }
+    },
+    onCancel() {}
   })
 }
+
+// 表格字段设置
+const columns = [
+  {
+    title: '文章标题',
+    dataIndex: 'title',
+    key: 'title'
+  },
+  {
+    title: '分类',
+    dataIndex: 'categoryName',
+    key: 'categoryName'
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status'
+  },
+  {
+    title: '标签',
+    key: 'tags'
+  },
+  {
+    title: '浏览量',
+    dataIndex: 'viewCount',
+    key: 'viewCount'
+  },
+  {
+    title: '更新时间',
+    dataIndex: 'updateTime',
+    key: 'updateTime'
+  },
+  {
+    title: '操作',
+    key: 'action',
+    width: 280
+  }
+]
+
+// 表格数据
+const tableData = ref([])
+
+const selectedTableRowKeys = ref([])
+
+const onSelectChange = (selectedRowKeys) => {
+  selectedTableRowKeys.value = selectedRowKeys
+}
+
+// 修改状态
+const handlerUpdateStatus = async (record) => {
+  const res = await articleUpdateStatueService(record.id)
+  if (res.data.code === 200) {
+    message.success('修改状态成功')
+    pageQuery()
+  }
+}
+
+// 处理表格删除
+const handlerDelete = async (record) => {
+  Modal.confirm({
+    title: '删除文章',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '确定要删除该文章吗？',
+    async onOk() {
+      const res = await articleDeleteService(record.id)
+      if (res.data.code === 200) {
+        message.success('删除成功')
+        // 重置分页
+        usingSearchForm.value.pageNum = 1
+        usingSearchForm.value.pageSize = 10
+        pageQuery()
+      }
+    },
+    onCancel() {}
+  })
+}
+
+const pageQuery = async () => {
+  const res = await articlePageQueryService(usingSearchForm.value)
+  let tempTableData = res.data.data.result
+  for (let i = 0; i < tempTableData.length; i++) {
+    tempTableData[i].key = +tempTableData[i].id
+  }
+  tableData.value = tempTableData
+  total.value = res.data.data.total
+}
+
+// 数据请求初始化
+getCategoryList()
+getTagList()
+pageQuery()
 </script>
 
 <template>
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-      <div class="container-fluid"></div>
-      <!-- /.container-fluid -->
-    </div>
-    <!-- Main content -->
-    <div class="content">
-      <div class="container-fluid">
-        <div class="card card-primary card-outline">
-          <div class="card-header">
-            <h3 class="card-title">博客管理</h3>
-          </div>
-          <!-- /.card-body -->
-          <div class="card-body">
-            <div class="grid-btn">
-              <button class="btn btn-success" onclick="addBlog()">
-                <i class="fa fa-plus"></i>&nbsp;新增
-              </button>
-              <button class="btn btn-info" onclick="editBlog()">
-                <i class="fa fa-edit"></i>&nbsp;修改
-              </button>
-              <button class="btn btn-danger" onclick="deleteBlog()">
-                <i class="fa fa-trash-o"></i>&nbsp;删除</button
-              >&nbsp;&nbsp;
-              <input
-                type="text"
-                placeholder="关键字(标题/分类)"
-                id="keyword"
-                class="form-control col-2"
-              />&nbsp;
-              <button class="btn btn-info" onclick="search()">
-                <i class="fa fa-search"></i>&nbsp;搜索
-              </button>
-            </div>
-            <!-- JqGrid必要DOM,用于创建表格展示列表数据 -->
-            <table id="jqGrid" class="table table-bordered"></table>
-            <!-- JqGrid必要DOM,分页信息区域 -->
-            <div id="jqGridPager"></div>
-          </div>
-          <!-- /.card-body -->
-        </div>
+  <div class="category-container">
+    <div class="category-search">
+      <a-form
+        :model="articleSearchForm"
+        ref="articleSearchFormRef"
+        layout="inline"
+        autocomplete="off"
+      >
+        <a-form-item label="文章标题" name="title">
+          <a-input v-model:value="articleSearchForm.title" placeholder="文章标题" />
+        </a-form-item>
+
+        <a-form-item label="状态" name="status">
+          <a-select v-model:value="articleSearchForm.status" style="width: 180px">
+            <a-select-option :value="0">草稿</a-select-option>
+            <a-select-option :value="1">发布</a-select-option>
+            <a-select-option :value="2">下线</a-select-option>
+          </a-select>
+        </a-form-item>
+
+        <a-form-item label="分类" name="categoryId">
+          <a-select v-model:value="articleSearchForm.categoryId" style="width: 180px">
+            <a-select-option
+              v-for="category in categoryList"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+
+        <a-form-item label="标签" name="tagId">
+          <a-select v-model:value="articleSearchForm.tagId" style="width: 180px">
+            <a-select-option v-for="tag in tagList" :key="tag.id" :value="tag.id">
+              {{ tag.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+      <div class="category-search-buttons">
+        <a-button type="primary" @click="search">
+          <template #icon>
+            <SearchOutlined />
+          </template>
+          查询
+        </a-button>
+        <a-button style="margin-left: 12px" @click="clearSearchForm">清空</a-button>
       </div>
-      <!-- /.container-fluid -->
     </div>
-    <!-- /.content -->
+
+    <div class="category-buttons">
+      <a-button type="primary" ghost @click="$router.push('/admin/article/edit')">
+        <template #icon>
+          <PlusOutlined />
+        </template>
+        新增
+      </a-button>
+      <a-button
+        type="primary"
+        :disabled="selectedTableRowKeys.length === 0"
+        danger
+        ghost
+        style="margin-left: 12px"
+        @click="handlerBatchDelete"
+      >
+        <template #icon>
+          <DeleteOutlined />
+        </template>
+        删除
+      </a-button>
+      <a-button style="margin-left: 12px" @click="pageQuery">
+        <template #icon>
+          <UndoOutlined />
+        </template>
+        刷新
+      </a-button>
+    </div>
+
+    <div class="category-table">
+      <div class="category-table-content">
+        <a-table
+          :columns="columns"
+          :pagination="false"
+          :data-source="tableData"
+          :row-selection="{ selectedRowKeys: selectedTableRowKeys, onChange: onSelectChange }"
+        >
+          <!-- 表格内容 -->
+          <template #bodyCell="{ column, record }">
+            <!-- 分类 -->
+            <template v-if="column.key === 'categoryName'">
+              <a-tag color="blue">{{ record.categoryName }}</a-tag>
+            </template>
+            <!-- 标签 -->
+            <template v-if="column.key === 'tags'">
+              <a-tag color="blue" v-for="tag in record.tags" :key="tag.id">{{ tag.name }}</a-tag>
+            </template>
+            <!-- 状态 -->
+            <template v-if="column.key === 'status'">
+              <a-tag color="default" v-if="record.status === 0">草稿</a-tag>
+              <a-tag color="green" v-if="record.status === 1">发布</a-tag>
+              <a-tag color="orange" v-if="record.status === 2">下线</a-tag>
+            </template>
+            <!-- 操作 -->
+            <template v-if="column.key === 'action'">
+              <span>
+                <!-- TODO:预览未实现 -->
+                <a-button type="link" @click="articleDialogRef.openDialog(record)">
+                  <template #icon>
+                    <EditOutlined />
+                  </template>
+                  预览
+                </a-button>
+                <a-button type="link" @click="articleDialogRef.openDialog(record)">
+                  <template #icon>
+                    <EditOutlined />
+                  </template>
+                  编辑
+                </a-button>
+                <!-- TODO:发布未实现 -->
+                <a-button
+                  type="link"
+                  danger
+                  v-if="record.status === 0 || record.status === 2"
+                  @click="handlerUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <StopOutlined />
+                  </template>
+                  发布
+                </a-button>
+                <!-- TODO:下架未实现 -->
+                <a-button
+                  type="link"
+                  v-if="record.status === 1"
+                  style="color: #38aa88"
+                  @click="handlerUpdateStatus(record)"
+                >
+                  <template #icon>
+                    <CheckOutlined />
+                  </template>
+                  下架
+                </a-button>
+                <a-button type="link" danger @click="handlerDelete(record)">
+                  <template #icon>
+                    <DeleteOutlined />
+                  </template>
+                  删除
+                </a-button>
+              </span>
+            </template>
+          </template>
+
+          <!-- 空数据 -->
+          <template #emptyText>
+            <a-empty description="暂无数据" />
+          </template>
+        </a-table>
+      </div>
+      <div class="category-table-page">
+        <a-pagination
+          v-model:current="usingSearchForm.pageNum"
+          v-model:pageSize="usingSearchForm.pageSize"
+          :total="total"
+          show-less-items
+          :show-total="(total) => `总共 ${total} 条`"
+          show-size-changer
+          show-quick-jumper
+        />
+      </div>
+    </div>
   </div>
 </template>
 
-<style scoped></style>
+<style lang="less">
+.category-search-buttons {
+  margin-top: 10px;
+}
+
+.category-buttons {
+  margin-top: 12px;
+}
+
+.category-table {
+  margin-top: 12px;
+
+  .category-table-page {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+}
+</style>

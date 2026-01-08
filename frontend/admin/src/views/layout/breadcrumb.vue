@@ -27,6 +27,10 @@ const items = [
     path: '/admin/article'
   },
   {
+    label: '文章编辑',
+    path: '/admin/article/edit'
+  },
+  {
     label: '标签管理',
     path: '/admin/tag'
   },

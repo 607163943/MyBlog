@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 @RestController("user-article-controller")
 @RequestMapping("/article")
 public class ArticleController {
-    public static String theme = "amaze";
     @Resource
     private BlogService blogService;
     @Resource
