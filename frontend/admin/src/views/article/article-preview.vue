@@ -13,7 +13,7 @@ const openCoverModal = ref(false)
 const articleEditForm = ref({
   id: '',
   categoryId: '',
-  tagIds: [],
+  tags: [],
   title: '',
   summary: '',
   cover: '',
@@ -23,8 +23,13 @@ const articleEditForm = ref({
 
 const categoryList = ref([])
 const getCategoryList = async () => {
-  const res = await categoryAllService()
-  categoryList.value = res.data.data
+  try {
+    const res = await categoryAllService()
+    categoryList.value = res?.data?.data ?? []
+  } catch (error) {
+    console.error('获取分类列表失败:', error)
+    categoryList.value = []
+  }
 }
 
 // 打开对话框
@@ -80,14 +85,16 @@ articleEditInit()
         <a-col :span="6">
           <a-space>
             <div>状态：</div>
-            <a-tag color="default" v-if="articleEditForm.status === 0">草稿</a-tag>
-            <a-tag color="green" v-if="articleEditForm.status === 1">发布</a-tag>
-            <a-tag color="orange" v-if="articleEditForm.status === 2">下线</a-tag>
+            <a-tag color="default" v-if="Number(articleEditForm.status) === 0">草稿</a-tag>
+            <a-tag color="green" v-else-if="Number(articleEditForm.status) === 1">发布</a-tag>
+            <a-tag color="orange" v-else-if="Number(articleEditForm.status) === 2">下线</a-tag>
           </a-space>
           <a-space>
             <div>分类：</div>
             <div v-for="category in categoryList" :key="category.id">
-              <div v-if="category.id === articleEditForm.categoryId">{{ category.name }}</div>
+              <div v-if="Number(category.id) === Number(articleEditForm.categoryId)">
+                {{ category.name }}
+              </div>
             </div>
           </a-space>
         </a-col>
@@ -95,16 +102,23 @@ articleEditInit()
           <a-space>
             <div>标签：</div>
             <a-space>
-              <a-tag color="green" v-for="tag in articleEditForm.tags" :key="tag.id">{{
-                tag.name
-              }}</a-tag>
+              <a-tag color="green" v-for="tag in articleEditForm.tags || []" :key="tag.id">
+                {{ tag.name }}
+              </a-tag>
             </a-space>
           </a-space>
         </a-col>
         <a-col :span="6">
           <a-space>
             <div>文章封面：</div>
-            <a-button type="primary" @click="openCoverModal = true">查看封面图</a-button>
+            <!-- 没封面时禁用按钮 -->
+            <a-button
+              type="primary"
+              :disabled="!articleEditForm.cover"
+              @click="openCoverModal = true"
+            >
+              查看封面图
+            </a-button>
           </a-space>
         </a-col>
       </a-row>

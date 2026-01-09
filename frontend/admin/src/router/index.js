@@ -7,7 +7,6 @@ import ArticlePreview from '../views/article/article-preview.vue'
 import Statistics from '../views/statistics/index.vue'
 import Category from '../views/category/index.vue'
 import Tag from '../views/tag/index.vue'
-import Config from '../views/config/index.vue'
 import Profile from '../views/profile/index.vue'
 import Login from '../views/login/index.vue'
 import { useUserStore } from '@/stores'
@@ -90,14 +89,6 @@ const router = createRouter({
           path: '/admin/tag',
           name: 'Tag',
           component: Tag,
-          meta: {
-            loginRequired: true
-          }
-        },
-        {
-          path: '/admin/config',
-          name: 'Config',
-          component: Config,
           meta: {
             loginRequired: true
           }

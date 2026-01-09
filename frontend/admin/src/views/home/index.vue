@@ -1,149 +1,198 @@
 <script setup>
-import { homeGetTotalService } from '@/api/home'
-import { ref } from 'vue'
+import dayjs from 'dayjs'
+import { ref, onMounted, onUnmounted } from 'vue'
+import * as echarts from 'echarts'
 
-const blogCount = ref(0)
-const commentCount = ref(0)
-const categoryCount = ref(0)
-const tagCount = ref(0)
-const linkCount = ref(0)
+const time = ref(dayjs().format('HH:mm:ss'))
 
-const getTotal = async () => {
-  const res = await homeGetTotalService()
-  blogCount.value = res.data.data.blogCount
-  commentCount.value = res.data.data.commentCount
-  categoryCount.value = res.data.data.categoryCount
-  tagCount.value = res.data.data.tagCount
-  linkCount.value = res.data.data.linkCount
+let timer = null
+
+const startTimeUpdate = () => {
+  // 防止重复启动（保险起见）
+  if (timer) return
+  timer = setInterval(() => {
+    time.value = dayjs().format('HH:mm:ss')
+  }, 1000)
 }
 
-getTotal()
+const stopTimeUpdate = () => {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
+// 初始化趋势图
+const initTrendChart = () => {
+  const chart = echarts.init(document.getElementById('trend-chart'))
+  chart.setOption({
+    grid: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      containLabel: false // 注意：false 时轴文字可能会被裁掉
+    },
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+    yAxis: {
+      type: 'value'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    series: [
+      {
+        data: [150, 230, 224, 218, 135, 147, 260],
+        type: 'line'
+      }
+    ]
+  })
+}
+
+// 初始化占比图
+const initRatioChart = () => {
+  const chart = echarts.init(document.getElementById('ratio-chart'))
+  chart.setOption({
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'left'
+    },
+    series: [
+      {
+        name: 'Access From',
+        type: 'pie',
+        radius: '72%',
+        data: [
+          { value: 1048, name: 'Search Engine' },
+          { value: 735, name: 'Direct' },
+          { value: 580, name: 'Email' },
+          { value: 484, name: 'Union Ads' },
+          { value: 300, name: 'Video Ads' }
+        ],
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  })
+}
+
+onMounted(() => {
+  startTimeUpdate()
+  initTrendChart()
+  initRatioChart()
+})
+
+onUnmounted(() => {
+  stopTimeUpdate()
+})
 </script>
 
 <template>
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-      <div class="container-fluid"></div>
-      <!-- /.container-fluid -->
-    </div>
-    <!-- Main content -->
-    <div class="content">
-      <div class="container-fluid">
-        <div class="card-header">
-          <h3 class="card-title">管理首页</h3>
-        </div>
-        <!-- /.card-body -->
-        <div class="row" style="margin-top: 40px; border-top: 0px">
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h3>新增博客</h3>
-
-                <p>记心中所想</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-pencil-square-o"></i>
-              </div>
-              <a href="/admin/blogs/edit" class="small-box-footer"
-                >let's go <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-success">
-              <div class="inner">
-                <h3>{{ blogCount }}</h3>
-
-                <p>总文章数</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-list-alt"></i>
-              </div>
-              <a href="/admin/blogs" class="small-box-footer"
-                >More info <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-primary">
-              <div class="inner">
-                <h3>{{ commentCount }}</h3>
-
-                <p>收到评论数</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-comments"></i>
-              </div>
-              <a href="/admin/comments" class="small-box-footer"
-                >More info <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning">
-              <div class="inner">
-                <h3>{{ categoryCount }}</h3>
-
-                <p>分类数量</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-bookmark"></i>
-              </div>
-              <a href="/admin/categories" class="small-box-footer"
-                >More info <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-danger">
-              <div class="inner">
-                <h3>{{ tagCount }}</h3>
-
-                <p>标签总量</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-tags"></i>
-              </div>
-              <a href="/admin/tags" class="small-box-footer"
-                >More info <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-          <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-dark">
-              <div class="inner">
-                <h3>{{ linkCount }}</h3>
-
-                <p>友情链接</p>
-              </div>
-              <div class="icon">
-                <i class="fa fa-heart"></i>
-              </div>
-              <a href="/admin/links" class="small-box-footer"
-                >More info <i class="fa fa-arrow-circle-right"></i
-              ></a>
-            </div>
-          </div>
-          <!-- ./col -->
-        </div>
+  <div class="welcome">
+    <a-card title="欢迎卡片">
+      <a-row>
+        <a-col :span="6">
+          <span>你好，管理员，欢迎使用博客管理系统</span>
+        </a-col>
+        <a-col :span="6">
+          <span>今天：{{ dayjs().format('YYYY-MM-DD') }} {{ dayjs().format('dddd') }}</span>
+        </a-col>
+        <a-col :span="6">
+          <span>当前时间：{{ time }}</span>
+        </a-col>
+      </a-row>
+      <div class="quick-enter">
+        <span>快捷入口：</span>
+        <a-space>
+          <a-button @click="$router.push('/admin/article/edit')">写文章</a-button>
+          <a-button @click="$router.push('/admin/article')">文章管理</a-button>
+          <a-button @click="$router.push('/admin/category')">分类管理</a-button>
+          <a-button @click="$router.push('/admin/tag')">标签管理</a-button>
+          <a-button @click="$router.push('/admin/profile')">个人中心</a-button>
+        </a-space>
       </div>
-      <!-- /.container-fluid -->
-    </div>
-    <!-- /.content -->
+    </a-card>
+  </div>
+  <div class="stat-cards">
+    <a-card title="统计卡片">
+      <a-row>
+        <a-col :span="4">
+          <a-statistic title="文章总数" :value="112893" />
+        </a-col>
+        <a-col :span="4" :offset="1">
+          <a-statistic title="已发布" :value="112893" />
+        </a-col>
+        <a-col :span="4" :offset="1">
+          <a-statistic title="草稿" :value="112893" />
+        </a-col>
+        <a-col :span="4" :offset="1">
+          <a-statistic title="分类总数" :value="112893" />
+        </a-col>
+        <a-col :span="4" :offset="1">
+          <a-statistic title="标签总数" :value="112893" />
+        </a-col>
+      </a-row>
+    </a-card>
+  </div>
+
+  <div class="chart-cards">
+    <a-card title="趋势图" style="width: 48%">
+      <div id="trend-chart" style="width: 100%; height: 300px"></div>
+    </a-card>
+    <a-card title="占比图" style="width: 48%">
+      <div id="ratio-chart" style="width: 100%; height: 300px"></div>
+    </a-card>
+  </div>
+
+  <div class="system-cards">
+    <a-card title="系统卡片">
+      <a-row>
+        <a-col :span="2"> 运行指标： </a-col>
+        <a-col :span="4"> CPU 12% </a-col>
+        <a-col :span="4"> Memory 43% </a-col>
+      </a-row>
+      <a-row style="margin-top: 12px">
+        <a-col :span="2"> 服务状态： </a-col>
+        <a-col :span="4">
+          MySQL
+          <a-tag color="green"> 正常 </a-tag>
+        </a-col>
+        <a-col :span="4">
+          Redis
+          <a-tag color="red"> 异常 </a-tag>
+        </a-col>
+      </a-row>
+    </a-card>
   </div>
 </template>
 
-<style scoped></style>
+<style lang="less" scoped>
+.quick-enter {
+  margin-top: 20px;
+}
+
+.stat-cards {
+  margin-top: 20px;
+}
+
+.chart-cards {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.system-cards {
+  margin-top: 20px;
+}
+</style>
