@@ -14,13 +14,13 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminArticleVO {
+public class AdminArticlePreviewVO {
     @ApiModelProperty("文章id")
     private Long id;
     @ApiModelProperty("分类id")
     private Long categoryId;
-    @ApiModelProperty("标签id集合")
-    private List<Long> tagIds;
+    @ApiModelProperty("标签")
+    private List<AdminTagVO> tags;
     @ApiModelProperty("文章标题")
     private String title;
     @ApiModelProperty("文章摘要")
@@ -29,4 +29,6 @@ public class AdminArticleVO {
     private String cover;
     @ApiModelProperty("文章内容")
     private String content;
+    @ApiModelProperty("文章状态 0草稿 1发布 2下架")
+    private Integer status;
 }

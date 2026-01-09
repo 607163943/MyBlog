@@ -5,12 +5,16 @@ import { uploadImageService } from '@/api/upload'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { categoryAllService } from '@/api/category'
 import { tagAllService } from '@/api/tag'
+import { articleAddService, articleByIdService, articleUpdateService } from '@/api/article'
 import { MdEditor } from 'md-editor-v3'
+import { useRouter, useRoute } from 'vue-router'
 import 'md-editor-v3/lib/style.css'
 
-const articleDialogFormRef = ref(null)
-
-const articleDialogForm = ref({
+const router = useRouter()
+const route = useRoute()
+const isEdit = ref(false)
+const articleEditFormRef = ref(null)
+const articleEditForm = ref({
   id: '',
   categoryId: '',
   tagIds: [],
@@ -18,8 +22,16 @@ const articleDialogForm = ref({
   summary: '',
   cover: '',
   content: '',
-  uploadFileRefId: ''
+  uploadFileRefId: '',
+  status: ''
 })
+
+// 表单校验规则
+const rules = {
+  title: [{ required: true, message: '请输入文章标题', trigger: 'blur' }],
+  summary: [{ required: true, message: '请输入文章摘要', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入文章内容', trigger: 'blur' }]
+}
 
 const categoryList = ref([])
 const tagList = ref([])
@@ -54,8 +66,8 @@ const beforeUpload = async (file) => {
 
   const res = await uploadImageService(formData)
   if (res.data.code === 200) {
-    articleDialogForm.value.cover = res.data.data.url
-    articleDialogForm.value.uploadFileRefId = res.data.data.uploadFileRefId
+    articleEditForm.value.cover = res.data.data.url
+    articleEditForm.value.uploadFileRefId = res.data.data.uploadFileRefId
   }
   // 禁用自动上传
   return false
@@ -67,20 +79,70 @@ const handleChange = (info) => {
   fileList.value = [info.file]
 }
 
+// 保存为草稿
+const saveArticle = async () => {
+  await articleEditFormRef.value.validate()
+  articleEditForm.value.status = 0
+  if (isEdit.value) {
+    await handleUpdateArticle()
+  } else {
+    await handleAddArticle()
+  }
+  message.success('保存草稿成功')
+  router.back()
+}
+
+// 发布文章
+const publishArticle = async () => {
+  await articleEditFormRef.value.validate()
+  articleEditForm.value.status = 1
+  if (isEdit.value) {
+    await handleUpdateArticle()
+  } else {
+    await handleAddArticle()
+  }
+  message.success('发布文章成功')
+  router.back()
+}
+
+// 处理添加文章
+const handleAddArticle = async () => {
+  await articleAddService(articleEditForm.value)
+}
+// 处理修改文章
+const handleUpdateArticle = async () => {
+  await articleUpdateService(articleEditForm.value)
+}
+
+// 打开对话框
+const articleEditInit = async () => {
+  if (route.params.id) {
+    // 编辑模式
+    isEdit.value = true
+    // 获取标签数据
+    const res = await articleByIdService(route.params.id)
+    articleEditForm.value = res.data.data
+  } else {
+    // 添加模式
+    isEdit.value = false
+  }
+}
+
 // 数据请求初始化
 getCategoryList()
 getTagList()
+articleEditInit()
 </script>
 
 <template>
   <div class="article-form-container">
-    <a-form :model="articleDialogForm" ref="articleDialogFormRef" autocomplete="off">
+    <a-form :rules="rules" :model="articleEditForm" ref="articleEditFormRef" autocomplete="off">
       <a-form-item label="标题" name="title">
-        <a-input v-model:value="articleDialogForm.title" />
+        <a-input v-model:value="articleEditForm.title" />
       </a-form-item>
 
       <a-form-item label="摘要" name="summary">
-        <a-input v-model:value="articleDialogForm.summary" />
+        <a-input v-model:value="articleEditForm.summary" />
       </a-form-item>
 
       <a-row>
@@ -95,7 +157,7 @@ getTagList()
               :before-upload="beforeUpload"
               @change="handleChange"
             >
-              <img v-if="articleDialogForm.cover" :src="articleDialogForm.cover" alt="avatar" />
+              <img v-if="articleEditForm.cover" :src="articleEditForm.cover" alt="avatar" />
               <div v-else>
                 <plus-outlined></plus-outlined>
                 <div class="ant-upload-text">上传封面图</div>
@@ -105,7 +167,7 @@ getTagList()
         </a-col>
         <a-col :span="12">
           <a-form-item label="分类" name="categoryId">
-            <a-select v-model:value="articleDialogForm.categoryId" style="width: 180px">
+            <a-select v-model:value="articleEditForm.categoryId" style="width: 180px">
               <a-select-option
                 v-for="category in categoryList"
                 :key="category.id"
@@ -117,7 +179,7 @@ getTagList()
           </a-form-item>
 
           <a-form-item label="标签" name="tagId">
-            <a-select v-model:value="articleDialogForm.tagId" style="width: 180px">
+            <a-select mode="tags" v-model:value="articleEditForm.tagIds" style="width: 180px">
               <a-select-option v-for="tag in tagList" :key="tag.id" :value="tag.id">
                 {{ tag.name }}
               </a-select-option>
@@ -127,7 +189,7 @@ getTagList()
       </a-row>
 
       <a-form-item name="content">
-        <MdEditor v-model="articleDialogForm.content" />
+        <MdEditor v-model="articleEditForm.content" />
       </a-form-item>
     </a-form>
   </div>
@@ -136,8 +198,8 @@ getTagList()
       <a-button type="primary" @click="$router.back()">返回列表</a-button>
     </div>
     <div class="article-form-button-right">
-      <a-button>保存草稿</a-button>
-      <a-button style="margin-left: 12px">发布</a-button>
+      <a-button @click="saveArticle">保存草稿</a-button>
+      <a-button style="margin-left: 12px" type="primary" @click="publishArticle">发布</a-button>
     </div>
   </div>
 </template>
@@ -146,6 +208,10 @@ getTagList()
 :deep(.avatar-uploader > .ant-upload) {
   width: 200px !important;
   height: 200px !important;
+}
+:deep(.avatar-uploader > .ant-upload img) {
+  width: 100%;
+  height: 100%;
 }
 :deep(.ant-upload-select-picture-card i) {
   font-size: 32px;

@@ -20,6 +20,11 @@ export const articleAllService = () => {
   return request.get('/article/all')
 }
 
+// 预览文章
+export const articlePreviewService = (id) => {
+  return request.get(`/article/preview/${id}`)
+}
+
 // 新增文章
 export const articleAddService = (data) => {
   return request.post('/article', data)
@@ -31,8 +36,8 @@ export const articleUpdateService = (data) => {
 }
 
 // 修改文章状态
-export const articleUpdateStatueService = (id) => {
-  return request.patch(`/article/${id}/status`)
+export const articleUpdateStatueService = (id, status) => {
+  return request.patch(`/article/${id}/status/${status}`)
 }
 
 // 删除文章

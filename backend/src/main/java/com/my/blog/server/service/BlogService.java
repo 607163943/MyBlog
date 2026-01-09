@@ -1,37 +1,14 @@
 package com.my.blog.server.service;
 
+import com.my.blog.common.utils.PageResult;
 import com.my.blog.pojo.vo.BlogDetailVO;
 import com.my.blog.pojo.vo.SimpleBlogListVO;
-import com.my.blog.pojo.entity.Blog;
-import com.my.blog.common.utils.PageQueryUtil;
-import com.my.blog.common.utils.PageResult;
 
 import java.util.List;
 
 public interface BlogService {
-    String saveBlog(Blog blog);
-
-    PageResult getBlogsPage(PageQueryUtil pageUtil);
-
-    Boolean deleteBatch(Integer[] ids);
 
     int getTotalBlogs();
-
-    /**
-     * 根据id获取详情
-     *
-     * @param blogId
-     * @return
-     */
-    Blog getBlogById(Long blogId);
-
-    /**
-     * 后台修改
-     *
-     * @param blog
-     * @return
-     */
-    String updateBlog(Blog blog);
 
     /**
      * 获取首页文章列表

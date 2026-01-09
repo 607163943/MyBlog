@@ -138,12 +138,10 @@ const onSelectChange = (selectedRowKeys) => {
 }
 
 // 修改状态
-const handlerUpdateStatus = async (record) => {
-  const res = await articleUpdateStatueService(record.id)
-  if (res.data.code === 200) {
-    message.success('修改状态成功')
-    pageQuery()
-  }
+const handlerUpdateStatus = async (record, status) => {
+  await articleUpdateStatueService(record.id, status)
+  message.success('修改状态成功')
+  pageQuery()
 }
 
 // 处理表格删除
@@ -289,40 +287,37 @@ pageQuery()
             <!-- 操作 -->
             <template v-if="column.key === 'action'">
               <span>
-                <!-- TODO:预览未实现 -->
-                <a-button type="link" @click="articleDialogRef.openDialog(record)">
+                <a-button type="link" @click="$router.push(`/admin/article/preview/${record.id}`)">
                   <template #icon>
                     <EditOutlined />
                   </template>
                   预览
                 </a-button>
-                <a-button type="link" @click="articleDialogRef.openDialog(record)">
+                <a-button type="link" @click="$router.push(`/admin/article/edit/${record.id}`)">
                   <template #icon>
                     <EditOutlined />
                   </template>
                   编辑
                 </a-button>
-                <!-- TODO:发布未实现 -->
                 <a-button
                   type="link"
-                  danger
-                  v-if="record.status === 0 || record.status === 2"
-                  @click="handlerUpdateStatus(record)"
-                >
-                  <template #icon>
-                    <StopOutlined />
-                  </template>
-                  发布
-                </a-button>
-                <!-- TODO:下架未实现 -->
-                <a-button
-                  type="link"
-                  v-if="record.status === 1"
                   style="color: #38aa88"
-                  @click="handlerUpdateStatus(record)"
+                  v-if="record.status === 0 || record.status === 2"
+                  @click="handlerUpdateStatus(record, 1)"
                 >
                   <template #icon>
                     <CheckOutlined />
+                  </template>
+                  发布
+                </a-button>
+                <a-button
+                  type="link"
+                  danger
+                  v-if="record.status === 1"
+                  @click="handlerUpdateStatus(record, 2)"
+                >
+                  <template #icon>
+                    <StopOutlined />
                   </template>
                   下架
                 </a-button>

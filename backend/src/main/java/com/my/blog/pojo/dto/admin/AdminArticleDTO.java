@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @ApiModel("添加/修改文章参数")
 @Data
@@ -21,6 +22,9 @@ public class AdminArticleDTO {
 
     @ApiModelProperty("分类id")
     private Long categoryId;
+
+    @ApiModelProperty("标签id集合")
+    private List<Long> tagIds;
 
     @ApiModelProperty("标题")
     @NotEmpty(message = "标题不能为空")
@@ -40,4 +44,7 @@ public class AdminArticleDTO {
     @ApiModelProperty("状态 0草稿 1发布 2下架")
     @NotNull(message = "状态不能为空")
     private Integer status;
+
+    @ApiModelProperty("上传封面关联id")
+    private Long uploadFileRefId;
 }

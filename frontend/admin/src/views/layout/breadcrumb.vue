@@ -31,6 +31,10 @@ const items = [
     path: '/admin/article/edit'
   },
   {
+    label: '文章预览',
+    path: '/admin/article/preview'
+  },
+  {
     label: '标签管理',
     path: '/admin/tag'
   },

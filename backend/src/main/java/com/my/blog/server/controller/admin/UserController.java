@@ -3,9 +3,7 @@ package com.my.blog.server.controller.admin;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.dto.UserLoginDTO;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
-import com.my.blog.pojo.vo.admin.UserInfo;
 import com.my.blog.pojo.vo.admin.UserLoginVO;
-import com.my.blog.server.service.AdminUserService;
 import com.my.blog.server.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,16 +17,7 @@ import javax.annotation.Resource;
 @RequestMapping("/admin/user")
 public class UserController {
     @Resource
-    private AdminUserService adminUserService;
-
-    @Resource
     private IUserService userService;
-
-    @ApiOperation("获取用户信息")
-    @GetMapping("/info")
-    public Result<UserInfo> getUserInfo() {
-        return Result.success(adminUserService.getUserInfo());
-    }
 
     @ApiOperation("用户登录")
     @PostMapping("/login")

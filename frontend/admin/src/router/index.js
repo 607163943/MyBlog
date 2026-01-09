@@ -3,6 +3,7 @@ import Home from '../views/home/index.vue'
 import ArticleEdit from '../views/article/article-edit.vue'
 import Layout from '../views/layout/index.vue'
 import Article from '../views/article/index.vue'
+import ArticlePreview from '../views/article/article-preview.vue'
 import Statistics from '../views/statistics/index.vue'
 import Category from '../views/category/index.vue'
 import Tag from '../views/tag/index.vue'
@@ -46,9 +47,25 @@ const router = createRouter({
           }
         },
         {
-          path: '/admin/article/edit',
+          path: '/admin/article/edit/:id',
+          name: 'ArticleEditById',
+          component: ArticleEdit,
+          meta: {
+            loginRequired: true
+          }
+        },
+        {
+          path: '/admin/article/edit/',
           name: 'ArticleEdit',
           component: ArticleEdit,
+          meta: {
+            loginRequired: true
+          }
+        },
+        {
+          path: '/admin/article/preview/:id',
+          name: 'ArticlePreview',
+          component: ArticlePreview,
           meta: {
             loginRequired: true
           }

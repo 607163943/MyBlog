@@ -9,13 +9,14 @@ import com.my.blog.server.service.IUploadFileService;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//@Component
+@Component
 public class OssImageClearSchedule {
     @Resource
     private IUploadFileRefService uploadFileRefService;

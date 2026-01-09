@@ -18,7 +18,11 @@ public enum ExceptionEnums {
 
     ADMIN_CATEGORY_EXIST(3001, "分类已存在"),
     ADMIN_CATEGORY_COVER_NOT_EXIST(3002, "分类封面不存在"),
-    ADMIN_UPLOAD_MD5_CREATE_ERROR(4001, "创建文件MD5值生成失败");
+    ADMIN_UPLOAD_MD5_CREATE_ERROR(4001, "创建文件MD5值生成失败"),
+
+    ADMIN_ARTICLE_EXIST(5001, "文章已存在"),
+    ADMIN_ARTICLE_COVER_NOT_EXIST(5002, "文章封面不存在"),
+    ADMIN_ARTICLE_STATUS_ERROR(5003, "文章状态错误");
 
     private final Integer code;
     private final String msg;
