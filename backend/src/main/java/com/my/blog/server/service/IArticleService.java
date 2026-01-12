@@ -5,9 +5,9 @@ import com.my.blog.common.result.PageResult;
 import com.my.blog.pojo.dto.admin.AdminArticleDTO;
 import com.my.blog.pojo.dto.admin.AdminArticlePageQueryDTO;
 import com.my.blog.pojo.po.Article;
-import com.my.blog.pojo.vo.admin.AdminArticlePageQueryVO;
-import com.my.blog.pojo.vo.admin.AdminArticlePreviewVO;
-import com.my.blog.pojo.vo.admin.AdminArticleVO;
+import com.my.blog.pojo.vo.admin.*;
+
+import java.util.List;
 
 public interface IArticleService extends IService<Article> {
 
@@ -50,4 +50,24 @@ public interface IArticleService extends IService<Article> {
      * @return 文章预览数据
      */
     AdminArticlePreviewVO preview(Long id);
+
+    /**
+     * 获取7天新增文章趋势
+     * @return 7天文章新增趋势
+     */
+    List<TrendChartData> trend7Day();
+
+    /**
+     * 获取文章分类占比
+     * @return 文章分类占比
+     */
+    List<RatioChartData> categoryArticleRatio();
+
+    Long countArticle7Day(Integer status);
+
+    /**
+     * 获取文章状态占比
+     * @return 文章状态占比
+     */
+    List<RatioChartData> countGroupByStatus();
 }

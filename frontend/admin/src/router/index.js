@@ -4,7 +4,7 @@ import ArticleEdit from '../views/article/article-edit.vue'
 import Layout from '../views/layout/index.vue'
 import Article from '../views/article/index.vue'
 import ArticlePreview from '../views/article/article-preview.vue'
-import Statistics from '../views/statistics/index.vue'
+import Chart from '../views/chart/index.vue'
 import Category from '../views/category/index.vue'
 import Tag from '../views/tag/index.vue'
 import Profile from '../views/profile/index.vue'
@@ -38,9 +38,9 @@ const router = createRouter({
           }
         },
         {
-          path: '/admin/statistics',
-          name: 'Statistics',
-          component: Statistics,
+          path: '/admin/chart',
+          name: 'Chart',
+          component: Chart,
           meta: {
             loginRequired: true
           }

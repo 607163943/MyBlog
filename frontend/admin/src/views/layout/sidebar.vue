@@ -32,7 +32,7 @@ const items = ref([
     icon: () => h(BarChartOutlined),
     label: '统计',
     title: '统计',
-    path: '/admin/statistics'
+    path: '/admin/chart'
   },
   {
     key: '3',

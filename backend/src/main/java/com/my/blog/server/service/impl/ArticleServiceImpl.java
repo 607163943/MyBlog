@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.blog.common.constants.ArticleStatus;
 import com.my.blog.common.constants.BizTypeConstant;
 import com.my.blog.common.constants.UploadFileRefStatus;
 import com.my.blog.common.enums.ExceptionEnums;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,6 +163,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 保存文章
         Article article = BeanUtil.copyProperties(adminArticleDTO, Article.class);
+        // 首次发布，设置发布时间
+        if(article.getStatus().equals(ArticleStatus.PUBLISH)) {
+            article.setPublishTime(LocalDateTime.now());
+        }
         save(article);
 
         // 保存文章标签关联数据
@@ -213,6 +219,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         Article article = BeanUtil.copyProperties(adminArticleDTO, Article.class);
+
+        // 查看修改前文章是否为首次发布，如果是则设置发布时间
+        Article oldArticle = super.getById(article.getId());
+        if(oldArticle.getPublishTime()==null&&article.getStatus().equals(ArticleStatus.PUBLISH)) {
+            article.setPublishTime(LocalDateTime.now());
+        }
+
         updateById(article);
 
         // 标记引用文件状态为已使用，同时更新业务标记，旧文件标记为未使用
@@ -254,16 +267,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public void updateStatus(Long id, Integer status) {
         List<Integer> statusList = Arrays.asList(0, 1, 2);
-        if(!statusList.contains(status)) {
+        if (!statusList.contains(status)) {
             throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_STATUS_ERROR);
         }
         Article article = super.getById(id);
+        // 首次发布设置发布时间
+        if(article.getPublishTime()==null&& status.equals(ArticleStatus.PUBLISH)) {
+            article.setPublishTime(LocalDateTime.now());
+        }
         article.setStatus(status);
         updateById(article);
     }
 
     /**
      * 预览文章
+     *
      * @param id 文章id
      * @return 文章数据
      */
@@ -282,5 +300,42 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         adminArticlePreviewVO.setTags(adminTagVOS);
 
         return adminArticlePreviewVO;
+    }
+
+    /**
+     * 获取7天新增文章趋势
+     *
+     * @return 7天文章新增趋势
+     */
+    @Override
+    public List<TrendChartData> trend7Day() {
+        return baseMapper.trend7Day();
+    }
+
+    /**
+     * 分类文章占比
+     * @return 分类文章占比
+     */
+    @Override
+    public List<RatioChartData> categoryArticleRatio() {
+        return baseMapper.categoryArticleRatio();
+    }
+
+    /**
+     * 统计文章7天新增数
+     * @param status 文章状态
+     */
+    @Override
+    public Long countArticle7Day(Integer status) {
+        return baseMapper.countArticle7Day(status);
+    }
+
+    /**
+     * 统计文章状态
+     * @return 文章状态
+     */
+    @Override
+    public List<RatioChartData> countGroupByStatus() {
+        return baseMapper.countGroupByStatus();
     }
 }

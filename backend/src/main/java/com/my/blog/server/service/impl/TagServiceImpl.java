@@ -12,6 +12,7 @@ import com.my.blog.pojo.dto.admin.AdminTagDTO;
 import com.my.blog.pojo.dto.admin.AdminTagPageQueryDTO;
 import com.my.blog.pojo.po.Tag;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
+import com.my.blog.pojo.vo.admin.RatioChartData;
 import com.my.blog.server.mapper.TagMapper;
 import com.my.blog.server.service.ITagService;
 import org.springframework.stereotype.Service;
@@ -105,5 +106,14 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         Tag tag = getById(id);
         tag.setStatus(tag.getStatus() == 0 ? 1 : 0);
         updateById(tag);
+    }
+
+    /**
+     * 统计标签状态
+     * @return 统计结果
+     */
+    @Override
+    public List<RatioChartData> countGroupByStatus() {
+        return baseMapper.countGroupByStatus();
     }
 }

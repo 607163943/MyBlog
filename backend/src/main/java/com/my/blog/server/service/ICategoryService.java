@@ -6,6 +6,9 @@ import com.my.blog.pojo.dto.admin.AdminCategoryDTO;
 import com.my.blog.pojo.dto.admin.AdminCategoryPageQueryDTO;
 import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
+import com.my.blog.pojo.vo.admin.RatioChartData;
+
+import java.util.List;
 
 public interface ICategoryService extends IService<Category> {
 
@@ -33,4 +36,10 @@ public interface ICategoryService extends IService<Category> {
      * @param id 分类id
      */
     void updateStatus(Long id);
+
+    /**
+     * 分类状态数据统计
+     * @return 分类状态数据统计
+     */
+    List<RatioChartData> countGroupByStatus();
 }

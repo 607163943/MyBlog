@@ -16,6 +16,7 @@ import com.my.blog.pojo.dto.admin.AdminCategoryPageQueryDTO;
 import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.po.UploadFileRef;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
+import com.my.blog.pojo.vo.admin.RatioChartData;
 import com.my.blog.server.mapper.CategoryMapper;
 import com.my.blog.server.service.ICategoryService;
 import com.my.blog.server.service.IUploadFileRefService;
@@ -174,5 +175,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         Category category = getById(id);
         category.setStatus(category.getStatus() == 0 ? 1 : 0);
         updateById(category);
+    }
+
+    /**
+     * 统计分类状态
+     * @return 分类状态统计数据
+     */
+    @Override
+    public List<RatioChartData> countGroupByStatus() {
+        return baseMapper.countGroupByStatus();
     }
 }

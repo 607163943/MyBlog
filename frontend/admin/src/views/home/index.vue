@@ -1,7 +1,8 @@
 <script setup>
 import dayjs from 'dayjs'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, shallowRef } from 'vue'
 import * as echarts from 'echarts'
+import { homeCardDataService, homeChartCardDataService } from '@/api/home'
 
 const time = ref(dayjs().format('HH:mm:ss'))
 
@@ -22,10 +23,32 @@ const stopTimeUpdate = () => {
   }
 }
 
+// 统计卡片
+const cardData = ref({
+  articleCount: 0,
+  publishArticleCount: 0,
+  draftArticleCount: 0,
+  categoryCount: 0,
+  tagCount: 0
+})
+
+const handlerCardData = async () => {
+  const res = await homeCardDataService()
+  cardData.value = res.data.data
+}
+
+// 图表数据
+const chartData = ref({
+  trendDate: [],
+  trendData: [],
+  ratioData: []
+})
+
 // 初始化趋势图
+const trendChart = shallowRef(null)
 const initTrendChart = () => {
-  const chart = echarts.init(document.getElementById('trend-chart'))
-  chart.setOption({
+  trendChart.value = echarts.init(document.getElementById('trend-chart'))
+  trendChart.value.setOption({
     grid: {
       left: 0,
       right: 0,
@@ -33,19 +56,20 @@ const initTrendChart = () => {
       bottom: 0,
       containLabel: false // 注意：false 时轴文字可能会被裁掉
     },
+    tooltip: {
+      trigger: 'axis'
+    },
     xAxis: {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      data: []
     },
     yAxis: {
       type: 'value'
     },
-    tooltip: {
-      trigger: 'axis'
-    },
     series: [
       {
-        data: [150, 230, 224, 218, 135, 147, 260],
+        name: '新增文章趋势',
+        data: [],
         type: 'line'
       }
     ]
@@ -53,9 +77,10 @@ const initTrendChart = () => {
 }
 
 // 初始化占比图
+const ratioChart = shallowRef(null)
 const initRatioChart = () => {
-  const chart = echarts.init(document.getElementById('ratio-chart'))
-  chart.setOption({
+  ratioChart.value = echarts.init(document.getElementById('ratio-chart'))
+  ratioChart.value.setOption({
     tooltip: {
       trigger: 'item'
     },
@@ -65,16 +90,10 @@ const initRatioChart = () => {
     },
     series: [
       {
-        name: 'Access From',
+        name: '文章占比',
         type: 'pie',
         radius: '72%',
-        data: [
-          { value: 1048, name: 'Search Engine' },
-          { value: 735, name: 'Direct' },
-          { value: 580, name: 'Email' },
-          { value: 484, name: 'Union Ads' },
-          { value: 300, name: 'Video Ads' }
-        ],
+        data: chartData.value.ratioData,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
@@ -87,10 +106,44 @@ const initRatioChart = () => {
   })
 }
 
+// 处理图表数据获取
+const handlerCardChart = async () => {
+  const res = await homeChartCardDataService()
+  chartData.value.ratioData = res.data.data.ratioData
+  ratioChart.value.setOption({
+    series: [
+      {
+        data: chartData.value.ratioData
+      }
+    ]
+  })
+
+  // 处理趋势图原始数据，将日期、数据分离
+  const tempTrendData = res.data.data.trendData
+  chartData.value.trendDate = tempTrendData.map((item) => item.date)
+  chartData.value.trendData = tempTrendData.map((item) => item.count)
+
+  trendChart.value.setOption({
+    xAxis: {
+      data: chartData.value.trendDate
+    },
+    series: [
+      {
+        data: chartData.value.trendData
+      }
+    ]
+  })
+}
+
 onMounted(() => {
   startTimeUpdate()
+  // 图表初始化
   initTrendChart()
   initRatioChart()
+
+  // 获取初始化数据
+  handlerCardData()
+  handlerCardChart()
 })
 
 onUnmounted(() => {
@@ -128,51 +181,29 @@ onUnmounted(() => {
     <a-card title="统计卡片">
       <a-row>
         <a-col :span="4">
-          <a-statistic title="文章总数" :value="112893" />
+          <a-statistic title="文章总数" :value="cardData.articleCount" />
         </a-col>
         <a-col :span="4" :offset="1">
-          <a-statistic title="已发布" :value="112893" />
+          <a-statistic title="已发布" :value="cardData.publishArticleCount" />
         </a-col>
         <a-col :span="4" :offset="1">
-          <a-statistic title="草稿" :value="112893" />
+          <a-statistic title="草稿" :value="cardData.draftArticleCount" />
         </a-col>
         <a-col :span="4" :offset="1">
-          <a-statistic title="分类总数" :value="112893" />
+          <a-statistic title="分类总数" :value="cardData.categoryCount" />
         </a-col>
         <a-col :span="4" :offset="1">
-          <a-statistic title="标签总数" :value="112893" />
+          <a-statistic title="标签总数" :value="cardData.tagCount" />
         </a-col>
       </a-row>
     </a-card>
   </div>
-
   <div class="chart-cards">
-    <a-card title="趋势图" style="width: 48%">
+    <a-card title="趋势图-最近7天" style="width: 48%">
       <div id="trend-chart" style="width: 100%; height: 300px"></div>
     </a-card>
     <a-card title="占比图" style="width: 48%">
       <div id="ratio-chart" style="width: 100%; height: 300px"></div>
-    </a-card>
-  </div>
-
-  <div class="system-cards">
-    <a-card title="系统卡片">
-      <a-row>
-        <a-col :span="2"> 运行指标： </a-col>
-        <a-col :span="4"> CPU 12% </a-col>
-        <a-col :span="4"> Memory 43% </a-col>
-      </a-row>
-      <a-row style="margin-top: 12px">
-        <a-col :span="2"> 服务状态： </a-col>
-        <a-col :span="4">
-          MySQL
-          <a-tag color="green"> 正常 </a-tag>
-        </a-col>
-        <a-col :span="4">
-          Redis
-          <a-tag color="red"> 异常 </a-tag>
-        </a-col>
-      </a-row>
     </a-card>
   </div>
 </template>
@@ -189,10 +220,6 @@ onUnmounted(() => {
 .chart-cards {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
-}
-
-.system-cards {
   margin-top: 20px;
 }
 </style>

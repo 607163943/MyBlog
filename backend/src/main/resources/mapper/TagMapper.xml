@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.my.blog.server.mapper.TagMapper">
 
+    <select id="countGroupByStatus" resultType="com.my.blog.pojo.vo.admin.RatioChartData">
+        SELECT
+        COUNT(id) AS value,
+        CASE
+        WHEN status = 1 THEN '发布'
+        WHEN status = 0 THEN '草稿'
+        ELSE '未知'
+        END AS name
+        FROM `tb_tag`
+        GROUP BY status
+    </select>
 </mapper>

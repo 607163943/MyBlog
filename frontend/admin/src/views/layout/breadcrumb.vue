@@ -15,7 +15,7 @@ const items = [
   },
   {
     label: '统计',
-    path: '/admin/statistics'
+    path: '/admin/chart'
   },
 
   {
