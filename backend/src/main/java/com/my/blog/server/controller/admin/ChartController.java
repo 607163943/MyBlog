@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Api(tags = "后台图表")
 @RequestMapping("/admin/chart")
@@ -31,5 +32,12 @@ public class ChartController {
     public Result<AdminChartTrendCardVO> chartCardTrend() {
         AdminChartTrendCardVO adminChartTrendCardVO = chartService.chartCardTrend();
         return Result.success(adminChartTrendCardVO);
+    }
+
+    @ApiOperation("图表日历数据")
+    @GetMapping("/card/calendar")
+    public Result<List<List<Object>>> chartCardCalendar() {
+        List<List<Object>> calendarChartData = chartService.chartCardCalendar();
+        return Result.success(calendarChartData);
     }
 }

@@ -32,4 +32,10 @@
         from tb_article
         group by status;
     </select>
+    <select id="countThisYearAddArticleActive" resultType="com.my.blog.pojo.vo.admin.CalendarChartData">
+        select date(create_time) date, count(0) count
+        from `tb_article`
+        where date(create_time) >= date_format(curdate(), '%Y-01-01')
+        group by date(create_time);
+    </select>
 </mapper>

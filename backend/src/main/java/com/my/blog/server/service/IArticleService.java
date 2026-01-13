@@ -70,4 +70,10 @@ public interface IArticleService extends IService<Article> {
      * @return 文章状态占比
      */
     List<RatioChartData> countGroupByStatus();
+
+    /**
+     * 获取文章活跃数据
+     * @return 文章活跃数据
+     */
+    List<List<Object>> countThisYearAddArticleActive();
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -337,5 +338,42 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public List<RatioChartData> countGroupByStatus() {
         return baseMapper.countGroupByStatus();
+    }
+
+    /**
+     * 获取文章今年新增活跃度
+     * @return 文章今年新增活跃度
+     */
+    @Override
+    public List<List<Object>> countThisYearAddArticleActive() {
+        // 统计新增文章活跃度
+        List<CalendarChartData> calendarChartDataList=baseMapper.countThisYearAddArticleActive();
+
+        // 创建今年时间初始列表
+        List<List<Object>> calendarList = new ArrayList<>();
+        // 一年开始
+        LocalDate startYearDate = LocalDate.of(LocalDate.now().getYear(), 1, 1);
+        // 一年结束
+        LocalDate endYearDate = LocalDate.of(LocalDate.now().getYear(), 12, 31);
+        while(startYearDate.isBefore(endYearDate)) {
+            List<Object> calendarListItem = new ArrayList<>(2);
+            calendarListItem.add(startYearDate);
+            calendarListItem.add(0);
+
+            calendarList.add(calendarListItem);
+            startYearDate = startYearDate.plusDays(1);
+        }
+        // 补全末尾项
+        calendarList.add(new ArrayList<>(Arrays.asList(endYearDate, 0)));
+
+        // 补全列表数据
+        for (CalendarChartData calendarChartData : calendarChartDataList) {
+            for (List<Object> calendarListItem : calendarList) {
+                if(calendarListItem.get(0).equals(calendarChartData.getDate())) {
+                    calendarListItem.set(1, calendarChartData.getCount());
+                }
+            }
+        }
+        return calendarList;
     }
 }

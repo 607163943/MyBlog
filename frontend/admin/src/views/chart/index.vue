@@ -1,8 +1,12 @@
 <script setup>
-import { chartKpiCardService } from '@/api/chart'
 import { ref, shallowRef, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { chartTrendCardService } from '@/api/chart'
+import dayjs from 'dayjs'
+import {
+  chartKpiCardService,
+  chartTrendCardService,
+  chartArticleActiveCalendarService
+} from '@/api/chart'
 
 // KPI卡片
 const kpiData = ref({
@@ -201,14 +205,118 @@ const handlerCardChart = async () => {
   })
 }
 
+// 文章创作活跃图
+const calendarChart = shallowRef(null)
+function getVirtualData(year) {
+  const date = +echarts.time.parse(year + '-01-01')
+  const end = +echarts.time.parse(+year + 1 + '-01-01')
+  const dayTime = 3600 * 24 * 1000
+  const data = []
+  for (let time = date; time < end; time += dayTime) {
+    data.push([
+      echarts.time.format(time, '{yyyy}-{MM}-{dd}', false),
+      Math.floor(Math.random() * 10000)
+    ])
+  }
+  return data
+}
+// 初始化文章创作活跃图
+const initCalendarChart = () => {
+  console.log(getVirtualData('2026'))
+  calendarChart.value = echarts.init(document.getElementById('calendar-chart'))
+  calendarChart.value.setOption({
+    backgroundColor: '#fff',
+    tooltip: {
+      formatter: (p) => {
+        // p.value: [date, count]
+        const [date, count] = p.value || []
+        return `${count || 0} contributions<br/>${date || ''}`
+      }
+    },
+    visualMap: {
+      type: 'piecewise',
+      orient: 'horizontal',
+      right: 0,
+      bottom: 0,
+      itemGap: 6,
+      itemWidth: 12,
+      itemHeight: 12,
+      text: ['More', 'Less'],
+      textGap: 8,
+      pieces: [
+        { min: 0, max: 0, color: '#ebedf0' }, // GitHub 0
+        { min: 1, max: 1, color: '#9be9a8' },
+        { min: 2, max: 2, color: '#40c463' },
+        { min: 3, max: 3, color: '#30a14e' },
+        { min: 4, color: '#216e39' }
+      ]
+    },
+    calendar: {
+      top: 0,
+      left: 40,
+      right: 20,
+      cellSize: ['auto', 20], // 方格大小（GitHub 更小更紧凑）
+      range: dayjs().format('YYYY'),
+      itemStyle: {
+        color: '#fff', // “间距”底色（和背景保持一致）
+        borderWidth: 2, // 留白间距的核心：边框越大，间距越明显
+        borderColor: '#fff'
+      },
+      splitLine: { show: false },
+      yearLabel: { show: false },
+      monthLabel: {
+        position: 'top',
+        color: '#57606a',
+        margin: 10
+      },
+      dayLabel: {
+        firstDay: 1,
+        color: '#57606a',
+        margin: 10,
+        formatter: (d) => (d === 'Mon' || d === 'Wed' || d === 'Fri' ? d : '')
+      }
+    },
+    series: {
+      type: 'heatmap',
+      coordinateSystem: 'calendar',
+      data: getVirtualData(dayjs().format('YYYY')),
+      itemStyle: {
+        borderWidth: 2, // 与 calendar.itemStyle 保持一致，避免叠加发灰
+        borderColor: '#fff',
+        borderRadius: 2 // GitHub 方格有轻微圆角
+      },
+      emphasis: {
+        itemStyle: {
+          borderWidth: 2,
+          borderColor: '#fff'
+        }
+      }
+    }
+  })
+}
+
+// 处理日历热力图数据获取
+const handlerArticleActiveCalendarData = async () => {
+  const res = await chartArticleActiveCalendarService()
+  calendarChart.value.setOption({
+    series: [
+      {
+        data: res.data.data
+      }
+    ]
+  })
+}
+
 onMounted(() => {
   // 初始化图表
   initAddArticleTrendChart()
   initArticleStatusRatioChart()
   initCategoryStatusRatioChart()
   initTagStatusRatioChart()
+  initCalendarChart()
   // 获取数据
   handlerCardChart()
+  handlerArticleActiveCalendarData()
 })
 
 handlerKpiCardData()
@@ -255,6 +363,12 @@ handlerKpiCardData()
       </a-card>
     </div>
   </div>
+
+  <div class="calendar-card">
+    <a-card title="文章创作活跃度">
+      <div id="calendar-chart" style="width: 100%; height: 200px"></div>
+    </a-card>
+  </div>
 </template>
 
 <style lang="less" scoped>
@@ -264,6 +378,10 @@ handlerKpiCardData()
 .trend-chart-item {
   display: flex;
   justify-content: space-between;
+  margin-top: 20px;
+}
+
+.calendar-card {
   margin-top: 20px;
 }
 </style>

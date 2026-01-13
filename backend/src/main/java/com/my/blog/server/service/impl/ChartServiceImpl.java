@@ -1,10 +1,7 @@
 package com.my.blog.server.service.impl;
 
 import com.my.blog.common.constants.ArticleStatus;
-import com.my.blog.pojo.vo.admin.AdminChartCardKPIVO;
-import com.my.blog.pojo.vo.admin.AdminChartTrendCardVO;
-import com.my.blog.pojo.vo.admin.RatioChartData;
-import com.my.blog.pojo.vo.admin.TrendChartData;
+import com.my.blog.pojo.vo.admin.*;
 import com.my.blog.server.service.IArticleService;
 import com.my.blog.server.service.ICategoryService;
 import com.my.blog.server.service.IChartService;
@@ -72,5 +69,15 @@ public class ChartServiceImpl implements IChartService {
                 .categoryStatusRatioData(categoryStatusRatio)
                 .tagStatusRatioData(tagStatusRatio)
                 .build();
+    }
+
+    /**
+     * 获取日历数据
+     *
+     * @return 日历数据
+     */
+    @Override
+    public List<List<Object>> chartCardCalendar() {
+        return articleService.countThisYearAddArticleActive();
     }
 }

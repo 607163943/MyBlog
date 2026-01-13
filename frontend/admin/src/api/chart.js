@@ -9,3 +9,8 @@ export const chartKpiCardService = () => {
 export const chartTrendCardService = () => {
   return request.get('/chart/card/trend')
 }
+
+// 获取文章活跃度数据
+export const chartArticleActiveCalendarService = () => {
+  return request.get('/chart/card/calendar')
+}
