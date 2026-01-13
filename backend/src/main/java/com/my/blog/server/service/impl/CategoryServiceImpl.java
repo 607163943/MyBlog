@@ -176,13 +176,4 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         category.setStatus(category.getStatus() == 0 ? 1 : 0);
         updateById(category);
     }
-
-    /**
-     * 统计分类状态
-     * @return 分类状态统计数据
-     */
-    @Override
-    public List<RatioChartData> countGroupByStatus() {
-        return baseMapper.countGroupByStatus();
-    }
 }

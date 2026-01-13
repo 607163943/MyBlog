@@ -4,12 +4,12 @@ import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.ShearCaptcha;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminUserException;
 import com.my.blog.common.utils.JWTUtils;
-import com.my.blog.common.utils.MD5Util;
-import com.my.blog.pojo.dto.UserLoginDTO;
+import com.my.blog.pojo.dto.admin.UserLoginDTO;
 import com.my.blog.pojo.po.User;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
 import com.my.blog.pojo.vo.admin.UserInfo;
@@ -64,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // 密码校验
-        String passwordMd5 = MD5Util.MD5Encode(userLoginDTO.getPassword(), "UTF-8");
+        String passwordMd5 = SecureUtil.md5(userLoginDTO.getPassword());
         if (!passwordMd5.equals(user.getPassword())) {
             throw new AdminUserException(ExceptionEnums.ADMIN_USER_PASSWORD_ERROR);
         }

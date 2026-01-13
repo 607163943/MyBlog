@@ -19,8 +19,4 @@ public class AdminChartTrendCardVO {
     private List<TrendChartData> addArticleTrendData;
     @ApiModelProperty("各状态文章数量占比数据")
     private List<RatioChartData> articleStatusRatioData;
-    @ApiModelProperty("各状态分类数量占比数据")
-    private List<RatioChartData> categoryStatusRatioData;
-    @ApiModelProperty("各状态分类数量占比数据")
-    private List<RatioChartData> tagStatusRatioData;
 }

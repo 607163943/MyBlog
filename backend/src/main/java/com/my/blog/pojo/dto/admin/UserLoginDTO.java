@@ -1,4 +1,4 @@
-package com.my.blog.pojo.dto;
+package com.my.blog.pojo.dto.admin;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

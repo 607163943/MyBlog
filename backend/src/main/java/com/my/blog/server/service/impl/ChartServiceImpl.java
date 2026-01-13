@@ -58,16 +58,10 @@ public class ChartServiceImpl implements IChartService {
         List<TrendChartData> trendChartData = articleService.trend7Day();
         // 文章状态占比
         List<RatioChartData> articleStatusRatio = articleService.countGroupByStatus();
-        // 分类状态占比
-        List<RatioChartData> categoryStatusRatio = categoryService.countGroupByStatus();
-        // 标签状态占比
-        List<RatioChartData> tagStatusRatio = tagService.countGroupByStatus();
 
         return AdminChartTrendCardVO.builder()
                 .addArticleTrendData(trendChartData)
                 .articleStatusRatioData(articleStatusRatio)
-                .categoryStatusRatioData(categoryStatusRatio)
-                .tagStatusRatioData(tagStatusRatio)
                 .build();
     }
 

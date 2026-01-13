@@ -1,7 +1,7 @@
 package com.my.blog.server.controller.admin;
 
 import com.my.blog.common.result.Result;
-import com.my.blog.pojo.dto.UserLoginDTO;
+import com.my.blog.pojo.dto.admin.UserLoginDTO;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
 import com.my.blog.pojo.vo.admin.UserLoginVO;
 import com.my.blog.server.service.IUserService;

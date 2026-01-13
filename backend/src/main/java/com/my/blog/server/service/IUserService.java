@@ -1,7 +1,7 @@
 package com.my.blog.server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.my.blog.pojo.dto.UserLoginDTO;
+import com.my.blog.pojo.dto.admin.UserLoginDTO;
 import com.my.blog.pojo.po.User;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
 import com.my.blog.pojo.vo.admin.UserLoginVO;

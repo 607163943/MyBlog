@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.my.blog.server.mapper.CategoryMapper">
-
-    <select id="countGroupByStatus" resultType="com.my.blog.pojo.vo.admin.RatioChartData">
-        SELECT
-        COUNT(id) AS value,
-        CASE
-            WHEN status=0 THEN '启用'
-            WHEN status=1 THEN '禁用'
-        END AS name
-        FROM `tb_category`
-        GROUP BY status
-    </select>
 </mapper>

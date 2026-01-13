@@ -6,9 +6,6 @@ import com.my.blog.pojo.dto.admin.AdminTagDTO;
 import com.my.blog.pojo.dto.admin.AdminTagPageQueryDTO;
 import com.my.blog.pojo.po.Tag;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
-import com.my.blog.pojo.vo.admin.RatioChartData;
-
-import java.util.List;
 
 public interface ITagService extends IService<Tag> {
     /**
@@ -35,10 +32,4 @@ public interface ITagService extends IService<Tag> {
      * @param id 标签id
      */
     void updateStatus(Long id);
-
-    /**
-     * 统计标签状态
-     * @return 统计结果
-     */
-    List<RatioChartData> countGroupByStatus();
 }
