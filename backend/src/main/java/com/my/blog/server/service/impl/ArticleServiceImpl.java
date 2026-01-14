@@ -1,6 +1,7 @@
 package com.my.blog.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -62,16 +63,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         page.setSize(adminArticlePageQueryDTO.getPageSize());
 
         // 获取标签对应文章id
-        List<ArticleTag> articleTags = articleTagService.lambdaQuery()
-                .eq(adminArticlePageQueryDTO.getTagId() != null,
-                        ArticleTag::getTagId,
-                        adminArticlePageQueryDTO.getTagId())
-                .list();
-        List<Long> articleIds = articleTags.stream().map(ArticleTag::getArticleId).collect(Collectors.toList());
+        List<ArticleTag> articleTags = null;
+        List<Long> articleIds = null;
+        // 空标签就不查
+        if (adminArticlePageQueryDTO.getTagId() != null) {
+            articleTags = articleTagService.lambdaQuery()
+                    .eq(ArticleTag::getTagId, adminArticlePageQueryDTO.getTagId())
+                    .list();
+
+            articleIds = articleTags.stream().map(ArticleTag::getArticleId).collect(Collectors.toList());
+        }
 
         // 查询
         page = lambdaQuery()
-                .like(StrUtil.isNotEmpty(adminArticlePageQueryDTO.getTitle()),
+                .select(Article::getId, Article::getTitle,
+                        Article::getStatus, Article::getCategoryId,
+                        Article::getUpdateTime)
+                .like(StrUtil.isNotEmpty(adminArticlePageQueryDTO.getTitle().trim()),
                         Article::getTitle,
                         adminArticlePageQueryDTO.getTitle())
                 .eq(adminArticlePageQueryDTO.getStatus() != null,
@@ -80,7 +88,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(adminArticlePageQueryDTO.getCategoryId() != null,
                         Article::getCategoryId,
                         adminArticlePageQueryDTO.getCategoryId())
-                .in(!articleIds.isEmpty(),
+                .in(CollUtil.isNotEmpty(articleIds),
                         Article::getId,
                         articleIds)
                 .page(page);
@@ -96,7 +104,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, tag -> tag));
 
         // 构建文章id和文章标签关联映射
-        List<ArticleTag> articleTagList = articleTagService.list();
+        // 获取查询出的文章id集合
+        List<Long> articleIdList = articleList.stream().map(Article::getId).collect(Collectors.toList());
+        List<ArticleTag> articleTagList = articleTagService.lambdaQuery()
+                .in(CollUtil.isNotEmpty(articleIdList), ArticleTag::getArticleId, articleIdList)
+                .list();
         Map<Long, List<ArticleTag>> longListMap = articleTagList.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
 
         // 补充分类和标签数据
@@ -165,7 +177,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 保存文章
         Article article = BeanUtil.copyProperties(adminArticleDTO, Article.class);
         // 首次发布，设置发布时间
-        if(article.getStatus().equals(ArticleStatus.PUBLISH)) {
+        if (article.getStatus().equals(ArticleStatus.PUBLISH)) {
             article.setPublishTime(LocalDateTime.now());
         }
         save(article);
@@ -223,7 +235,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 查看修改前文章是否为首次发布，如果是则设置发布时间
         Article oldArticle = super.getById(article.getId());
-        if(oldArticle.getPublishTime()==null&&article.getStatus().equals(ArticleStatus.PUBLISH)) {
+        if (oldArticle.getPublishTime() == null && article.getStatus().equals(ArticleStatus.PUBLISH)) {
             article.setPublishTime(LocalDateTime.now());
         }
 
@@ -273,7 +285,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         Article article = super.getById(id);
         // 首次发布设置发布时间
-        if(article.getPublishTime()==null&& status.equals(ArticleStatus.PUBLISH)) {
+        if (article.getPublishTime() == null && status.equals(ArticleStatus.PUBLISH)) {
             article.setPublishTime(LocalDateTime.now());
         }
         article.setStatus(status);
@@ -315,6 +327,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 分类文章Top10
+     *
      * @return 分类文章
      */
     @Override
@@ -324,6 +337,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 统计文章7天新增数
+     *
      * @param status 文章状态
      */
     @Override
@@ -333,6 +347,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 统计文章状态
+     *
      * @return 文章状态
      */
     @Override
@@ -342,12 +357,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 获取文章今年新增活跃度
+     *
      * @return 文章今年新增活跃度
      */
     @Override
     public List<List<Object>> countThisYearAddArticleActive() {
         // 统计新增文章活跃度
-        List<CalendarChartData> calendarChartDataList=baseMapper.countThisYearAddArticleActive();
+        List<CalendarChartData> calendarChartDataList = baseMapper.countThisYearAddArticleActive();
 
         // 创建今年时间初始列表
         List<List<Object>> calendarList = new ArrayList<>();
@@ -355,7 +371,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         LocalDate startYearDate = LocalDate.of(LocalDate.now().getYear(), 1, 1);
         // 一年结束
         LocalDate endYearDate = LocalDate.of(LocalDate.now().getYear(), 12, 31);
-        while(startYearDate.isBefore(endYearDate)) {
+        while (startYearDate.isBefore(endYearDate)) {
             List<Object> calendarListItem = new ArrayList<>(2);
             calendarListItem.add(startYearDate);
             calendarListItem.add(0);
@@ -369,7 +385,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 补全列表数据
         for (CalendarChartData calendarChartData : calendarChartDataList) {
             for (List<Object> calendarListItem : calendarList) {
-                if(calendarListItem.get(0).equals(calendarChartData.getDate())) {
+                if (calendarListItem.get(0).equals(calendarChartData.getDate())) {
                     calendarListItem.set(1, calendarChartData.getCount());
                 }
             }
