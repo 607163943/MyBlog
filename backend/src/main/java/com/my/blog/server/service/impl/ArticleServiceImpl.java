@@ -233,8 +233,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         Article article = BeanUtil.copyProperties(adminArticleDTO, Article.class);
 
-        // 查看修改前文章是否为首次发布，如果是则设置发布时间
         Article oldArticle = super.getById(article.getId());
+        // 查看该文章是否处于发布状态
+        if(oldArticle.getStatus().equals(ArticleStatus.PUBLISH)) {
+            throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_PUBLISH_CANT_UPDATE);
+        }
+        // 查看修改前文章是否为首次发布，如果是则设置发布时间
         if (oldArticle.getPublishTime() == null && article.getStatus().equals(ArticleStatus.PUBLISH)) {
             article.setPublishTime(LocalDateTime.now());
         }

@@ -93,7 +93,8 @@ const columns = [
     key: 'status'
   },
   {
-    title: '文章数(总/发布)',
+    title: '文章数',
+    dataIndex: 'articleCount',
     key: 'articleCount'
   },
   {
@@ -241,10 +242,6 @@ pageQuery()
               <a-tag :color="record.status === 0 ? 'green' : 'red'">
                 {{ record.status === 0 ? '启用' : '禁用' }}
               </a-tag>
-            </template>
-            <!-- 文章数 -->
-            <template v-if="column.key === 'articleCount'">
-              <span>{{ record.articleCount }} / {{ record.publishedArticleCount }}</span>
             </template>
             <!-- 操作 -->
             <template v-if="column.key === 'action'">

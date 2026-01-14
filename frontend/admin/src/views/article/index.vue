@@ -293,7 +293,11 @@ pageQuery()
                   </template>
                   预览
                 </a-button>
-                <a-button type="link" @click="$router.push(`/admin/article/edit/${record.id}`)">
+                <a-button
+                  type="link"
+                  @click="$router.push(`/admin/article/edit/${record.id}`)"
+                  :disabled="record.status === 1"
+                >
                   <template #icon>
                     <EditOutlined />
                   </template>

@@ -22,7 +22,8 @@ public enum ExceptionEnums {
 
     ADMIN_ARTICLE_EXIST(5001, "文章已存在"),
     ADMIN_ARTICLE_COVER_NOT_EXIST(5002, "文章封面不存在"),
-    ADMIN_ARTICLE_STATUS_ERROR(5003, "文章状态错误");
+    ADMIN_ARTICLE_STATUS_ERROR(5003, "文章状态错误"),
+    ADMIN_ARTICLE_PUBLISH_CANT_UPDATE(5004, "不能修改发布中的文章");
 
     private final Integer code;
     private final String msg;

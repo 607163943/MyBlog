@@ -17,6 +17,8 @@ public class AdminCategoryPageQueryVO {
     private String name;
     @ApiModelProperty ("排序")
     private Integer sort;
+    @ApiModelProperty("总文章数")
+    private Long articleCount;
     @ApiModelProperty("分类状态")
     private Integer status;
 }
