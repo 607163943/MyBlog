@@ -339,6 +339,7 @@ pageQuery()
       </div>
       <div class="category-table-page">
         <a-pagination
+          @change="pageQuery"
           v-model:current="usingSearchForm.pageNum"
           v-model:pageSize="usingSearchForm.pageSize"
           :total="total"
