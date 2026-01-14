@@ -7,7 +7,7 @@
 
 ## 项目简介
 
-- **定位**：个人博客系统 / 内容管理（文章、分类、标签、站点配置、评论等）
+- **定位**：个人博客系统 / 内容管理（文章、分类、标签等）
 - **架构**：前后端分离  
   - 管理端（Admin）：Vite + Vue3 + Ant Design Vue
   - 门户端（Web）：Vite + Vue3（UI 规划中）
@@ -17,6 +17,9 @@
 ---
 
 ## 核心特性
+## 图表统计
+* ✅ 文章创作活跃度
+* ✅ 
 
 ### 内容管理
 - ✅ 文章：新增/编辑/发布/下线/草稿
@@ -36,17 +39,31 @@
 ## 技术栈
 
 ### 后端（Server）
-- Spring Boot
-- MyBatis-Plus
-- MySQL
-- Redis
-- Shiro
-- Spring Task（定时任务）
+
+| 技术                  | 版本      |
+| ------------------- | ------- |
+| JDK                 | 8       |
+| MySQL               | 9.x     |
+| Redis               | 8.0     |
+| SpringBoot          | 2.7.5   |
+| MyBatisPlus         | 3.5.3.1 |
+| Shiro               | 1.13.0  |
+| Hibernate Validator | 6.2.5   |
+| X File Storage      | 2.3.0   |
+| Knife4j Openapi2    | 4.4.0   |
+| Hutool-All          | 5.8.40  |
 
 ### 前端
-- 管理端（Admin）
-  - Vite + Vue3
-  - Ant Design Vue
+#### 管理端（Admin）
+
+| 技术           | 版本      |
+| ------------ | ------- |
+| NodeJS       | 22.13.1 |
+| Vue          | 3.x     |
+| Pinia        |         |
+| AntDesignVue |         |
+
+
 - 门户端（Web）
   - Vite + Vue3（进行中）
 
@@ -54,37 +71,28 @@
 
 ## 快速开始
 
-### 1）环境准备
-- JDK：17（或与你的 Spring Boot 版本匹配）
-- Maven：3.8+
-- Node.js：18+
-- MySQL：8.x
-- Redis：6.x/7.x
-- （可选）Docker / Docker Compose
-
-### 2）配置说明
-> 下列配置项按你项目实际 `application-dev.yml` / `.env.*` 等为准。
+### 1）配置说明
+> 在application中配置如下信息
 
 - **数据库**：MySQL 连接信息
 - **Redis**：地址、密码、DB、序列化策略（如有）
 - **OSS**：endpoint、bucket、accessKeyId、accessKeySecret、目录策略等
-- **安全**：Shiro 相关配置（token、过滤器链、匿名路径等）
-- **定时任务**：清理策略（过期天数/扫描频率/批次大小等）
+- **安全**：Shiro 相关配置（token、匿名路径等）
 
-### 4）管理端启动（示例）
+### 2）管理端启动（示例）
 
 ```bash
-cd admin-web
+cd frontend/admin
 npm install
 npm run dev
 ```
 
-### 5）门户端启动（示例）
+### 3）用户端启动
 
 ```bash
-cd web
-npm install
-npm run dev
+cd frontend/user
+pnpm install
+pnpm run dev
 ```
 
 ## 定时清理说明（OSS 图片）
@@ -101,8 +109,6 @@ npm run dev
 - 统一异常处理（业务异常 + 参数校验 + 权限异常）
     
 - 接口文档（可选：Swagger/Knife4j）
-    
-- 日志规范与审计（可选）
     
 
 ---
