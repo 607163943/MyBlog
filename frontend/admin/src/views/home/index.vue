@@ -202,7 +202,7 @@ onUnmounted(() => {
     <a-card title="趋势图-最近7天" style="width: 48%">
       <div id="trend-chart" style="width: 100%; height: 300px"></div>
     </a-card>
-    <a-card title="占比图" style="width: 48%">
+    <a-card title="分类统计Top10占比图" style="width: 48%">
       <div id="ratio-chart" style="width: 100%; height: 300px"></div>
     </a-card>
   </div>

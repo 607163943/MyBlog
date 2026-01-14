@@ -58,8 +58,8 @@ public interface IArticleService extends IService<Article> {
     List<TrendChartData> trend7Day();
 
     /**
-     * 获取文章分类占比
-     * @return 文章分类占比
+     * 获取文章分类Top10
+     * @return 文章分类
      */
     List<RatioChartData> categoryArticleRatio();
 

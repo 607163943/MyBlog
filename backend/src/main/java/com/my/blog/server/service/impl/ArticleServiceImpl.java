@@ -314,8 +314,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 分类文章占比
-     * @return 分类文章占比
+     * 分类文章Top10
+     * @return 分类文章
      */
     @Override
     public List<RatioChartData> categoryArticleRatio() {

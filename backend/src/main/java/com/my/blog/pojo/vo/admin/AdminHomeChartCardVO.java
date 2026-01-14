@@ -17,6 +17,6 @@ import java.util.List;
 public class AdminHomeChartCardVO {
     @ApiModelProperty("7天新增文章趋势数据")
     private List<TrendChartData> trendData;
-    @ApiModelProperty("各分类文章数量占比数据")
+    @ApiModelProperty("各分类文章数量占比Top10数据")
     private List<RatioChartData> ratioData;
 }

@@ -12,7 +12,9 @@
         select count(0) value, category.name
         from tb_article article
                  join tb_category category on article.category_id = category.id
-        group by article.category_id;
+        group by article.category_id
+        order by value desc
+        limit 10
     </select>
     <select id="countArticle7Day" resultType="long">
         select count(0)
