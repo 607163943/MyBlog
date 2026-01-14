@@ -26,8 +26,6 @@ public class Article {
     private String content;
     // 状态 0草稿 1发布 2下架
     private Integer status;
-    // 浏览次数
-    private Long viewCount;
     // 首次发布时间
     private LocalDateTime publishTime;
     // 创建时间

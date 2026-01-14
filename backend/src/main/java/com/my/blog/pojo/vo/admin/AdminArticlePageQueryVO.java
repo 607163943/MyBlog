@@ -26,8 +26,6 @@ public class AdminArticlePageQueryVO {
     private String categoryName;
     @ApiModelProperty("标签")
     private List<AdminTagPageQueryVO> tags;
-    @ApiModelProperty("浏览量")
-    private Long viewCount;
     @ApiModelProperty("修改时间")
     private LocalDateTime updateTime;
 }

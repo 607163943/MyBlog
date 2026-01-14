@@ -2,6 +2,7 @@ import axios from 'axios'
 import { useUserStore } from '@/stores'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { isEmpty } from 'es-toolkit/compat'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -35,6 +36,10 @@ instance.interceptors.response.use(
     // 超出 2xx 范围的状态码都会触发该函数。
     // 对响应错误做点什么
     const res = error.response
+    if (isEmpty(res)) {
+      message.error('请求超时')
+      return Promise.reject(error)
+    }
     // 用户未认证
     if (res.status === 401) {
       const router = useRouter()

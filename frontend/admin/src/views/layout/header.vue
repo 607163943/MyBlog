@@ -50,7 +50,7 @@ const onClick = ({ key }) => {
             </a-avatar>
           </div>
           <div class="user-info-name">
-            <span>admin</span>
+            <span>{{ userStore.userInfo.nickname }}</span>
           </div>
         </div>
       </a>
