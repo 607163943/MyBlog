@@ -75,18 +75,14 @@ public class TagController {
     @ApiOperation("根据id删除标签")
     @DeleteMapping("/{id}")
     public Result<Object> deleteById(@PathVariable Long id) {
-        tagService.removeById(id);
+        tagService.deleteById(id);
         return Result.success();
     }
 
     @ApiOperation("批量删除标签")
     @DeleteMapping
     public Result<Object> deleteByIds(@RequestParam List<Long> ids) {
-        // 空集合不处理
-        if(ids.isEmpty()) {
-            return Result.success();
-        }
-        tagService.removeBatchByIds(ids);
+        tagService.deleteByIds(ids);
         return Result.success();
     }
 }

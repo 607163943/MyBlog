@@ -7,6 +7,8 @@ import com.my.blog.pojo.dto.admin.AdminCategoryPageQueryDTO;
 import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 
+import java.util.List;
+
 public interface ICategoryService extends IService<Category> {
 
     /**
@@ -33,4 +35,16 @@ public interface ICategoryService extends IService<Category> {
      * @param id 分类id
      */
     void updateStatus(Long id);
+
+    /**
+     * 根据id删除分类
+     * @param id 分类id
+     */
+    void deleteById(Long id);
+
+    /**
+     * 批量删除分类
+     * @param ids 分类id集合
+     */
+    void deleteByIds(List<Long> ids);
 }

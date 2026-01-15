@@ -77,22 +77,17 @@ public class ArticleController {
         return Result.success();
     }
 
-    // TODO:需要删除引用的文件
     @ApiOperation("根据id删除文章")
     @DeleteMapping("/{id}")
     public Result<Object> deleteById(@PathVariable Long id) {
-        articleService.removeById(id);
+        articleService.deleteById(id);
         return Result.success();
     }
 
     @ApiOperation("批量删除文章")
     @DeleteMapping
     public Result<Object> deleteByIds(@RequestParam List<Long> ids) {
-        // 空集合不处理
-        if(ids.isEmpty()) {
-            return Result.success();
-        }
-        articleService.removeBatchByIds(ids);
+        articleService.deleteByIds(ids);
         return Result.success();
     }
 }

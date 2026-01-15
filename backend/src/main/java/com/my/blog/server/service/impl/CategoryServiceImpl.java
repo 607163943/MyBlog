@@ -6,9 +6,12 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
+import com.my.blog.common.constants.ArticleStatus;
 import com.my.blog.common.constants.BizTypeConstant;
+import com.my.blog.common.constants.CategoryStatus;
 import com.my.blog.common.constants.UploadFileRefStatus;
 import com.my.blog.common.enums.ExceptionEnums;
+import com.my.blog.common.exception.admin.AdminArticleException;
 import com.my.blog.common.exception.admin.AdminCategoryException;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.utils.PageQueryUtils;
@@ -21,6 +24,7 @@ import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 import com.my.blog.server.mapper.CategoryMapper;
 import com.my.blog.server.service.ICategoryService;
 import com.my.blog.server.service.IUploadFileRefService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +41,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Resource
     private IUploadFileRefService uploadFileRefService;
+
+    @Lazy
+    @Resource
+    private ICategoryService categoryService;
 
     /**
      * 分页查询分类
@@ -115,7 +123,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
 
         Category category = BeanUtil.copyProperties(adminCategoryDTO, Category.class);
-        save(category);
+
+        // 保证事务正常运行
+        categoryService.save(category);
 
         // 标记引用文件状态为已使用，同时更新业务标记
         if (adminCategoryDTO.getUploadFileRefId() != null) {
@@ -154,7 +164,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
 
         Category category = BeanUtil.copyProperties(adminCategoryDTO, Category.class);
-        updateById(category);
+
+        // 保证事务
+        categoryService.updateById(category);
 
         // 标记引用文件状态为已使用，同时更新业务标记，旧文件标记为未使用
         if (adminCategoryDTO.getUploadFileRefId() != null) {
@@ -191,10 +203,59 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      *
      * @param id 分类id
      */
+    @Transactional
     @Override
     public void updateStatus(Long id) {
         Category category = getById(id);
         category.setStatus(category.getStatus() == 0 ? 1 : 0);
-        updateById(category);
+        // 若分类禁用，则下属发布中文章全部下架
+        if(category.getStatus().equals(CategoryStatus.DISABLE)) {
+            Db.lambdaUpdate(Article.class)
+                    .set(Article::getStatus, ArticleStatus.OFF_SHELF)
+                    .eq(Article::getStatus,ArticleStatus.PUBLISH)
+                    .eq(Article::getCategoryId,category.getId())
+                    .update();
+        }
+        // 修改分类状态
+        categoryService.updateById(category);
+    }
+
+    /**
+     * 删除分类
+     * @param id 分类id
+     */
+    @Override
+    public void deleteById(Long id) {
+        // 分类下属文章判空
+        Long count = Db.lambdaQuery(Article.class)
+                .eq(Article::getCategoryId, id)
+                .count();
+        if(count>0) {
+            throw new AdminCategoryException(ExceptionEnums.ADMIN_CATEGORY_NOT_EMPTY);
+        }
+
+        removeById(id);
+    }
+
+    /**
+     * 批量删除分类
+     * @param ids 分类id集合
+     */
+    @Override
+    public void deleteByIds(List<Long> ids) {
+        // 空集合不处理
+        if(ids.isEmpty()) {
+            return;
+        }
+
+        // 分类下属文章判空
+        Long count = Db.lambdaQuery(Article.class)
+                .in(Article::getCategoryId, ids)
+                .count();
+        if(count>0) {
+            throw new AdminArticleException(ExceptionEnums.ADMIN_CATEGORY_NOT_EMPTY);
+        }
+
+        categoryService.removeBatchByIds(ids);
     }
 }

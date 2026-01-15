@@ -117,13 +117,15 @@ const handlerDictDelete = async (record) => {
     icon: createVNode(ExclamationCircleOutlined),
     content: '确定要删除该标签吗？',
     async onOk() {
-      const res = await tagDeleteService(record.id)
-      if (res.data.code === 200) {
+      try {
+        await tagDeleteService(record.id)
         message.success('删除成功')
         // 重置分页
         usingSearchForm.value.pageNum = 1
         usingSearchForm.value.pageSize = 10
         pageQuery()
+      } catch (e) {
+        console.log(e)
       }
     },
     onCancel() {}

@@ -4,17 +4,21 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminTagException;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.utils.PageQueryUtils;
 import com.my.blog.pojo.dto.admin.AdminTagDTO;
 import com.my.blog.pojo.dto.admin.AdminTagPageQueryDTO;
+import com.my.blog.pojo.po.ArticleTag;
 import com.my.blog.pojo.po.Tag;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
 import com.my.blog.server.mapper.TagMapper;
 import com.my.blog.server.service.ITagService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -23,6 +27,12 @@ import java.util.List;
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagService {
     @Resource
     private PageQueryUtils pageQueryUtils;
+
+    // 本类代理
+    @Lazy
+    @Resource
+    private ITagService tagService;
+
     /**
      * 分页查询标签
      *
@@ -63,13 +73,13 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
     /**
      * 添加标签
      *
-      * @param adminTagDTO 标签数据
+     * @param adminTagDTO 标签数据
      */
     @Override
     public void addTag(AdminTagDTO adminTagDTO) {
         // 检测是否存在同名标签
         Long count = lambdaQuery().eq(Tag::getName, adminTagDTO.getName()).count();
-        if(count>0) {
+        if (count > 0) {
             throw new AdminTagException(ExceptionEnums.ADMIN_TAG_EXIST);
         }
 
@@ -88,7 +98,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         Long count = lambdaQuery().eq(Tag::getName, adminTagDTO.getName())
                 .notIn(Tag::getId, adminTagDTO.getId())
                 .count();
-        if(count>0) {
+        if (count > 0) {
             throw new AdminTagException(ExceptionEnums.ADMIN_TAG_EXIST);
         }
 
@@ -98,6 +108,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
 
     /**
      * 修改标签状态
+     *
      * @param id 标签id
      */
     @Override
@@ -105,5 +116,44 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         Tag tag = getById(id);
         tag.setStatus(tag.getStatus() == 0 ? 1 : 0);
         updateById(tag);
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param id 标签id
+     */
+    @Transactional
+    @Override
+    public void deleteById(Long id) {
+        // 删除文章标签关联数据
+        Db.lambdaUpdate(ArticleTag.class)
+                .eq(ArticleTag::getTagId, id)
+                .remove();
+
+        // 删除标签数据
+        tagService.removeById(id);
+    }
+
+    /**
+     * 批量删除标签
+     *
+     * @param ids 标签id集合
+     */
+    @Transactional
+    @Override
+    public void deleteByIds(List<Long> ids) {
+        // 空集合不处理
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        // 删除文章标签关联数据
+        Db.lambdaUpdate(ArticleTag.class)
+                .in(ArticleTag::getTagId, ids)
+                .remove();
+
+        // 批量删除标签数据
+        tagService.removeBatchByIds(ids);
     }
 }

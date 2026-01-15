@@ -9,6 +9,7 @@ import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminCategoryVO;
 import com.my.blog.server.config.valid.UpdateValidGroup;
+import com.my.blog.server.service.IArticleService;
 import com.my.blog.server.service.ICategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +27,9 @@ public class CategoryController {
 
     @Resource
     private ICategoryService categoryService;
+
+    @Resource
+    private IArticleService articleService;
 
     @ApiOperation("分页查询分类")
     @GetMapping
@@ -74,18 +78,14 @@ public class CategoryController {
     @ApiOperation("根据id删除分类")
     @DeleteMapping("/{id}")
     public Result<Object> deleteById(@PathVariable Long id) {
-        categoryService.removeById(id);
+        categoryService.deleteById(id);
         return Result.success();
     }
 
     @ApiOperation("批量删除分类")
     @DeleteMapping
     public Result<Object> deleteByIds(@RequestParam List<Long> ids) {
-        // 空集合不处理
-        if(ids.isEmpty()) {
-            return Result.success();
-        }
-        categoryService.removeBatchByIds(ids);
+        categoryService.deleteByIds(ids);
         return Result.success();
     }
 }

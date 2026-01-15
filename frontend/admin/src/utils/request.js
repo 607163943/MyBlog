@@ -49,6 +49,8 @@ instance.interceptors.response.use(
       userStore.setToken('')
       // 跳转到登录页面
       router.push('/login')
+
+      return Promise.reject(error)
     }
     if (res.data.msg) {
       message.error(res.data.msg)

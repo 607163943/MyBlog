@@ -7,6 +7,8 @@ import com.my.blog.pojo.dto.admin.AdminTagPageQueryDTO;
 import com.my.blog.pojo.po.Tag;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
 
+import java.util.List;
+
 public interface ITagService extends IService<Tag> {
     /**
      * 分页查询标签
@@ -32,4 +34,16 @@ public interface ITagService extends IService<Tag> {
      * @param id 标签id
      */
     void updateStatus(Long id);
+
+    /**
+     * 删除标签
+     * @param id 标签id
+     */
+    void deleteById(Long id);
+
+    /**
+     * 批量删除标签
+     * @param ids 标签id集合
+     */
+    void deleteByIds(List<Long> ids);
 }

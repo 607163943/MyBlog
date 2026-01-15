@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.blog.common.constants.ArticleStatus;
 import com.my.blog.common.constants.BizTypeConstant;
+import com.my.blog.common.constants.CategoryStatus;
 import com.my.blog.common.constants.UploadFileRefStatus;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminArticleException;
@@ -18,6 +19,7 @@ import com.my.blog.pojo.po.*;
 import com.my.blog.pojo.vo.admin.*;
 import com.my.blog.server.mapper.ArticleMapper;
 import com.my.blog.server.service.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ICategoryService categoryService;
     @Resource
     private ITagService tagService;
+
+    // 本类代理
+    @Lazy
+    @Resource
+    private IArticleService articleService;
 
 
     /**
@@ -176,11 +183,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 保存文章
         Article article = BeanUtil.copyProperties(adminArticleDTO, Article.class);
-        // 首次发布，设置发布时间
+        // 发布文章
         if (article.getStatus().equals(ArticleStatus.PUBLISH)) {
+            // 检测所属分类是否禁用
+            if (article.getCategoryId() != null) {
+                Category category = categoryService.getById(article.getCategoryId());
+                if (category.getStatus().equals(CategoryStatus.DISABLE)) {
+                    throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_BELONG_CATEGORY_DISABLE);
+                }
+            }
+            // 首次发布，设置发布时间
             article.setPublishTime(LocalDateTime.now());
         }
-        save(article);
+
+        // 保证事务正常回滚
+        articleService.save(article);
 
         // 保存文章标签关联数据
         List<ArticleTag> articleTags = new ArrayList<>(adminArticleDTO.getTagIds().size());
@@ -221,7 +238,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional
     @Override
     public void updateArticle(AdminArticleDTO adminArticleDTO) {
-        // 检测修改后是否存在同名标签
+        // 检测修改后是否存在同名文章
         Long count = lambdaQuery()
                 .eq(Article::getCategoryId, adminArticleDTO.getCategoryId())
                 .eq(Article::getTitle, adminArticleDTO.getTitle())
@@ -235,15 +252,28 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         Article oldArticle = super.getById(article.getId());
         // 查看该文章是否处于发布状态
-        if(oldArticle.getStatus().equals(ArticleStatus.PUBLISH)) {
+        if (oldArticle.getStatus().equals(ArticleStatus.PUBLISH)) {
             throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_PUBLISH_CANT_UPDATE);
         }
-        // 查看修改前文章是否为首次发布，如果是则设置发布时间
-        if (oldArticle.getPublishTime() == null && article.getStatus().equals(ArticleStatus.PUBLISH)) {
-            article.setPublishTime(LocalDateTime.now());
+
+        // 修改文章为发布时
+        if (article.getStatus().equals(ArticleStatus.PUBLISH)) {
+            // 检查所属分类是否禁用
+            if (article.getCategoryId() != null) {
+                Category category = categoryService.getById(article.getCategoryId());
+                if (category.getStatus().equals(CategoryStatus.DISABLE)) {
+                    throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_BELONG_CATEGORY_DISABLE);
+                }
+            }
+
+            // 查看修改前文章是否为首次发布，如果是则设置发布时间
+            if (oldArticle.getPublishTime() == null) {
+                article.setPublishTime(LocalDateTime.now());
+            }
         }
 
-        updateById(article);
+        // 保证事务正常回滚
+        articleService.updateById(article);
 
         // 标记引用文件状态为已使用，同时更新业务标记，旧文件标记为未使用
         if (adminArticleDTO.getUploadFileRefId() != null) {
@@ -287,11 +317,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (!statusList.contains(status)) {
             throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_STATUS_ERROR);
         }
+
         Article article = super.getById(id);
-        // 首次发布设置发布时间
-        if (article.getPublishTime() == null && status.equals(ArticleStatus.PUBLISH)) {
-            article.setPublishTime(LocalDateTime.now());
+
+        // 发布文章
+        if (status.equals(ArticleStatus.PUBLISH)) {
+            // 检查所属分类是否禁用
+            Category category = categoryService.getById(article.getCategoryId());
+            if (category != null && category.getStatus().equals(CategoryStatus.DISABLE)) {
+                throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_BELONG_CATEGORY_DISABLE);
+            }
+
+            // 首次发布设置发布时间
+            if (article.getPublishTime() == null) {
+                article.setPublishTime(LocalDateTime.now());
+            }
         }
+
         article.setStatus(status);
         updateById(article);
     }
@@ -395,5 +437,56 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
         return calendarList;
+    }
+
+    /**
+     * 删除文章
+     *
+     * @param id 文章id
+     */
+    @Transactional
+    @Override
+    public void deleteById(Long id) {
+        // 删除文章标签引用
+        articleTagService.lambdaUpdate()
+                .eq(ArticleTag::getArticleId, id)
+                .remove();
+
+        // 删除文章封面和正文图片引用
+        uploadFileRefService.lambdaUpdate()
+                .in(UploadFileRef::getBizType,
+                        Arrays.asList(BizTypeConstant.ARTICLE_COVER, BizTypeConstant.ARTICLE_TEXT_IMAGE))
+                .eq(UploadFileRef::getBizId, id)
+                .remove();
+
+        // 保证事务正常回滚
+        articleService.removeById(id);
+    }
+
+    /**
+     * 批量删除文章
+     *
+     * @param ids 文章id集合
+     */
+    @Transactional
+    @Override
+    public void deleteByIds(List<Long> ids) {
+        // 空集合不处理
+        if (ids.isEmpty()) {
+            return;
+        }
+        // 删除文章标签引用
+        articleTagService.lambdaUpdate()
+                .in(ArticleTag::getArticleId, ids)
+                .remove();
+
+        // 删除文章封面和正文图片引用
+        uploadFileRefService.lambdaUpdate()
+                .in(UploadFileRef::getBizType,
+                        Arrays.asList(BizTypeConstant.ARTICLE_COVER, BizTypeConstant.ARTICLE_TEXT_IMAGE))
+                .in(UploadFileRef::getBizId, ids)
+                .remove();
+
+        articleService.removeBatchByIds(ids);
     }
 }

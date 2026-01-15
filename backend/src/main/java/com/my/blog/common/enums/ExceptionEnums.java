@@ -18,12 +18,15 @@ public enum ExceptionEnums {
 
     ADMIN_CATEGORY_EXIST(3001, "分类已存在"),
     ADMIN_CATEGORY_COVER_NOT_EXIST(3002, "分类封面不存在"),
+    ADMIN_CATEGORY_NOT_EMPTY(3003, "分类下有文章，不能删除"),
+
     ADMIN_UPLOAD_MD5_CREATE_ERROR(4001, "创建文件MD5值生成失败"),
 
     ADMIN_ARTICLE_EXIST(5001, "文章已存在"),
     ADMIN_ARTICLE_COVER_NOT_EXIST(5002, "文章封面不存在"),
     ADMIN_ARTICLE_STATUS_ERROR(5003, "文章状态错误"),
-    ADMIN_ARTICLE_PUBLISH_CANT_UPDATE(5004, "不能修改发布中的文章");
+    ADMIN_ARTICLE_PUBLISH_CANT_UPDATE(5004, "不能修改发布中的文章"),
+    ADMIN_ARTICLE_BELONG_CATEGORY_DISABLE(5005, "文章所属分类已禁用");
 
     private final Integer code;
     private final String msg;

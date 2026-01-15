@@ -76,4 +76,16 @@ public interface IArticleService extends IService<Article> {
      * @return 文章活跃数据
      */
     List<List<Object>> countThisYearAddArticleActive();
+
+    /**
+     * 删除文章
+     * @param id 文章id
+     */
+    void deleteById(Long id);
+
+    /**
+     * 批量删除文章
+     * @param ids 文章id集合
+     */
+    void deleteByIds(List<Long> ids);
 }

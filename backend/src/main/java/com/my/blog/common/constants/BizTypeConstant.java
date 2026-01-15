@@ -6,4 +6,7 @@ public interface BizTypeConstant {
 
     // 文章封面
     Integer ARTICLE_COVER = 1;
+
+    // 正文图片
+    Integer ARTICLE_TEXT_IMAGE = 2;
 }

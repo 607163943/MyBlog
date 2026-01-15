@@ -129,13 +129,15 @@ const handlerDelete = async (record) => {
     icon: createVNode(ExclamationCircleOutlined),
     content: '确定要删除该分类吗？',
     async onOk() {
-      const res = await categoryDeleteService(record.id)
-      if (res.data.code === 200) {
+      try {
+        await categoryDeleteService(record.id)
         message.success('删除成功')
         // 重置分页
         usingSearchForm.value.pageNum = 1
         usingSearchForm.value.pageSize = 10
         pageQuery()
+      } catch (e) {
+        console.log(e)
       }
     },
     onCancel() {}
