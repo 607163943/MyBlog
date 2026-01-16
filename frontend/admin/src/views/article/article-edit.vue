@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { uploadImageService } from '@/api/upload'
 import { PlusOutlined } from '@ant-design/icons-vue'
-import { categoryAllService } from '@/api/category'
-import { tagAllService } from '@/api/tag'
+import { categoryAllActiveService } from '@/api/category'
+import { tagAllActiveService } from '@/api/tag'
 import { articleAddService, articleByIdService, articleUpdateService } from '@/api/article'
 import { MdEditor } from 'md-editor-v3'
 import { useRouter, useRoute } from 'vue-router'
@@ -36,12 +36,12 @@ const rules = {
 const categoryList = ref([])
 const tagList = ref([])
 const getCategoryList = async () => {
-  const res = await categoryAllService()
+  const res = await categoryAllActiveService()
   categoryList.value = res.data.data
 }
 
 const getTagList = async () => {
-  const res = await tagAllService()
+  const res = await tagAllActiveService()
   tagList.value = res.data.data
 }
 

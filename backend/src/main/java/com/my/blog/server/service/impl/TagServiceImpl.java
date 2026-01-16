@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
+import com.my.blog.common.constants.TagStatus;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminTagException;
 import com.my.blog.common.result.PageResult;
@@ -111,11 +112,21 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
      *
      * @param id 标签id
      */
+    @Transactional
     @Override
     public void updateStatus(Long id) {
         Tag tag = getById(id);
         tag.setStatus(tag.getStatus() == 0 ? 1 : 0);
-        updateById(tag);
+
+        // 删除禁用标签的文章标签关联数据
+        if (tag.getStatus().equals(TagStatus.DISABLE)) {
+            Db.lambdaUpdate(ArticleTag.class)
+                    .eq(ArticleTag::getTagId, id)
+                    .remove();
+        }
+
+        // 保证事务
+        tagService.updateById(tag);
     }
 
     /**

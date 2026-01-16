@@ -5,10 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.my.blog.common.constants.ArticleStatus;
-import com.my.blog.common.constants.BizTypeConstant;
-import com.my.blog.common.constants.CategoryStatus;
-import com.my.blog.common.constants.UploadFileRefStatus;
+import com.my.blog.common.constants.*;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminArticleException;
 import com.my.blog.common.result.PageResult;
@@ -26,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,6 +68,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Long> articleIds = null;
         // 空标签就不查
         if (adminArticlePageQueryDTO.getTagId() != null) {
+            // 判断该标签是否存在或禁用
+            Tag tag = tagService.getById(adminArticlePageQueryDTO.getTagId());
+            if (tag == null || tag.getStatus().equals(TagStatus.DISABLE)) {
+                throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_TAG_DISABLE);
+            }
+
             articleTags = articleTagService.lambdaQuery()
                     .eq(ArticleTag::getTagId, adminArticlePageQueryDTO.getTagId())
                     .list();
@@ -100,46 +100,96 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         articleIds)
                 .page(page);
 
+        // 查询为空直接返回空集合
+        if (page.getTotal() == 0) {
+            return PageResult.<AdminArticlePageQueryVO>builder()
+                    .pageSize(page.getPages())
+                    .pageNum(page.getCurrent())
+                    .total(page.getTotal())
+                    .result(Collections.emptyList())
+                    .build();
+        }
+
+        // 文章标签关联数据为空但标签查询条件不为空也返回空集合
+        if (CollUtil.isEmpty(articleIds) && adminArticlePageQueryDTO.getTagId() != null) {
+            return PageResult.<AdminArticlePageQueryVO>builder()
+                    .pageSize(page.getPages())
+                    .pageNum(page.getCurrent())
+                    .total(page.getTotal())
+                    .result(Collections.emptyList())
+                    .build();
+        }
+
+        // 常规查询
         // 构建VO数据
         List<Article> articleList = page.getRecords();
         List<AdminArticlePageQueryVO> adminArticlePageQueryVOS = new ArrayList<>(articleList.size());
-        List<Category> categories = categoryService.list();
+
+        // 获取查询出的文章相关分类数据
+        // 获取分类id集合
+        List<Long> categoryIds = articleList.stream()
+                .map(Article::getCategoryId)
+                .filter(categoryId -> categoryId != null)
+                .collect(Collectors.toList());
+
+        List<Category> categories=new ArrayList<>(categoryIds.size());
+        if(CollUtil.isNotEmpty(categoryIds)) {
+            categories = categoryService.lambdaQuery()
+                    .in(CollUtil.isNotEmpty(categoryIds), Category::getId, categoryIds)
+                    .list();
+        }
         // 构建分类和文章id映射
         Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, category -> category));
-        // 构建标签和文章id映射
-        List<Tag> tags = tagService.list();
-        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, tag -> tag));
 
-        // 构建文章id和文章标签关联映射
+        // 获取查询出的文章相关标签数据
         // 获取查询出的文章id集合
         List<Long> articleIdList = articleList.stream().map(Article::getId).collect(Collectors.toList());
         List<ArticleTag> articleTagList = articleTagService.lambdaQuery()
-                .in(CollUtil.isNotEmpty(articleIdList), ArticleTag::getArticleId, articleIdList)
+                .in(ArticleTag::getArticleId, articleIdList)
                 .list();
+        // 构建文章id和文章标签关联映射
         Map<Long, List<ArticleTag>> longListMap = articleTagList.stream().collect(Collectors.groupingBy(ArticleTag::getArticleId));
+
+        // 查询文章标签关系数据中相关标签
+        // 获取文章标签关联id
+        List<Long> tagIds = articleTagList.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
+        List<Tag> tags = new ArrayList<>(tagIds.size());
+        if (CollUtil.isNotEmpty(tagIds)) {
+            tags = tagService
+                    .lambdaQuery()
+                    .in(Tag::getId, tagIds)
+                    .list();
+        }
+        Map<Long, Tag> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, tag -> tag));
 
         // 补充分类和标签数据
         for (Article article : articleList) {
             AdminArticlePageQueryVO adminArticlePageQueryVO = BeanUtil.copyProperties(article, AdminArticlePageQueryVO.class);
             // 补充分类数据
-            adminArticlePageQueryVO.setCategoryName(
-                    categoryMap.get(adminArticlePageQueryVO.getCategoryId()).getName());
+            Category category = categoryMap.get(adminArticlePageQueryVO.getCategoryId());
+            if (category != null) {
+                adminArticlePageQueryVO.setCategoryName(category.getName());
+            }
 
             // 补充标签数据
             List<ArticleTag> tempArticleTagList = longListMap.get(article.getId());
-            List<AdminTagPageQueryVO> adminTagPageQueryVOS = new ArrayList<>(tempArticleTagList.size());
-            for (ArticleTag articleTag : tempArticleTagList) {
-                Tag tag = tagMap.get(articleTag.getTagId());
-                AdminTagPageQueryVO adminTagPageQueryVO = BeanUtil.copyProperties(tag, AdminTagPageQueryVO.class);
-                adminTagPageQueryVOS.add(adminTagPageQueryVO);
+            if (tempArticleTagList != null) {
+                List<AdminTagPageQueryVO> adminTagPageQueryVOS = new ArrayList<>(tempArticleTagList.size());
+                for (ArticleTag articleTag : tempArticleTagList) {
+                    Tag tag = tagMap.get(articleTag.getTagId());
+                    if(tag!=null) {
+                        AdminTagPageQueryVO adminTagPageQueryVO = BeanUtil.copyProperties(tag, AdminTagPageQueryVO.class);
+                        adminTagPageQueryVOS.add(adminTagPageQueryVO);
+                    }
+                }
+                adminArticlePageQueryVO.setTags(adminTagPageQueryVOS);
             }
-            adminArticlePageQueryVO.setTags(adminTagPageQueryVOS);
 
             adminArticlePageQueryVOS.add(adminArticlePageQueryVO);
         }
 
         return PageResult.<AdminArticlePageQueryVO>builder()
-                .pageSize(page.getPages())
+                .pageSize(page.getSize())
                 .pageNum(page.getCurrent())
                 .total(page.getTotal())
                 .result(adminArticlePageQueryVOS)

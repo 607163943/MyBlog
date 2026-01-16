@@ -17,8 +17,8 @@ import {
   articleDeleteService,
   articleBatchDeleteService
 } from '@/api/article'
-import { categoryAllService } from '@/api/category'
-import { tagAllService } from '@/api/tag'
+import { categoryAllActiveService } from '@/api/category'
+import { tagAllActiveService } from '@/api/tag'
 
 const articleSearchFormRef = ref(null)
 const articleSearchForm = ref({
@@ -41,12 +41,12 @@ const categoryList = ref([])
 const tagList = ref([])
 
 const getCategoryList = async () => {
-  const res = await categoryAllService()
+  const res = await categoryAllActiveService()
   categoryList.value = res.data.data
 }
 
 const getTagList = async () => {
-  const res = await tagAllService()
+  const res = await tagAllActiveService()
   tagList.value = res.data.data
 }
 const total = ref(0)

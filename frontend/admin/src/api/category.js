@@ -10,9 +10,9 @@ export const categoryByIdService = (id) => {
   return request.get(`/category/${id}`)
 }
 
-// 获取所有分类
-export const categoryAllService = () => {
-  return request.get('/category/all')
+// 获取所有激活中分类
+export const categoryAllActiveService = () => {
+  return request.get('/category/all/active')
 }
 
 // 新增分类

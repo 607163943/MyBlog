@@ -1,6 +1,7 @@
 package com.my.blog.server.controller.admin;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.my.blog.common.constants.TagStatus;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.dto.admin.AdminTagDTO;
@@ -35,10 +36,12 @@ public class TagController {
         return Result.success(pageResult);
     }
 
-    @ApiOperation("查询所有标签")
-    @GetMapping("/all")
+    @ApiOperation("查询所有激活中标签")
+    @GetMapping("/all/active")
     public Result<List<AdminTagVO>> tagAll() {
-        List<Tag> dictList = tagService.list();
+        List<Tag> dictList = tagService.lambdaQuery()
+                .eq(Tag::getStatus, TagStatus.ENABLE)
+                .list();
         List<AdminTagVO> adminTagVOS = BeanUtil.copyToList(dictList, AdminTagVO.class);
         return Result.success(adminTagVOS);
     }

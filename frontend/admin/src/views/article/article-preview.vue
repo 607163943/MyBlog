@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { categoryAllService } from '@/api/category'
+import { categoryAllActiveService } from '@/api/category'
 import { articlePreviewService } from '@/api/article'
 import { useRoute } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
@@ -24,7 +24,7 @@ const articleEditForm = ref({
 const categoryList = ref([])
 const getCategoryList = async () => {
   try {
-    const res = await categoryAllService()
+    const res = await categoryAllActiveService()
     categoryList.value = res?.data?.data ?? []
   } catch (error) {
     console.error('获取分类列表失败:', error)

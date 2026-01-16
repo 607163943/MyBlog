@@ -1,6 +1,7 @@
 package com.my.blog.server.controller.admin;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.my.blog.common.constants.CategoryStatus;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.dto.admin.AdminCategoryDTO;
@@ -9,7 +10,6 @@ import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminCategoryVO;
 import com.my.blog.server.config.valid.UpdateValidGroup;
-import com.my.blog.server.service.IArticleService;
 import com.my.blog.server.service.ICategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,9 +28,6 @@ public class CategoryController {
     @Resource
     private ICategoryService categoryService;
 
-    @Resource
-    private IArticleService articleService;
-
     @ApiOperation("分页查询分类")
     @GetMapping
     public Result<PageResult<AdminCategoryPageQueryVO>> pageQuery(AdminCategoryPageQueryDTO adminCategoryPageQueryDTO) {
@@ -38,10 +35,12 @@ public class CategoryController {
         return Result.success(pageResult);
     }
 
-    @ApiOperation("查询所有分类")
-    @GetMapping("/all")
+    @ApiOperation("查询所有激活中分类")
+    @GetMapping("/all/active")
     public Result<List<AdminCategoryVO>> categoryAll() {
-        List<Category> dictList = categoryService.list();
+        List<Category> dictList = categoryService.lambdaQuery()
+                .eq(Category::getStatus, CategoryStatus.ENABLE)
+                .list();
         List<AdminCategoryVO> adminCategoryVOS = BeanUtil.copyToList(dictList, AdminCategoryVO.class);
         return Result.success(adminCategoryVOS);
     }

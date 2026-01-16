@@ -11,8 +11,8 @@ export const tagByIdService = (id) => {
 }
 
 // 获取所有标签
-export const tagAllService = () => {
-  return request.get('/tag/all')
+export const tagAllActiveService = () => {
+  return request.get('/tag/all/active')
 }
 
 // 新增标签
