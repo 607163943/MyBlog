@@ -3,12 +3,17 @@ import { useUserStore } from '@/stores'
 import { message } from 'ant-design-vue'
 import router from '@/router'
 import { isEmpty } from 'es-toolkit/compat'
-import { errorMessage } from './message'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
   timeout: 10000
 })
+
+const LOGIN_ERROR_KEY = 'login_error'
+
+const SYSTEM_ERROR_KEY = 'system_error'
+
+const REQUEST_TIMEOUT_KEY = 'request_timeout'
 
 // 添加请求拦截器
 instance.interceptors.request.use(
@@ -38,7 +43,11 @@ instance.interceptors.response.use(
     // 对响应错误做点什么
     const res = error.response
     if (isEmpty(res)) {
-      errorMessage(res)
+      message.error({
+        key: REQUEST_TIMEOUT_KEY,
+        content: '请求超时',
+        duration: 3
+      })
       return Promise.reject(error)
     }
     // 用户未认证
@@ -50,9 +59,24 @@ instance.interceptors.response.use(
       // 跳转到登录页面
       router.push('/login')
 
+      message.error({
+        key: LOGIN_ERROR_KEY,
+        content: '登陆超时',
+        duration: 3
+      })
+
       return Promise.reject(error)
     }
-    errorMessage(res)
+
+    if (res.data.msg) {
+      message.error(res.data.msg)
+    } else {
+      message.error({
+        key: SYSTEM_ERROR_KEY,
+        content: '未知错误，请联系管理员',
+        duration: 3
+      })
+    }
     return Promise.reject(error)
   }
 )
