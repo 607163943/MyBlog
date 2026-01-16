@@ -36,6 +36,10 @@ public class LoginRealm extends AuthenticatingRealm {
         // 获取登录用户id
         Long userId = jwtUtils.getUserId(token);
 
+        if(userId==null) {
+            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
+        }
+
         // redis令牌再校验
         Object redisTokenObj = redisTemplate.opsForValue().get("user:token:" + userId);
         if(redisTokenObj==null) {
@@ -44,10 +48,6 @@ public class LoginRealm extends AuthenticatingRealm {
         String redisToken = (String) redisTokenObj;
         if(!redisToken.equals(token)) {
             throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_LOGIN_TIMEOUT);
-        }
-
-        if(userId==null) {
-            throw new AdminUserLoginException(ExceptionEnums.ADMIN_USER_NOT_LOGIN);
         }
 
         // 获取用户数据

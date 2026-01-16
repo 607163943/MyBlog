@@ -37,14 +37,18 @@ const rules = {
 const login = async () => {
   // 进行校验
   await loginFormRef.value.validate()
-  const res = await userLoginService(loginForm.value)
-  if (res.data.code === 200) {
+  try {
+    const res = await userLoginService(loginForm.value)
     userStore.setToken(res.data.data.token)
     userStore.setUserInfo(res.data.data.userInfo)
     message.success('登录成功')
     router.push('/')
-  } else {
-    message.error(res.data.message)
+  } catch (error) {
+    console.log(error)
+
+    // 重新获取验证码
+    loginForm.value.captchaCode = ''
+    getCaptchaImage()
   }
 }
 

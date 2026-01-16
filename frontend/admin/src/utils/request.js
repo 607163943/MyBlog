@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 import { isEmpty } from 'es-toolkit/compat'
+import { errorMessage } from './message'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -37,12 +38,11 @@ instance.interceptors.response.use(
     // 对响应错误做点什么
     const res = error.response
     if (isEmpty(res)) {
-      message.error('请求超时')
+      errorMessage(res)
       return Promise.reject(error)
     }
     // 用户未认证
     if (res.status === 401) {
-      const router = useRouter()
       // 清除用户信息
       const userStore = useUserStore()
       userStore.setUserInfo(null)
@@ -52,11 +52,7 @@ instance.interceptors.response.use(
 
       return Promise.reject(error)
     }
-    if (res.data.msg) {
-      message.error(res.data.msg)
-    } else {
-      message.error('未知错误，请联系管理员')
-    }
+    errorMessage(res)
     return Promise.reject(error)
   }
 )

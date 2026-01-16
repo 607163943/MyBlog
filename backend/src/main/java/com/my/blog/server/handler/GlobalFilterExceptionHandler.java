@@ -20,7 +20,7 @@ public class GlobalFilterExceptionHandler extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        // 将filter异常交给Spring全局异常管理
+        // 将filter异常链路交给Spring全局异常管理
         try {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
