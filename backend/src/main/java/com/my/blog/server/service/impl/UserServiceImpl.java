@@ -9,10 +9,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminUserException;
 import com.my.blog.common.utils.JWTUtils;
+import com.my.blog.pojo.dto.admin.UserInfoDTO;
 import com.my.blog.pojo.dto.admin.UserLoginDTO;
+import com.my.blog.pojo.dto.admin.UserPasswordDTO;
 import com.my.blog.pojo.po.User;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
-import com.my.blog.pojo.vo.admin.UserInfo;
+import com.my.blog.pojo.vo.admin.UserInfoVO;
 import com.my.blog.pojo.vo.admin.UserLoginVO;
 import com.my.blog.server.mapper.UserMapper;
 import com.my.blog.server.service.IUserService;
@@ -44,18 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public UserLoginVO login(UserLoginDTO userLoginDTO) {
         // 验证码校验
-        Object captchaCodeObj = redisTemplate.opsForValue().get("user:captcha:" + userLoginDTO.getCaptchaKey());
-        if (captchaCodeObj == null) {
-            // 验证码过期
-            throw new AdminUserException(ExceptionEnums.ADMIN_USER_CAPTCHA_EXPIRED);
-        }
-
-        String captchaCode = captchaCodeObj.toString();
-        // 忽略大小写
-        if (!userLoginDTO.getCaptchaCode().equalsIgnoreCase(captchaCode)) {
-            // 验证码错误
-            throw new AdminUserException(ExceptionEnums.ADMIN_USER_CAPTCHA_CODE_ERROR);
-        }
+        validateCaptchaCode(userLoginDTO.getCaptchaCode(), userLoginDTO.getCaptchaKey());
 
         // 用户校验
         User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();
@@ -71,10 +62,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 登陆成功
         log.info("用户{},id:{}，登陆成功！", user.getUsername(), user.getId());
-        // 清除验证码缓存
-        redisTemplate.opsForValue().getAndDelete("user:captcha:" + userLoginDTO.getCaptchaKey());
         // 用户信息
-        UserInfo userInfo = BeanUtil.copyProperties(user, UserInfo.class);
+        UserInfoVO userInfoVO = BeanUtil.copyProperties(user, UserInfoVO.class);
 
         // 生成令牌
         String token = jwtUtils.createJWTWithUserId(user.getId());
@@ -88,8 +77,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         return UserLoginVO.builder()
                 .token(token)
-                .userInfo(userInfo)
+                .userInfoVO(userInfoVO)
                 .build();
+    }
+
+    /**
+     * 验证码校验
+     * @param captchaCode 验证码
+     * @param captchaKey 验证码key
+     */
+    private void validateCaptchaCode(String captchaCode,String captchaKey) {
+        // 验证码校验
+        Object captchaCodeObj = redisTemplate.opsForValue().get("user:captcha:" + captchaKey);
+        if (captchaCodeObj == null) {
+            // 验证码过期
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_CAPTCHA_EXPIRED);
+        }
+
+        String redisCaptchaCode = captchaCodeObj.toString();
+        // 忽略大小写
+        if (!captchaCode.equalsIgnoreCase(redisCaptchaCode)) {
+            // 验证码错误
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_CAPTCHA_CODE_ERROR);
+        }
+        // 清除验证码缓存
+        redisTemplate.delete("user:captcha:" + captchaKey);
     }
 
     /**
@@ -120,11 +132,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void logout() {
         // 获取登录用户数据
-        User user= (User) SecurityUtils.getSubject().getPrincipal();
+        User user = (User) SecurityUtils.getSubject().getPrincipal();
 
         // 清除缓存中的token
         redisTemplate.opsForValue().getAndDelete("user:token:" + user.getId());
 
         log.info("用户{},id:{}，登出成功！", user.getUsername(), user.getId());
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @return 用户信息
+     */
+    @Override
+    public UserInfoVO userInfo() {
+        User user = (User) SecurityUtils.getSubject().getPrincipal();
+        return BeanUtil.copyProperties(user, UserInfoVO.class);
+    }
+
+    /**
+     * 修改用户信息
+     * @param userInfoDTO 用户信息
+     * @return 修改后的用户信息
+     */
+    @Override
+    public UserInfoVO updateUserInfo(UserInfoDTO userInfoDTO) {
+        // 判断登录用户和修改用户是否为同一人
+        User user = (User) SecurityUtils.getSubject().getPrincipal();
+        if(!userInfoDTO.getId().equals(user.getId())) {
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_NOT_MATCH);
+        }
+
+        lambdaUpdate()
+                .set(User::getUsername, userInfoDTO.getUsername())
+                .set(User::getNickname, userInfoDTO.getNickname())
+                .eq(User::getId, userInfoDTO.getId())
+                .update();
+
+        // 获取修改后用户信息
+        user = getById(userInfoDTO.getId());
+        return BeanUtil.copyProperties(user, UserInfoVO.class);
+    }
+
+    /**
+     * 修改用户密码
+     * @param userPasswordDTO 用户密码
+     */
+    @Override
+    public void updatePassword(UserPasswordDTO userPasswordDTO) {
+        // 验证码校验
+        validateCaptchaCode(userPasswordDTO.getCaptchaCode(), userPasswordDTO.getCaptchaKey());
+
+        User user = (User) SecurityUtils.getSubject().getPrincipal();
+
+        // 用户旧密码校验
+        String oldPasswordMd5 = SecureUtil.md5(userPasswordDTO.getOldPassword());
+        if(!user.getPassword().equals(oldPasswordMd5)) {
+            throw new AdminUserException(ExceptionEnums.ADMIN_USER_PASSWORD_ERROR);
+        }
+
+        // 修改用户密码
+        String newPasswordMd5 = SecureUtil.md5(userPasswordDTO.getNewPassword());
+        lambdaUpdate()
+                .set(User::getPassword,newPasswordMd5)
+                .eq(User::getId,user.getId())
+                .update();
+
+        log.info("用户{},id:{}，修改密码成功！", user.getUsername(), user.getId());
+
+        // 清除redis token缓存
+        redisTemplate.delete("user:token:" + user.getId());
     }
 }

@@ -1,8 +1,11 @@
 package com.my.blog.server.controller.admin;
 
 import com.my.blog.common.result.Result;
+import com.my.blog.pojo.dto.admin.UserInfoDTO;
 import com.my.blog.pojo.dto.admin.UserLoginDTO;
+import com.my.blog.pojo.dto.admin.UserPasswordDTO;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
+import com.my.blog.pojo.vo.admin.UserInfoVO;
 import com.my.blog.pojo.vo.admin.UserLoginVO;
 import com.my.blog.server.service.IUserService;
 import io.swagger.annotations.Api;
@@ -27,14 +30,31 @@ public class UserController {
         return Result.success(userLoginVO);
     }
 
-    /**
-     * 获取验证码
-     * @return 验证码数据
-     */
+    @ApiOperation("获取用户信息")
+    @GetMapping("/info")
+    public Result<UserInfoVO> userInfo() {
+        UserInfoVO userInfoVO = userService.userInfo();
+        return Result.success(userInfoVO);
+    }
+
+    @ApiOperation("更新用户信息")
+    @PutMapping("/info")
+    public Result<UserInfoVO> updateUserInfo(@Validated @RequestBody UserInfoDTO userInfoDTO) {
+        UserInfoVO userInfoVO = userService.updateUserInfo(userInfoDTO);
+        return Result.success(userInfoVO);
+    }
+
+    @ApiOperation("修改密码")
+    @PatchMapping("/password")
+    public Result<Object> updatePassword(@Validated @RequestBody UserPasswordDTO userPasswordDTO) {
+        userService.updatePassword(userPasswordDTO);
+        return Result.success();
+    }
+
     @ApiOperation("获取验证码")
     @GetMapping("/captcha")
     public Result<CaptchaVO> captcha() {
-        CaptchaVO captchaVO=userService.captcha();
+        CaptchaVO captchaVO = userService.captcha();
 
         return Result.success(captchaVO);
 
@@ -46,51 +66,4 @@ public class UserController {
         userService.logout();
         return Result.success();
     }
-
-    //@GetMapping("/profile")
-    //public String profile(HttpServletRequest request) {
-    //    Integer loginUserId = (int) request.getSession().getAttribute("loginUserId");
-    //    AdminUser adminUser = adminUserService.getUserDetailById(loginUserId);
-    //    if (adminUser == null) {
-    //        return "admin/login";
-    //    }
-    //    request.setAttribute("path", "profile");
-    //    request.setAttribute("loginUserName", adminUser.getLoginUserName());
-    //    request.setAttribute("nickName", adminUser.getNickName());
-    //    return "admin/profile";
-    //}
-    //
-    //@PostMapping("/profile/password")
-    //@ResponseBody
-    //public String passwordUpdate(HttpServletRequest request, @RequestParam("originalPassword") String originalPassword,
-    //                             @RequestParam("newPassword") String newPassword) {
-    //    if (!StringUtils.hasText(originalPassword) || !StringUtils.hasText(newPassword)) {
-    //        return "参数不能为空";
-    //    }
-    //    Integer loginUserId = (int) request.getSession().getAttribute("loginUserId");
-    //    if (adminUserService.updatePassword(loginUserId, originalPassword, newPassword)) {
-    //        //修改成功后清空session中的数据，前端控制跳转至登录页
-    //        request.getSession().removeAttribute("loginUserId");
-    //        request.getSession().removeAttribute("loginUser");
-    //        request.getSession().removeAttribute("errorMsg");
-    //        return "success";
-    //    } else {
-    //        return "修改失败";
-    //    }
-    //}
-    //
-    //@PostMapping("/profile/name")
-    //@ResponseBody
-    //public String nameUpdate(HttpServletRequest request, @RequestParam("loginUserName") String loginUserName,
-    //                         @RequestParam("nickName") String nickName) {
-    //    if (!StringUtils.hasText(loginUserName) || !StringUtils.hasText(nickName)) {
-    //        return "参数不能为空";
-    //    }
-    //    Integer loginUserId = (int) request.getSession().getAttribute("loginUserId");
-    //    if (adminUserService.updateName(loginUserId, loginUserName, nickName)) {
-    //        return "success";
-    //    } else {
-    //        return "修改失败";
-    //    }
-    //}
 }

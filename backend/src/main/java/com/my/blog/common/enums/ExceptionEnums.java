@@ -13,6 +13,7 @@ public enum ExceptionEnums {
     ADMIN_USER_CAPTCHA_EXPIRED(1004, "验证码已过期"),
     ADMIN_USER_LOGIN_TIMEOUT(1005, "登录超时"),
     ADMIN_USER_NOT_LOGIN(1006, "用户未登录"),
+    ADMIN_USER_NOT_MATCH(1007, "用户未匹配"),
 
     ADMIN_TAG_EXIST(2001, "标签已存在"),
 

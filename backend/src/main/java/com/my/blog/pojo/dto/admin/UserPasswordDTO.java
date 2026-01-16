@@ -8,18 +8,18 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 
-@ApiModel("用户登录数据")
+@ApiModel("用户密码数据")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLoginDTO {
-    @ApiModelProperty("用户名")
-    @NotBlank(message = "用户名不能为空")
-    private String username;
+public class UserPasswordDTO {
+    @ApiModelProperty("旧密码")
+    @NotBlank(message = "旧密码不能为空")
+    private String oldPassword;
 
-    @ApiModelProperty("密码")
-    @NotBlank(message = "密码不能为空")
-    private String password;
+    @ApiModelProperty("新密码")
+    @NotBlank(message = "新密码不能为空")
+    private String newPassword;
 
     @ApiModelProperty("验证码")
     @NotBlank(message = "验证码不能为空")
