@@ -10,7 +10,7 @@ import com.my.blog.pojo.po.Tag;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminTagVO;
 import com.my.blog.server.config.valid.UpdateValidGroup;
-import com.my.blog.server.service.ITagService;
+import com.my.blog.server.service.admin.ITagService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +21,7 @@ import javax.validation.groups.Default;
 import java.util.List;
 
 @Api(tags = "标签管理")
-@RestController
+@RestController("admin-tag-controller")
 @RequestMapping("/admin/tag")
 public class TagController {
 

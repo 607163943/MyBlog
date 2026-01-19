@@ -3,7 +3,7 @@ package com.my.blog.server.controller.admin;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.vo.admin.AdminHomeChartCardVO;
 import com.my.blog.pojo.vo.admin.AdminHomeDataCardVO;
-import com.my.blog.server.service.IHomeService;
+import com.my.blog.server.service.admin.IHomeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @Api(tags = "后台首页")
-@RestController
+@RestController("admin-home-controller")
 @RequestMapping("/admin/home")
 public class HomeController {
     @Resource

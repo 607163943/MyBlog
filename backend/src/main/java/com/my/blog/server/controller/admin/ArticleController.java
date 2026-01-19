@@ -3,14 +3,14 @@ package com.my.blog.server.controller.admin;
 import cn.hutool.core.bean.BeanUtil;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.result.Result;
+import com.my.blog.pojo.dto.ArticlePageQueryDTO;
 import com.my.blog.pojo.dto.admin.AdminArticleDTO;
-import com.my.blog.pojo.dto.admin.AdminArticlePageQueryDTO;
 import com.my.blog.pojo.po.Article;
 import com.my.blog.pojo.vo.admin.AdminArticlePageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminArticlePreviewVO;
 import com.my.blog.pojo.vo.admin.AdminArticleVO;
 import com.my.blog.server.config.valid.UpdateValidGroup;
-import com.my.blog.server.service.IArticleService;
+import com.my.blog.server.service.admin.IArticleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +21,7 @@ import javax.validation.groups.Default;
 import java.util.List;
 
 @Api(tags = "文章管理")
-@RestController
+@RestController("admin-article-controller")
 @RequestMapping("/admin/article")
 public class ArticleController {
     @Resource
@@ -29,8 +29,8 @@ public class ArticleController {
 
     @ApiOperation("分页查询文章")
     @GetMapping
-    public Result<PageResult<AdminArticlePageQueryVO>> pageQuery(AdminArticlePageQueryDTO adminArticlePageQueryDTO) {
-        PageResult<AdminArticlePageQueryVO> pageResult = articleService.pageQuery(adminArticlePageQueryDTO);
+    public Result<PageResult<AdminArticlePageQueryVO>> pageQuery(ArticlePageQueryDTO articlePageQueryDTO) {
+        PageResult<AdminArticlePageQueryVO> pageResult = articleService.pageQuery(articlePageQueryDTO);
         return Result.success(pageResult);
     }
 

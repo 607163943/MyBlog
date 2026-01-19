@@ -35,5 +35,14 @@ export default defineConfig([
   ...pluginVue.configs['flat/essential'],
 
   skipFormatting,
-  eslintPluginPrettierRecommended
+  eslintPluginPrettierRecommended,
+
+  // prime-vue / UI 组件通常为单词命名（Button/Card/...），放行该规则避免 lint 整体失败
+  {
+    name: 'app/prime-vue-component-names',
+    files: ['src/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off'
+    }
+  }
 ])

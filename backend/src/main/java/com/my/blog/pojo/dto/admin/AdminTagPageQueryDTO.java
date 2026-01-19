@@ -1,5 +1,6 @@
 package com.my.blog.pojo.dto.admin;
 
+import com.my.blog.pojo.dto.PageQueryDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

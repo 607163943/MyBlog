@@ -5,9 +5,9 @@ import com.my.blog.pojo.dto.admin.UserInfoDTO;
 import com.my.blog.pojo.dto.admin.UserLoginDTO;
 import com.my.blog.pojo.dto.admin.UserPasswordDTO;
 import com.my.blog.pojo.vo.admin.CaptchaVO;
-import com.my.blog.pojo.vo.admin.UserInfoVO;
+import com.my.blog.pojo.vo.UserInfoVO;
 import com.my.blog.pojo.vo.admin.UserLoginVO;
-import com.my.blog.server.service.IUserService;
+import com.my.blog.server.service.admin.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 @Api(tags = "用户管理")
-@RestController
+@RestController("admin-user-controller")
 @RequestMapping("/admin/user")
 public class UserController {
     @Resource

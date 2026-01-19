@@ -2,7 +2,7 @@ package com.my.blog.server.controller.admin;
 
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.vo.admin.AdminUploadFileVO;
-import com.my.blog.server.service.IUploadFileService;
+import com.my.blog.server.service.admin.IUploadFileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 
 @Api(tags = "上传文件接口")
 @RequestMapping("/admin/upload")
-@RestController
+@RestController("admin-upload-controller")
 public class UploadController {
     @Resource
     private IUploadFileService uploadFileService;

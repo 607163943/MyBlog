@@ -3,7 +3,7 @@ package com.my.blog.server.controller.admin;
 import com.my.blog.common.result.Result;
 import com.my.blog.pojo.vo.admin.AdminChartCardKPIVO;
 import com.my.blog.pojo.vo.admin.AdminChartTrendCardVO;
-import com.my.blog.server.service.IChartService;
+import com.my.blog.server.service.admin.IChartService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @Api(tags = "后台图表")
 @RequestMapping("/admin/chart")
-@RestController
+@RestController("admin-chart-controller")
 public class ChartController {
     @Resource
     private IChartService chartService;

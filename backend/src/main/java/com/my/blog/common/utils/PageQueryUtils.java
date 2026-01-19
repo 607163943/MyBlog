@@ -1,6 +1,6 @@
 package com.my.blog.common.utils;
 
-import com.my.blog.pojo.dto.admin.PageQueryDTO;
+import com.my.blog.pojo.dto.PageQueryDTO;
 import org.springframework.stereotype.Component;
 
 @Component

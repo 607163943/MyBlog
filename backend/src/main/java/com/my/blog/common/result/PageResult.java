@@ -23,4 +23,6 @@ public class PageResult<T> {
     private Long pageNum;
     @ApiModelProperty("总页数")
     private Long pageSize;
+    @ApiModelProperty("总页数")
+    private Long pages;
 }

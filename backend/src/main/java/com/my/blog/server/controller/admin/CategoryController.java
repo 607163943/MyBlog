@@ -10,7 +10,7 @@ import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.vo.admin.AdminCategoryPageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminCategoryVO;
 import com.my.blog.server.config.valid.UpdateValidGroup;
-import com.my.blog.server.service.ICategoryService;
+import com.my.blog.server.service.admin.ICategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +21,7 @@ import javax.validation.groups.Default;
 import java.util.List;
 
 @Api(tags = "分类管理")
-@RestController
+@RestController("admin-category-controller")
 @RequestMapping("/admin/category")
 public class CategoryController {
 

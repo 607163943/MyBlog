@@ -2,7 +2,7 @@ package com.my.blog.service;
 
 import com.my.blog.MyBlogApplication;
 import com.my.blog.pojo.po.Article;
-import com.my.blog.server.service.IArticleService;
+import com.my.blog.server.service.admin.IArticleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
