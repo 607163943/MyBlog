@@ -9,3 +9,8 @@ export const articlePageQueryService = (params) => {
 export const articleNewTop5Service = () => {
   return request.get('/article/new/top5')
 }
+
+// 根据id查询文章详情
+export const articleByIdService = (id) => {
+  return request.get(`/article/view/${id}`)
+}

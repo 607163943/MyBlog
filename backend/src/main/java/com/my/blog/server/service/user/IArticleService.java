@@ -5,6 +5,7 @@ import com.my.blog.common.result.PageResult;
 import com.my.blog.pojo.dto.ArticlePageQueryDTO;
 import com.my.blog.pojo.po.Article;
 import com.my.blog.pojo.vo.user.UserArticlePageQueryVO;
+import com.my.blog.pojo.vo.user.UserArticleViewVO;
 
 import java.util.List;
 
@@ -21,4 +22,11 @@ public interface IArticleService extends IService<Article> {
      * @return 最新文章Top5
      */
     List<UserArticlePageQueryVO> newArticleTop5();
+
+    /**
+     * 文章详情
+     * @param articleId 文章id
+     * @return 文章详情
+     */
+    UserArticleViewVO articleView(Long articleId);
 }

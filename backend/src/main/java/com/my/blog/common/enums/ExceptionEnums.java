@@ -30,7 +30,10 @@ public enum ExceptionEnums {
     ADMIN_ARTICLE_BELONG_CATEGORY_DISABLE(5005, "文章所属分类已禁用"),
     ADMIN_ARTICLE_TAG_DISABLE(5006, "该标签不存在或已禁用"),
 
-    USER_DATA_EXCEPTION(6001, "系统数据异常");
+    USER_DATA_EXCEPTION(6001, "系统数据异常"),
+
+    USER_ARTICLE_NOT_EXIST(7001, "文章不存在"),
+    USER_ARTICLE_BELONG_CATEGORY_DISABLE(7002, "文章所属分类已禁用");
 
     private final Integer code;
     private final String msg;

@@ -6,9 +6,11 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.blog.common.constants.ArticleStatus;
+import com.my.blog.common.constants.CategoryStatus;
 import com.my.blog.common.constants.TagStatus;
 import com.my.blog.common.enums.ExceptionEnums;
 import com.my.blog.common.exception.admin.AdminArticleException;
+import com.my.blog.common.exception.user.UserArticleException;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.utils.PageQueryUtils;
 import com.my.blog.pojo.dto.ArticlePageQueryDTO;
@@ -16,8 +18,10 @@ import com.my.blog.pojo.po.Article;
 import com.my.blog.pojo.po.ArticleTag;
 import com.my.blog.pojo.po.Category;
 import com.my.blog.pojo.po.Tag;
-import com.my.blog.pojo.vo.user.UserArticlePageQueryVO;
 import com.my.blog.pojo.vo.admin.AdminTagPageQueryVO;
+import com.my.blog.pojo.vo.user.UserArticlePageQueryVO;
+import com.my.blog.pojo.vo.user.UserArticleViewVO;
+import com.my.blog.pojo.vo.user.UserTagVO;
 import com.my.blog.server.mapper.ArticleMapper;
 import com.my.blog.server.service.user.IArticleService;
 import com.my.blog.server.service.user.IArticleTagService;
@@ -210,5 +214,52 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articleList = page.getRecords();
 
         return BeanUtil.copyToList(articleList, UserArticlePageQueryVO.class);
+    }
+
+    /**
+     * 文章详情
+     * @param articleId 文章id
+     * @return 文章详情
+     */
+    @Override
+    public UserArticleViewVO articleView(Long articleId) {
+        // 查询文章
+        Article article = getById(articleId);
+        if(article==null) {
+            throw new UserArticleException(ExceptionEnums.USER_ARTICLE_NOT_EXIST);
+        }
+        UserArticleViewVO userArticleViewVO = BeanUtil.copyProperties(article, UserArticleViewVO.class);
+
+        // 分类补全
+        if(article.getCategoryId()!=null) {
+            Category category = categoryService.getById(article.getCategoryId());
+            if(category!=null) {
+                // 检测所属分类是否禁用
+                if(category.getStatus().equals(CategoryStatus.DISABLE)) {
+                    throw new UserArticleException(ExceptionEnums.USER_ARTICLE_BELONG_CATEGORY_DISABLE);
+                }
+
+                userArticleViewVO.setCategoryId(category.getId());
+                userArticleViewVO.setCategoryName(category.getName());
+            }
+        }
+
+        // 标签补全
+        List<ArticleTag> articleTags = articleTagService.lambdaQuery()
+                .eq(ArticleTag::getArticleId, article.getId())
+                .list();
+        List<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
+
+        if(CollUtil.isNotEmpty(tagIds)) {
+            List<Tag> tagList = tagService.lambdaQuery()
+                    // 文章残留禁用标签时不应导致用户端对整个文章的查询报错，直接过滤即可
+                    .eq(Tag::getStatus,TagStatus.ENABLE)
+                    .in(Tag::getId, tagIds)
+                    .list();
+            List<UserTagVO> userTagVOS = BeanUtil.copyToList(tagList, UserTagVO.class);
+            userArticleViewVO.setTags(userTagVOS);
+        }
+
+        return userArticleViewVO;
     }
 }

@@ -5,7 +5,7 @@
   >
     <div class="flex min-h-screen flex-col">
       <header
-        class="sticky top-0 z-30 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur"
+        class="sticky top-0 z-30000 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur"
       >
         <div class="mx-auto flex h-16 max-w-[1200px] items-center px-6">
           <a class="flex items-center gap-3 cursor-pointer" href="/">
