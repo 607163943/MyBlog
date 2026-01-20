@@ -10,4 +10,13 @@
         order by articleCount desc
         limit 5
     </select>
+    <select id="pageQuery" resultType="com.my.blog.pojo.vo.user.UserCategoryVO">
+        select category.id, category.name, category.cover, count(0) articleCount
+        from `tb_category` category
+                 join `tb_article` article on category.id = article.category_id
+        where category.status = 0
+          and article.status = 1
+        group by category.id, category.sort
+        order by category.sort desc
+    </select>
 </mapper>

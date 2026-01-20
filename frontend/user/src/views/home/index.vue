@@ -17,13 +17,11 @@ const articleList = ref([])
 
 const { pageNum } = storeToRefs(searchStore)
 const total = ref(0)
-const pages = ref(0)
 
 const pageQuery = async () => {
   const res = await articlePageQueryService(searchStore.searchParams)
   articleList.value = res.data.data.result
   total.value = res.data.data.total
-  pages.value = res.data.data.pages
 }
 
 const handlerSearch = () => {

@@ -191,7 +191,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return PageResult.<AdminArticlePageQueryVO>builder()
                 .pageSize(page.getSize())
                 .pageNum(page.getCurrent())
-                .pages(page.getPages())
                 .total(page.getTotal())
                 .result(articlePageQueryVOS)
                 .build();
