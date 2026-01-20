@@ -1,0 +1,21 @@
+# mysql
+mysql:
+  host: mysql主机地址
+  port: mysql端口号
+  database: mysql数据库
+  username: mysql账户名
+  password: mysql密码
+
+# redis
+redis:
+  host: redis主机地址
+  port: redis端口号
+  database: redis数据库
+
+# 阿里云OSS
+ali-yun-oss:
+  access-key: 你的阿里云access-key
+  secret-key: 你的阿里云secret-key
+  end-point: 你的end-point
+  bucket-name: 你的bucket-name
+  domain: 你的domain
