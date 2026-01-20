@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { message } from 'ant-design-vue'
+import { isEmpty } from 'es-toolkit/compat'
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -13,6 +15,14 @@ instance.interceptors.request.use(
   },
   function (error) {
     // 对请求错误做些什么
+    const res = error.response
+    if (isEmpty(res)) {
+      message.error('请求超时！')
+    } else if (res.data.data) {
+      message.error(res.data.message)
+    } else {
+      message.error('系统异常，请联系管理员!')
+    }
     return Promise.reject(error)
   }
 )

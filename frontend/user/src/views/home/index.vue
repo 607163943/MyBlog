@@ -1,204 +1,81 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { articlePageQueryService, articleNewTop5Service } from '@/api/article'
+import { ref } from 'vue'
+import { articlePageQueryService } from '@/api/article'
 import { SearchOutlined } from '@ant-design/icons-vue'
 import { Button } from '@/components/ui/button'
-import { userInfoService, userCountCardService } from '@/api/user'
-import { categoryHotTop5Service } from '@/api/category'
-import { tagWallService } from '@/api/tag'
+import UserInfoCard from '@/components/user-info-card.vue'
+import HotCategoryCard from '@/components/hot-category-card.vue'
+import NewArticleTop5Card from '@/components/new-article-top5-card.vue'
+import TagWall from '@/components/tag-wall.vue'
+import { useSearchStore } from '@/stores'
+import { storeToRefs } from 'pinia'
+
+const searchStore = useSearchStore()
 
 // 文章+搜索
 const articleList = ref([])
-const searchParams = ref({
-  categoryId: '',
-  tagId: '',
-  pageNum: 1,
-  pageSize: 10
-})
 
+const { pageNum } = storeToRefs(searchStore)
 const total = ref(0)
 const pages = ref(0)
 
 const pageQuery = async () => {
-  const res = await articlePageQueryService(searchParams.value)
+  const res = await articlePageQueryService(searchStore.searchParams)
   articleList.value = res.data.data.result
   total.value = res.data.data.total
   pages.value = res.data.data.pages
 }
 
-const isSearchMode = ref(false)
-const isCategorySearch = ref(false)
-const categoryName = ref('')
-const isTagSearch = ref(false)
-const tagName = ref('')
-
 const handlerSearch = () => {
-  isSearchMode.value = true
-  isCategorySearch.value = false
-  isTagSearch.value = false
+  searchStore.setSearchMode()
   pageQuery()
 }
 
 const handlerPageQuery = (page) => {
-  searchParams.value.pageNum = page
+  searchStore.setPageNum(page)
   pageQuery()
-}
-
-// 用户卡片
-const userInfo = ref({
-  username: '',
-  nickname: ''
-})
-
-const userCountCard = ref({
-  articleCount: 0,
-  categoryCount: 0,
-  tagCount: 0
-})
-
-const handlerUserInfo = async () => {
-  const res = await userInfoService()
-  userInfo.value = res.data.data
-}
-
-const handlerUserCountCard = async () => {
-  const res = await userCountCardService()
-  userCountCard.value = res.data.data
 }
 
 // 热门分类卡片
-const hotCategoryList = ref([])
-const handlerHotCategoryList = async () => {
-  const res = await categoryHotTop5Service()
-  hotCategoryList.value = res.data.data
-}
-
 const handlerCategoryPush = (category) => {
-  searchParams.value.categoryId = category.categoryId
-  searchParams.value.pageNum = 1
-  searchParams.value.pageSize = 10
-
-  isCategorySearch.value = true
-  categoryName.value = category.categoryName
-  isSearchMode.value = false
-  isTagSearch.value = false
+  searchStore.setCategorySearch(category)
+  searchStore.resetPage()
   pageQuery()
-}
-
-// 最新文章卡片
-const newArticleList = ref([])
-const handlerNewArticleList = async () => {
-  const res = await articleNewTop5Service()
-  newArticleList.value = res.data.data
 }
 
 // 标签墙
 const handlerTagPush = (tag) => {
-  searchParams.value.tagId = tag.tagId
-  searchParams.value.pageNum = 1
-  searchParams.value.pageSize = 10
-
-  isTagSearch.value = true
-  tagName.value = tag.tagName
-  isSearchMode.value = false
-  isCategorySearch.value = false
+  searchStore.setTagSearch(tag)
+  searchStore.resetPage()
   pageQuery()
-}
-// ✅ 示例：后端建议返回 id、name、articleCount
-const tags = ref([])
-
-// ✅ 多色调色板（稳定：按 id 取模）
-const palettes = [
-  'border-sky-100 bg-sky-50 text-sky-600',
-  'border-emerald-100 bg-emerald-50 text-emerald-600',
-  'border-amber-100 bg-amber-50 text-amber-700',
-  'border-violet-100 bg-violet-50 text-violet-600',
-  'border-rose-100 bg-rose-50 text-rose-600',
-  'border-slate-200 bg-slate-50 text-slate-700'
-]
-
-// ✅ 5档字号（推荐离散档位，Tailwind 友好）
-// 你也可以改成 4 档/6 档
-const sizeSteps = ['text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl']
-const weightSteps = ['font-medium', 'font-medium', 'font-semibold', 'font-semibold', 'font-bold']
-
-const tagWall = ref(null)
-const createTagWall = () => {
-  // 计算 min/max（注意边界）
-  const counts = tags.value.map((t) => {
-    return t.articleCount ?? 0
-  })
-  const min = Math.min(...counts)
-  const max = Math.max(...counts)
-  const span = Math.max(1, max - min)
-
-  function getLevel(count) {
-    // 归一化到 0~1
-    const w = (count - min) / span
-    // 映射到 0~(steps-1)
-    return Math.max(0, Math.min(sizeSteps.length - 1, Math.round(w * (sizeSteps.length - 1))))
-  }
-  tags.value.forEach((t) => {
-    const colorCls = palettes[t.tagId % palettes.length]
-    const level = getLevel(t.articleCount ?? 0)
-    console.log(level)
-    const sizeCls = sizeSteps[level]
-    const weightCls = weightSteps[level]
-
-    const a = document.createElement('a')
-
-    a.className = [
-      'cursor-pointer inline-flex items-center rounded-full border px-4 py-1.5',
-      'transition hover:opacity-90 active:scale-[0.98]',
-      // ✅ 动态字号/字重
-      sizeCls,
-      weightCls,
-      // ✅ 稳定配色
-      colorCls
-    ].join(' ')
-
-    a.textContent = t.tagName
-
-    a.addEventListener('click', (e) => {
-      e.preventDefault()
-      handlerTagPush(t)
-    })
-    tagWall.value.appendChild(a)
-  })
-}
-
-const handleTagWall = async () => {
-  const res = await tagWallService()
-  tags.value = res.data.data
-  createTagWall()
 }
 
 // 数据初始化
 pageQuery()
-handlerUserInfo()
-handlerUserCountCard()
-handlerHotCategoryList()
-handlerNewArticleList()
-
-onMounted(() => {
-  handleTagWall()
-})
 </script>
 <template>
   <main class="flex-1 pb-16">
     <div class="mx-auto max-w-[1200px] px-6 py-10 space-y-10">
       <h1
         class="text-3xl text-center p-1 font-semibold text-white line-1 anim-typewriter"
-        v-if="!isSearchMode && !isCategorySearch && !isTagSearch"
+        v-if="
+          !searchStore.isSearchMode && !searchStore.isCategorySearch && !searchStore.isTagSearch
+        "
       >
         MyBlog · 个人博客网站
       </h1>
 
-      <h1 class="text-3xl text-center p-1 font-semibold text-white" v-else-if="isCategorySearch">
-        {{ categoryName }}
+      <h1
+        class="text-3xl text-center p-1 font-semibold text-white"
+        v-else-if="searchStore.isCategorySearch"
+      >
+        {{ searchStore.categoryName }}
       </h1>
-      <h1 class="text-3xl text-center p-1 font-semibold text-white" v-else-if="isTagSearch">
-        {{ tagName }}
+      <h1
+        class="text-3xl text-center p-1 font-semibold text-white"
+        v-else-if="searchStore.isTagSearch"
+      >
+        {{ searchStore.tagName }}
       </h1>
       <h1 class="text-3xl text-center p-1 font-semibold text-white" v-else>搜索结果</h1>
       <!-- 搜索栏 -->
@@ -224,7 +101,9 @@ onMounted(() => {
             <input
               class="w-full bg-transparent text-base text-slate-700 placeholder:text-slate-400 focus:outline-none"
               :placeholder="
-                isSearchMode ? '修改关键词或直接回车更新' : '输入关键词，快速定位深度内容'
+                searchStore.isSearchMode
+                  ? '修改关键词或直接回车更新'
+                  : '输入关键词，快速定位深度内容'
               "
               @keydown.enter="handlerSearch"
               type="text"
@@ -246,7 +125,7 @@ onMounted(() => {
         <!-- 左侧文章区域 -->
         <section class="space-y-6">
           <div
-            v-if="isSearchMode"
+            v-if="searchStore.isSearchMode"
             class="rounded-2xl border border-sky-100 bg-[rgba(255,255,255,0.9)] p-5 text-sm text-slate-600 shadow-card"
           >
             <p class="font-semibold text-slate-900">
@@ -303,7 +182,7 @@ onMounted(() => {
           >
             <a-pagination
               @change="handlerPageQuery"
-              v-model:current="searchParams.pageNum"
+              v-model:current="pageNum"
               :total="total"
               show-less-items
               :showSizeChanger="false"
@@ -315,95 +194,15 @@ onMounted(() => {
         <!-- 右侧卡片区域 -->
         <aside class="space-y-6">
           <!-- 用户卡片 -->
-          <div
-            class="rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card"
-          >
-            <div class="flex items-center gap-4">
-              <img
-                alt="作者头像"
-                class="h-14 w-14 rounded-2xl object-cover"
-                src="https://images.unsplash.com/photo-1525130413817-d45c1d127c42?auto=format&fit=facearea&w=120&h=120&q=80"
-              />
-              <div>
-                <p class="text-base font-semibold text-slate-900">
-                  {{ userInfo.nickname ? userInfo.nickname : userInfo.username }}
-                </p>
-                <p class="text-sm text-slate-500">一个热爱编程的普通人</p>
-              </div>
-            </div>
-
-            <a-row>
-              <a-col :span="8">
-                <a-statistic title="文章" :value="userCountCard.articleCount" class="text-center" />
-              </a-col>
-              <a-col :span="8">
-                <a-statistic
-                  title="分类"
-                  :value="userCountCard.categoryCount"
-                  class="text-center"
-                />
-              </a-col>
-              <a-col :span="8">
-                <a-statistic title="标签" :value="userCountCard.tagCount" class="text-center" />
-              </a-col>
-            </a-row>
-          </div>
-
+          <UserInfoCard />
           <!-- 热门分类卡片 -->
-          <div
-            class="rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card"
-          >
-            <p class="text-base font-semibold text-slate-900">热门分类排行</p>
-            <ol class="mt-4 space-y-4 text-sm">
-              <li
-                v-for="(category, index) in hotCategoryList"
-                :key="category.categoryId"
-                class="flex items-center justify-between text-slate-600"
-              >
-                <span class="font-medium text-slate-800"
-                  >{{ index + 1 }} ·
-                  <span
-                    class="cursor-pointer hover:text-sky-600 transition-all duration-300"
-                    @click="handlerCategoryPush(category)"
-                    >{{ category.categoryName }}</span
-                  ></span
-                >
-                <span class="text-xs text-slate-500">{{ category.articleCount }}篇文章</span>
-              </li>
-            </ol>
-          </div>
+          <HotCategoryCard @categoryPush="handlerCategoryPush" />
 
           <!-- 最新文章卡片 -->
-          <div
-            class="rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card"
-          >
-            <p class="text-base font-semibold text-slate-900">最新文章 Top5</p>
-            <div class="mt-4 space-y-4 text-sm text-slate-600">
-              <div
-                v-for="(article, index) in newArticleList"
-                :key="article.id"
-                class="flex items-start gap-3 cursor-pointer hover:text-sky-600"
-                @click="$router.push('/article/' + article.id)"
-              >
-                <span class="text-xs font-semibold text-slate-400">{{ index + 1 }}</span>
-                <div>
-                  <p class="font-medium hover:text-sky-600 transition-all duration-300">
-                    {{ article.title }}
-                  </p>
-                  <p class="text-xs text-slate-400">{{ article.publishTime }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <NewArticleTop5Card />
 
           <!-- 标签墙卡片 -->
-          <div
-            class="rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card"
-          >
-            <p class="text-base font-semibold text-slate-900">标签墙</p>
-
-            <div ref="tagWall" class="mt-4 flex flex-wrap gap-3 text-sm"></div>
-          </div>
+          <TagWall @tagPush="handlerTagPush" />
         </aside>
       </div>
     </div>
