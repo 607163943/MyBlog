@@ -47,8 +47,10 @@
 - **数据库**：MySQL 连接信息
 - **Redis**：地址、密码、DB
 - **OSS**：endpoint、bucket、accessKeyId、accessKeySecret、目录策略等
+**数据导入**
+> 在MySQL中导入项目sql数据
 
-> 配置完毕即可启动项目
+> 上述操作完成后即可启动后端项目
 
 #### 后台启动
 
