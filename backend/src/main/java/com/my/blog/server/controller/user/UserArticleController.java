@@ -1,9 +1,8 @@
 package com.my.blog.server.controller.user;
 
-import com.my.blog.common.constants.ArticleStatus;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.result.Result;
-import com.my.blog.pojo.dto.ArticlePageQueryDTO;
+import com.my.blog.pojo.dto.user.UserArticlePageQueryDTO;
 import com.my.blog.pojo.vo.user.UserArticlePageQueryVO;
 import com.my.blog.pojo.vo.user.UserArticleViewVO;
 import com.my.blog.server.service.user.IArticleService;
@@ -26,10 +25,8 @@ public class UserArticleController {
 
     @ApiOperation("文章分页查询接口")
     @GetMapping
-    public Result<PageResult<UserArticlePageQueryVO>> pageQuery(ArticlePageQueryDTO articlePageQueryDTO) {
-        // 只查发布文章
-        articlePageQueryDTO.setStatus(ArticleStatus.PUBLISH);
-        return Result.success(articleService.pageQuery(articlePageQueryDTO));
+    public Result<PageResult<UserArticlePageQueryVO>> pageQuery(UserArticlePageQueryDTO userArticlePageQueryDTO) {
+        return Result.success(articleService.pageQuery(userArticlePageQueryDTO));
     }
 
     @ApiOperation("最新发布文章top5接口")

@@ -29,8 +29,6 @@ public class UserArticlePageQueryVO {
     private String categoryName;
     @ApiModelProperty("标签")
     private List<AdminTagPageQueryVO> tags;
-    @ApiModelProperty("修改时间")
-    private LocalDateTime updateTime;
     @ApiModelProperty("发布时间")
     private LocalDateTime publishTime;
 }

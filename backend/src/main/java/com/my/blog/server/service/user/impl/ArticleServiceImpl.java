@@ -13,7 +13,7 @@ import com.my.blog.common.exception.admin.AdminArticleException;
 import com.my.blog.common.exception.user.UserArticleException;
 import com.my.blog.common.result.PageResult;
 import com.my.blog.common.utils.PageQueryUtils;
-import com.my.blog.pojo.dto.ArticlePageQueryDTO;
+import com.my.blog.pojo.dto.user.UserArticlePageQueryDTO;
 import com.my.blog.pojo.po.Article;
 import com.my.blog.pojo.po.ArticleTag;
 import com.my.blog.pojo.po.Category;
@@ -54,32 +54,32 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 分页查询文章
      *
-     * @param articlePageQueryDTO 查询条件
+     * @param userArticlePageQueryDTO 查询条件
      * @return 分页结果
      */
     @Override
-    public PageResult<UserArticlePageQueryVO> pageQuery(ArticlePageQueryDTO articlePageQueryDTO) {
+    public PageResult<UserArticlePageQueryVO> pageQuery(UserArticlePageQueryDTO userArticlePageQueryDTO) {
         // 参数校验和初始化
-        pageQueryUtils.checkAndInitPageQuery(articlePageQueryDTO);
+        pageQueryUtils.checkAndInitPageQuery(userArticlePageQueryDTO);
 
         // 构建分页条件
         Page<Article> page = new Page<>();
-        page.setCurrent(articlePageQueryDTO.getPageNum());
-        page.setSize(articlePageQueryDTO.getPageSize());
+        page.setCurrent(userArticlePageQueryDTO.getPageNum());
+        page.setSize(userArticlePageQueryDTO.getPageSize());
 
         // 获取标签对应文章id
         List<ArticleTag> articleTags = null;
         List<Long> articleIds = null;
         // 空标签就不查
-        if (articlePageQueryDTO.getTagId() != null) {
+        if (userArticlePageQueryDTO.getTagId() != null) {
             // 判断该标签是否存在或禁用
-            Tag tag = tagService.getById(articlePageQueryDTO.getTagId());
+            Tag tag = tagService.getById(userArticlePageQueryDTO.getTagId());
             if (tag == null || tag.getStatus().equals(TagStatus.DISABLE)) {
                 throw new AdminArticleException(ExceptionEnums.ADMIN_ARTICLE_TAG_DISABLE);
             }
 
             articleTags = articleTagService.lambdaQuery()
-                    .eq(ArticleTag::getTagId, articlePageQueryDTO.getTagId())
+                    .eq(ArticleTag::getTagId, userArticlePageQueryDTO.getTagId())
                     .list();
 
             articleIds = articleTags.stream().map(ArticleTag::getArticleId).collect(Collectors.toList());
@@ -89,16 +89,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         page = lambdaQuery()
                 .select(Article::getId, Article::getTitle, Article::getSummary,
                         Article::getStatus, Article::getCategoryId,
-                        Article::getUpdateTime, Article::getPublishTime)
-                .like(StrUtil.isNotBlank(articlePageQueryDTO.getTitle()),
+                        Article::getPublishTime)
+                // 关键字暂时针对文章标题进行模糊匹配
+                // TODO:后续需要改成标题+摘要模糊匹配，添加ES后改为ES查询
+                .like(StrUtil.isNotBlank(userArticlePageQueryDTO.getKeyword()),
                         Article::getTitle,
-                        articlePageQueryDTO.getTitle())
-                .eq(articlePageQueryDTO.getStatus() != null,
-                        Article::getStatus,
-                        articlePageQueryDTO.getStatus())
-                .eq(articlePageQueryDTO.getCategoryId() != null,
+                        userArticlePageQueryDTO.getKeyword())
+                // 只查询发布文章
+                .eq(Article::getStatus, ArticleStatus.PUBLISH)
+                .eq(userArticlePageQueryDTO.getCategoryId() != null,
                         Article::getCategoryId,
-                        articlePageQueryDTO.getCategoryId())
+                        userArticlePageQueryDTO.getCategoryId())
                 .in(CollUtil.isNotEmpty(articleIds),
                         Article::getId,
                         articleIds)
@@ -115,7 +116,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         // 文章标签关联数据为空但标签查询条件不为空也返回空集合
-        if (CollUtil.isEmpty(articleIds) && articlePageQueryDTO.getTagId() != null) {
+        if (CollUtil.isEmpty(articleIds) && userArticlePageQueryDTO.getTagId() != null) {
             return PageResult.<UserArticlePageQueryVO>builder()
                     .pageSize(page.getPages())
                     .pageNum(page.getCurrent())
@@ -202,12 +203,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 最新发布文章Top5
+     *
      * @return 最新发布文章Top5
      */
     @Override
     public List<UserArticlePageQueryVO> newArticleTop5() {
         Page<Article> page = Page.of(1, 5);
-        page=lambdaQuery()
+        page = lambdaQuery()
                 .eq(Article::getStatus, ArticleStatus.PUBLISH)
                 .orderByDesc(Article::getPublishTime)
                 .page(page);
@@ -218,6 +220,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 文章详情
+     *
      * @param articleId 文章id
      * @return 文章详情
      */
@@ -225,17 +228,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public UserArticleViewVO articleView(Long articleId) {
         // 查询文章
         Article article = getById(articleId);
-        if(article==null) {
+        if (article == null) {
             throw new UserArticleException(ExceptionEnums.USER_ARTICLE_NOT_EXIST);
         }
         UserArticleViewVO userArticleViewVO = BeanUtil.copyProperties(article, UserArticleViewVO.class);
 
         // 分类补全
-        if(article.getCategoryId()!=null) {
+        if (article.getCategoryId() != null) {
             Category category = categoryService.getById(article.getCategoryId());
-            if(category!=null) {
+            if (category != null) {
                 // 检测所属分类是否禁用
-                if(category.getStatus().equals(CategoryStatus.DISABLE)) {
+                if (category.getStatus().equals(CategoryStatus.DISABLE)) {
                     throw new UserArticleException(ExceptionEnums.USER_ARTICLE_BELONG_CATEGORY_DISABLE);
                 }
 
@@ -250,10 +253,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .list();
         List<Long> tagIds = articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
 
-        if(CollUtil.isNotEmpty(tagIds)) {
+        if (CollUtil.isNotEmpty(tagIds)) {
             List<Tag> tagList = tagService.lambdaQuery()
                     // 文章残留禁用标签时不应导致用户端对整个文章的查询报错，直接过滤即可
-                    .eq(Tag::getStatus,TagStatus.ENABLE)
+                    .eq(Tag::getStatus, TagStatus.ENABLE)
                     .in(Tag::getId, tagIds)
                     .list();
             List<UserTagVO> userTagVOS = BeanUtil.copyToList(tagList, UserTagVO.class);

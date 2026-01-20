@@ -5,6 +5,7 @@ export const useSearchStore = defineStore('search', () => {
   const searchParams = ref({
     categoryId: '',
     tagId: '',
+    keyword: '',
     pageNum: 1,
     pageSize: 10
   })
@@ -19,16 +20,35 @@ export const useSearchStore = defineStore('search', () => {
   const isTagSearch = ref(false)
   const tagName = ref('')
 
-  const setSearchMode = () => {
-    isSearchMode.value = true
+  const resetMode = () => {
+    isSearchMode.value = false
+    searchParams.value.keyword = ''
+
     isCategorySearch.value = false
-    isTagSearch.value = false
     categoryName.value = ''
+    searchParams.value.categoryId = ''
+
+    isTagSearch.value = false
     tagName.value = ''
+    searchParams.value.tagId = ''
+  }
+
+  const setSearchMode = (keyword) => {
+    isSearchMode.value = true
+    searchParams.value.keyword = keyword
+
+    isCategorySearch.value = false
+    categoryName.value = ''
+    searchParams.value.categoryId = ''
+
+    isTagSearch.value = false
+    tagName.value = ''
+    searchParams.value.tagId = ''
   }
 
   const setCategorySearch = (category) => {
     isSearchMode.value = false
+    searchParams.value.keyword = ''
 
     isCategorySearch.value = true
     searchParams.value.categoryId = category.categoryId
@@ -41,6 +61,7 @@ export const useSearchStore = defineStore('search', () => {
 
   const setTagSearch = (tag) => {
     isSearchMode.value = false
+    searchParams.value.keyword = ''
 
     isCategorySearch.value = false
     categoryName.value = ''
@@ -58,6 +79,7 @@ export const useSearchStore = defineStore('search', () => {
   return {
     searchParams,
     resetPage,
+    resetMode,
     setPageNum,
     isSearchMode,
     isCategorySearch,

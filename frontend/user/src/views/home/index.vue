@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { articlePageQueryService } from '@/api/article'
 import { SearchOutlined } from '@ant-design/icons-vue'
 import { Button } from '@/components/ui/button'
@@ -9,23 +9,30 @@ import NewArticleTop5Card from '@/components/new-article-top5-card.vue'
 import TagWall from '@/components/tag-wall.vue'
 import { useSearchStore } from '@/stores'
 import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
 const searchStore = useSearchStore()
+const route = useRoute()
 
 // 文章+搜索
 const articleList = ref([])
 
-const { pageNum } = storeToRefs(searchStore)
+const { pageNum, searchParams } = storeToRefs(searchStore)
 const total = ref(0)
 
 const pageQuery = async () => {
-  const res = await articlePageQueryService(searchStore.searchParams)
+  const res = await articlePageQueryService(searchParams.value)
   articleList.value = res.data.data.result
   total.value = res.data.data.total
+
+  // 回到页面顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+const keyword = ref('')
 const handlerSearch = () => {
-  searchStore.setSearchMode()
+  searchStore.setSearchMode(keyword.value)
+  searchStore.resetPage()
   pageQuery()
 }
 
@@ -34,10 +41,22 @@ const handlerPageQuery = (page) => {
   pageQuery()
 }
 
+watch(
+  route,
+  () => {
+    searchStore.resetMode()
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
+
 // 热门分类卡片
 const handlerCategoryPush = (category) => {
   searchStore.setCategorySearch(category)
   searchStore.resetPage()
+  keyword.value = ''
   pageQuery()
 }
 
@@ -45,6 +64,7 @@ const handlerCategoryPush = (category) => {
 const handlerTagPush = (tag) => {
   searchStore.setTagSearch(tag)
   searchStore.resetPage()
+  keyword.value = ''
   pageQuery()
 }
 
@@ -98,6 +118,7 @@ pageQuery()
             </svg>
             <input
               class="w-full bg-transparent text-base text-slate-700 placeholder:text-slate-400 focus:outline-none"
+              v-model="keyword"
               :placeholder="
                 searchStore.isSearchMode
                   ? '修改关键词或直接回车更新'
@@ -127,26 +148,16 @@ pageQuery()
             class="rounded-2xl border border-sky-100 bg-[rgba(255,255,255,0.9)] p-5 text-sm text-slate-600 shadow-card"
           >
             <p class="font-semibold text-slate-900">
-              已搜索 “分布式系统”，匹配文章 12 篇，可点击分类或标签继续跳转。
+              已搜索 “{{ searchParams.keyword }}”，匹配文章
+              {{ total }} 篇，可点击分类或标签继续跳转。
             </p>
-            <div class="flex flex-wrap items-center gap-3 text-xs">
-              <span
-                class="rounded-full border border-sky-100 bg-sky-50 px-4 py-1.5 font-medium text-sky-600"
-              >
-                分类 · 基础架构
-              </span>
-              <span
-                class="rounded-full border border-amber-100 bg-amber-50 px-4 py-1.5 font-medium text-amber-500"
-              >
-                标签 · #分布式系统
-              </span>
-            </div>
           </div>
 
           <article
             v-for="article in articleList"
             :key="article.id"
-            class="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card transition hover:-translate-y-0.5"
+            @click="$router.push(`/article/${article.id}`)"
+            class="flex cursor-pointer flex-col gap-4 rounded-2xl border border-slate-100 bg-[rgba(255,255,255,0.9)] p-6 shadow-card transition hover:-translate-y-0.5"
           >
             <div class="flex flex-wrap items-center gap-3 text-xs">
               <span
