@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.TagMapper">
+
+    <!-- 分页查询标签：按名称模糊搜索，按 ID 升序 -->
+    <select id="selectTagPage" resultType="com.blog.pojo.vo.TagVO">
+        SELECT id, name, create_time, update_time
+        FROM tb_tag
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+        ORDER BY id ASC
+    </select>
+
+</mapper>

@@ -2,7 +2,6 @@
 export interface PageVO<T> {
   records: T[]
   total: number
-  current: number
   size: number
   pages: number
 }

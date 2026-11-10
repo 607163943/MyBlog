@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import { FolderOpened } from '@element-plus/icons-vue'
+import { FolderOpened, PriceTag } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const activeMenu = computed(() => route.path)
@@ -20,6 +20,10 @@ const activeMenu = computed(() => route.path)
           <el-menu-item index="/category">
             <el-icon><FolderOpened /></el-icon>
             <span>分类管理</span>
+          </el-menu-item>
+          <el-menu-item index="/tag">
+            <el-icon><PriceTag /></el-icon>
+            <span>标签管理</span>
           </el-menu-item>
         </el-menu>
       </aside>
