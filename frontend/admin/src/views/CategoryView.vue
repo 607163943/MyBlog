@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Edit, Plus, Refresh, RefreshLeft, Search } from '@element-plus/icons-vue'
 import CategoryDialog from '@/components/CategoryDialog.vue'
 import { useCategoryStore } from '@/stores/category'
-import type { CategoryVO } from '@/api/category'
+import type { CategoryVO } from '@/types/category'
 
 const store = useCategoryStore()
 const dialogVisible = ref(false)

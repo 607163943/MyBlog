@@ -6,10 +6,8 @@ import {
   deleteCategory,
   getCategoryPage,
   updateCategory,
-  type CategoryDTO,
-  type CategoryPageQuery,
-  type CategoryVO,
 } from '@/api/category'
+import type { CategoryDTO, CategoryPageQuery, CategoryVO } from '@/types/category'
 
 export const useCategoryStore = defineStore('category', () => {
   /** 表格加载状态 */

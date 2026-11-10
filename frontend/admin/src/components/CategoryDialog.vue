@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useCategoryStore } from '@/stores/category'
-import type { CategoryVO } from '@/api/category'
+import type { CategoryVO } from '@/types/category'
 
 const props = defineProps<{
   modelValue: boolean
