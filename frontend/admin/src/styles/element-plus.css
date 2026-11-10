@@ -1,0 +1,10 @@
+/* Element Plus 全局样式微调（保持默认主题） */
+
+.el-menu {
+  border-right: none;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--el-fill-color-light);
+  font-weight: 600;
+}
