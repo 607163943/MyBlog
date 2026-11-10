@@ -4,6 +4,8 @@ server:
 
 # springboot
 spring:
+  profiles:
+    active: dev
   datasource:
     username: ${mysql.username}
     password: ${mysql.password}
