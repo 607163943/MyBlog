@@ -7,6 +7,8 @@ export interface ArticleVO {
   cover: string | null
   categoryId: number
   categoryName: string | null
+  /** 标签 ID 列表，列表查询不返回该字段 */
+  tagIds: number[] | null
   authorId: number
   authorName: string | null
   status: number
@@ -23,6 +25,7 @@ export interface ArticleDTO {
   content: string
   cover?: string
   categoryId: number
+  tagIds?: number[]
   status: number
 }
 

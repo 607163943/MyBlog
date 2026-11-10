@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 文章新增 / 修改参数
  */
@@ -41,6 +43,11 @@ public class ArticleDTO {
      * 所属分类 ID
      */
     private Integer categoryId;
+
+    /**
+     * 标签 ID 列表
+     */
+    private List<Integer> tagIds;
 
     /**
      * 文章状态：0-草稿，1-已发布

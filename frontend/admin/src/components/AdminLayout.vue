@@ -4,7 +4,10 @@ import { RouterView, useRoute } from 'vue-router'
 import { Document, FolderOpened, PriceTag } from '@element-plus/icons-vue'
 
 const route = useRoute()
-const activeMenu = computed(() => route.path)
+const activeMenu = computed(() => {
+  const menu = route.meta.activeMenu
+  return typeof menu === 'string' ? menu : route.path
+})
 </script>
 
 <template>

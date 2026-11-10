@@ -11,6 +11,12 @@ export function getTagPage(params: TagPageQuery) {
   })
 }
 
+/** 查询全部标签，用于下拉选项 */
+export async function getTagOptions() {
+  const data = await getTagPage({ name: '', page: 1, pageSize: 1000 })
+  return data.records
+}
+
 /** 根据 ID 查询标签 */
 export function getTagById(id: number) {
   return request<TagVO>({

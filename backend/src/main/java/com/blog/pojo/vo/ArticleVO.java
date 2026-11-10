@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 文章返回结果
@@ -48,6 +49,11 @@ public class ArticleVO {
      * 所属分类名称
      */
     private String categoryName;
+
+    /**
+     * 标签 ID 列表
+     */
+    private List<Integer> tagIds;
 
     /**
      * 作者 ID

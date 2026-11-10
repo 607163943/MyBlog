@@ -1,14 +1,19 @@
 package com.blog.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
+import com.blog.mapper.ArticleTagMapper;
 import com.blog.mapper.CategoryMapper;
+import com.blog.mapper.TagMapper;
 import com.blog.pojo.dto.ArticleDTO;
 import com.blog.pojo.dto.ArticlePageQueryDTO;
 import com.blog.pojo.po.Article;
+import com.blog.pojo.po.ArticleTag;
 import com.blog.pojo.vo.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.ArticleService;
@@ -16,7 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 文章服务实现
@@ -37,6 +45,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private CategoryMapper categoryMapper;
+
+    @Resource
+    private TagMapper tagMapper;
+
+    @Resource
+    private ArticleTagMapper articleTagMapper;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticlePageQueryDTO dto) {
@@ -63,6 +77,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleVO == null) {
             throw new BusinessException("文章不存在");
         }
+        articleVO.setTagIds(listTagIds(id));
         return articleVO;
     }
 
@@ -84,6 +99,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setStatus(status);
         article.setViewCount(0);
         save(article);
+        saveArticleTags(article.getId(), dto.getTagIds());
     }
 
     @Override
@@ -105,22 +121,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 ? existing.getStatus()
                 : normalizeStatus(dto.getStatus());
 
-        Article article = new Article();
-        article.setId(dto.getId());
-        article.setTitle(title);
-        article.setDescription(normalizeOptionalText(dto.getDescription()));
-        article.setContent(content);
-        article.setCover(normalizeOptionalText(dto.getCover()));
-        article.setCategoryId(categoryId);
-        article.setStatus(status);
-        updateById(article);
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
+                .eq(Article::getId, dto.getId())
+                .set(Article::getTitle, title)
+                .set(Article::getDescription, normalizeOptionalText(dto.getDescription()))
+                .set(Article::getContent, content)
+                .set(Article::getCover, normalizeOptionalText(dto.getCover()))
+                .set(Article::getCategoryId, categoryId)
+                .set(Article::getStatus, status);
+        baseMapper.update(null, updateWrapper);
+
+        if (dto.getTagIds() != null) {
+            replaceArticleTags(dto.getId(), dto.getTagIds());
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteArticle(Integer id) {
         if (id == null || !removeById(id)) {
             throw new BusinessException("文章不存在");
         }
+        articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
+                .eq(ArticleTag::getArticleId, id));
     }
 
     @Override
@@ -130,6 +153,62 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BusinessException("请选择要删除的文章");
         }
         removeByIds(ids);
+        articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
+                .in(ArticleTag::getArticleId, ids));
+    }
+
+    /**
+     * 查询文章关联的标签 ID 列表
+     */
+    private List<Integer> listTagIds(Integer articleId) {
+        return articleTagMapper.selectList(new LambdaQueryWrapper<ArticleTag>()
+                        .eq(ArticleTag::getArticleId, articleId)
+                        .orderByAsc(ArticleTag::getTagId))
+                .stream()
+                .map(ArticleTag::getTagId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 保存文章标签关联
+     */
+    private void saveArticleTags(Integer articleId, List<Integer> tagIds) {
+        for (Integer tagId : normalizeTagIds(tagIds)) {
+            ArticleTag articleTag = new ArticleTag();
+            articleTag.setArticleId(articleId);
+            articleTag.setTagId(tagId);
+            articleTagMapper.insert(articleTag);
+        }
+    }
+
+    /**
+     * 覆盖文章标签关联：先删除旧关联，再保存新关联
+     */
+    private void replaceArticleTags(Integer articleId, List<Integer> tagIds) {
+        List<Integer> normalizedTagIds = normalizeTagIds(tagIds);
+        articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
+                .eq(ArticleTag::getArticleId, articleId));
+        saveArticleTags(articleId, normalizedTagIds);
+    }
+
+    /**
+     * 去重并校验标签 ID 是否存在
+     */
+    private List<Integer> normalizeTagIds(List<Integer> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Integer> normalizedTagIds = tagIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (normalizedTagIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (tagMapper.selectBatchIds(normalizedTagIds).size() != normalizedTagIds.size()) {
+            throw new BusinessException("所选标签不存在");
+        }
+        return normalizedTagIds;
     }
 
     /**

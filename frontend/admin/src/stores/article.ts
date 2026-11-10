@@ -4,10 +4,15 @@ import {
   addArticle,
   deleteArticle,
   deleteArticles,
+  getArticleById,
   getArticlePage,
   updateArticle,
 } from '@/api/article'
+import { getCategoryOptions } from '@/api/category'
+import { getTagOptions } from '@/api/tag'
 import type { ArticleDTO, ArticlePageQuery, ArticleVO } from '@/types/article'
+import type { CategoryVO } from '@/types/category'
+import type { TagVO } from '@/types/tag'
 
 export const useArticleStore = defineStore('article', () => {
   /** 表格加载状态 */
@@ -26,6 +31,24 @@ export const useArticleStore = defineStore('article', () => {
     page: 1,
     pageSize: 10,
   })
+
+  /** 分类下拉选项 */
+  const categoryOptions = ref<CategoryVO[]>([])
+
+  /** 标签下拉选项 */
+  const tagOptions = ref<TagVO[]>([])
+
+  /** 查询文章详情 */
+  function fetchArticleDetail(id: number) {
+    return getArticleById(id)
+  }
+
+  /** 查询编辑页所需的分类、标签选项 */
+  async function fetchArticleOptions() {
+    const [categories, tags] = await Promise.all([getCategoryOptions(), getTagOptions()])
+    categoryOptions.value = categories
+    tagOptions.value = tags
+  }
 
   /** 查询文章列表 */
   async function fetchList() {
@@ -85,6 +108,10 @@ export const useArticleStore = defineStore('article', () => {
     records,
     total,
     query,
+    categoryOptions,
+    tagOptions,
+    fetchArticleDetail,
+    fetchArticleOptions,
     fetchList,
     createArticle,
     editArticle,

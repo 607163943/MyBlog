@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Edit, Plus, Refresh, RefreshLeft, Search } from '@element-plus/icons-vue'
 import { useArticleStore } from '@/stores/article'
 import type { ArticleVO } from '@/types/article'
 
 const store = useArticleStore()
+const router = useRouter()
 const selection = ref<ArticleVO[]>([])
 
 function handleSelectionChange(rows: ArticleVO[]) {
@@ -13,11 +15,16 @@ function handleSelectionChange(rows: ArticleVO[]) {
 }
 
 function handleAdd() {
-  ElMessage.info('新增文章功能暂未实现')
+  router.push({ name: 'article-edit' })
 }
 
-function handleEdit() {
-  ElMessage.info('修改文章功能暂未实现')
+function handleEdit(row?: ArticleVO) {
+  const target = row ?? (selection.value.length === 1 ? selection.value[0] : null)
+  if (!target) {
+    ElMessage.warning('请选择一条要修改的文章')
+    return
+  }
+  router.push({ name: 'article-edit-id', params: { id: target.id } })
 }
 
 async function handleDelete(row?: ArticleVO) {
@@ -96,7 +103,11 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item label="发布状态">
-          <el-select v-model="store.query.status" placeholder="请选择发布状态" class="status-select">
+          <el-select
+            v-model="store.query.status"
+            placeholder="请选择发布状态"
+            class="status-select"
+          >
             <el-option label="全部" value="" />
             <el-option label="草稿" :value="0" />
             <el-option label="已发布" :value="1" />
@@ -112,7 +123,14 @@ onMounted(() => {
     <el-card shadow="never" class="table-card">
       <div class="toolbar">
         <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
-        <el-button type="warning" :icon="Edit" @click="handleEdit">修改</el-button>
+        <el-button
+          type="warning"
+          :icon="Edit"
+          :disabled="selection.length !== 1"
+          @click="handleEdit()"
+        >
+          修改
+        </el-button>
         <el-button
           type="danger"
           :icon="Delete"
@@ -150,7 +168,7 @@ onMounted(() => {
         </el-table-column>
         <el-table-column label="操作" width="150" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" :icon="Edit" @click="handleEdit">编辑</el-button>
+            <el-button link type="primary" :icon="Edit" @click="handleEdit(row)">编辑</el-button>
             <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>

@@ -16,6 +16,18 @@ const router = createRouter({
           meta: { title: '文章管理' },
         },
         {
+          path: 'article/edit',
+          name: 'article-edit',
+          component: () => import('@/views/ArticleEditView.vue'),
+          meta: { title: '新增文章', activeMenu: '/article' },
+        },
+        {
+          path: 'article/edit/:id',
+          name: 'article-edit-id',
+          component: () => import('@/views/ArticleEditView.vue'),
+          meta: { title: '修改文章', activeMenu: '/article' },
+        },
+        {
           path: 'category',
           name: 'category',
           component: () => import('@/views/CategoryView.vue'),

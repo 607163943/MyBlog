@@ -11,6 +11,12 @@ export function getCategoryPage(params: CategoryPageQuery) {
   })
 }
 
+/** 查询全部分类，用于下拉选项 */
+export async function getCategoryOptions() {
+  const data = await getCategoryPage({ name: '', page: 1, pageSize: 1000 })
+  return data.records
+}
+
 /** 根据 ID 查询分类 */
 export function getCategoryById(id: number) {
   return request<CategoryVO>({
