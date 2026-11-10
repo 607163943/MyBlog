@@ -7,8 +7,14 @@ const router = createRouter({
     {
       path: '/',
       component: AdminLayout,
-      redirect: '/category',
+      redirect: '/article',
       children: [
+        {
+          path: 'article',
+          name: 'article',
+          component: () => import('@/views/ArticleView.vue'),
+          meta: { title: '文章管理' },
+        },
         {
           path: 'category',
           name: 'category',

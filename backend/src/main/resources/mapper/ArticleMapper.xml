@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.ArticleMapper">
+
+    <!-- 分页查询文章：按标题模糊搜索、状态过滤，按 ID 倒序 -->
+    <select id="selectArticlePage" resultType="com.blog.pojo.vo.ArticleVO">
+        SELECT a.id,
+               a.title,
+               a.description,
+               a.cover,
+               a.category_id,
+               c.name AS category_name,
+               a.author_id,
+               u.nickname AS author_name,
+               a.status,
+               a.view_count,
+               a.create_time,
+               a.update_time
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        LEFT JOIN tb_user u ON a.author_id = u.id
+        <where>
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="status != null">
+                AND a.status = #{status}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+    <!-- 根据 ID 查询文章详情 -->
+    <select id="selectArticleDetailById" resultType="com.blog.pojo.vo.ArticleVO">
+        SELECT a.id,
+               a.title,
+               a.description,
+               a.content,
+               a.cover,
+               a.category_id,
+               c.name AS category_name,
+               a.author_id,
+               u.nickname AS author_name,
+               a.status,
+               a.view_count,
+               a.create_time,
+               a.update_time
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        LEFT JOIN tb_user u ON a.author_id = u.id
+        WHERE a.id = #{id}
+    </select>
+
+</mapper>

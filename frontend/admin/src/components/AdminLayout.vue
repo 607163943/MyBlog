@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import { FolderOpened, PriceTag } from '@element-plus/icons-vue'
+import { Document, FolderOpened, PriceTag } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const activeMenu = computed(() => route.path)
@@ -17,6 +17,10 @@ const activeMenu = computed(() => route.path)
     <div class="admin-body">
       <aside class="admin-aside">
         <el-menu :default-active="activeMenu" router class="side-menu">
+          <el-menu-item index="/article">
+            <el-icon><Document /></el-icon>
+            <span>文章管理</span>
+          </el-menu-item>
           <el-menu-item index="/category">
             <el-icon><FolderOpened /></el-icon>
             <span>分类管理</span>
