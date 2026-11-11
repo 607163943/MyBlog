@@ -8,21 +8,20 @@ import com.blog.pojo.vo.CategoryRankVO;
 import com.blog.pojo.vo.DashboardStatisticsVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.DashboardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Resource;
 
 /**
  * 数据总览接口
  */
 @RestController
 @RequestMapping("/dashboard")
+@RequiredArgsConstructor
 public class DashboardController {
 
-    @Resource
-    private DashboardService dashboardService;
+    private final DashboardService dashboardService;
 
     /**
      * 统计卡片数据

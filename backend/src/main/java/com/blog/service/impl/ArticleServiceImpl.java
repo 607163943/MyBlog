@@ -17,10 +17,10 @@ import com.blog.pojo.po.ArticleTag;
 import com.blog.pojo.vo.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.ArticleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * 文章服务实现
  */
 @Service
+@RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     private static final int DEFAULT_PAGE_NUM = 1;
@@ -43,14 +44,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private static final int STATUS_DRAFT = 0;
     private static final int STATUS_PUBLISHED = 1;
 
-    @Resource
-    private CategoryMapper categoryMapper;
+    private final CategoryMapper categoryMapper;
 
-    @Resource
-    private TagMapper tagMapper;
+    private final TagMapper tagMapper;
 
-    @Resource
-    private ArticleTagMapper articleTagMapper;
+    private final ArticleTagMapper articleTagMapper;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticlePageQueryDTO dto) {

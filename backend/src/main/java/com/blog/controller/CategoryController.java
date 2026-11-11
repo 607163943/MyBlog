@@ -6,6 +6,7 @@ import com.blog.pojo.dto.CategoryPageQueryDTO;
 import com.blog.pojo.vo.CategoryVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.CategoryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -23,10 +23,10 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/category")
+@RequiredArgsConstructor
 public class CategoryController {
 
-    @Resource
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     /**
      * 分页查询分类

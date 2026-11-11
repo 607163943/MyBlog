@@ -12,10 +12,10 @@ import com.blog.pojo.vo.CategoryRankVO;
 import com.blog.pojo.vo.DashboardStatisticsVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.DashboardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
  * 数据总览服务实现
  */
 @Service
+@RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
     private static final int DEFAULT_PAGE_NUM = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    @Resource
-    private DashboardMapper dashboardMapper;
+    private final DashboardMapper dashboardMapper;
 
     @Override
     @Transactional(readOnly = true)
