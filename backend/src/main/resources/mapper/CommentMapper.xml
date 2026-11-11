@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.CommentMapper">
+
+    <!-- 分页查询评论：按所属文章标题模糊搜索、审核状态过滤，按 ID 倒序 -->
+    <select id="selectCommentPage" resultType="com.blog.pojo.vo.CommentVO">
+        SELECT cm.id,
+               cm.article_id,
+               a.title AS article_title,
+               cm.parent_id,
+               cm.reply_to_id,
+               cm.nickname,
+               cm.email,
+               cm.content,
+               cm.status,
+               cm.create_time,
+               cm.update_time
+        FROM tb_comment cm
+        LEFT JOIN tb_article a ON cm.article_id = a.id
+        <where>
+            <if test="articleTitle != null and articleTitle != ''">
+                AND a.title LIKE CONCAT('%', #{articleTitle}, '%')
+            </if>
+            <if test="status != null">
+                AND cm.status = #{status}
+            </if>
+        </where>
+        ORDER BY cm.id DESC
+    </select>
+
+    <!-- 根据 ID 查询评论详情（含所属文章标题） -->
+    <select id="selectCommentDetailById" resultType="com.blog.pojo.vo.CommentVO">
+        SELECT cm.id,
+               cm.article_id,
+               a.title AS article_title,
+               cm.parent_id,
+               cm.reply_to_id,
+               cm.nickname,
+               cm.email,
+               cm.content,
+               cm.status,
+               cm.create_time,
+               cm.update_time
+        FROM tb_comment cm
+        LEFT JOIN tb_article a ON cm.article_id = a.id
+        WHERE cm.id = #{id}
+    </select>
+
+</mapper>

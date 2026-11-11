@@ -45,6 +45,12 @@ const router = createRouter({
           component: () => import('@/views/TagView.vue'),
           meta: { title: '标签管理' },
         },
+        {
+          path: 'comment',
+          name: 'comment',
+          component: () => import('@/views/CommentView.vue'),
+          meta: { title: '评论管理' },
+        },
       ],
     },
   ],

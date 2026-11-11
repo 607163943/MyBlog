@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import { Document, FolderOpened, Odometer, PriceTag } from '@element-plus/icons-vue'
+import { ChatDotRound, Document, FolderOpened, Odometer, PriceTag } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const activeMenu = computed(() => {
@@ -35,6 +35,10 @@ const activeMenu = computed(() => {
           <el-menu-item index="/tag">
             <el-icon><PriceTag /></el-icon>
             <span>标签管理</span>
+          </el-menu-item>
+          <el-menu-item index="/comment">
+            <el-icon><ChatDotRound /></el-icon>
+            <span>评论管理</span>
           </el-menu-item>
         </el-menu>
       </aside>
