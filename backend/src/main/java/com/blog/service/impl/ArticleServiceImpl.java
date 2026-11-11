@@ -1,5 +1,6 @@
 package com.blog.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -35,11 +36,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private static final int DEFAULT_PAGE_NUM = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
-
-    /**
-     * 暂无登录鉴权模块，新增文章默认归属管理员
-     */
-    private static final int DEFAULT_AUTHOR_ID = 1;
 
     private static final int STATUS_DRAFT = 0;
     private static final int STATUS_PUBLISHED = 1;
@@ -93,7 +89,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setContent(content);
         article.setCover(normalizeOptionalText(dto.getCover()));
         article.setCategoryId(categoryId);
-        article.setAuthorId(DEFAULT_AUTHOR_ID);
+        article.setAuthorId(StpUtil.getLoginIdAsInt());
         article.setStatus(status);
         article.setViewCount(0);
         save(article);
