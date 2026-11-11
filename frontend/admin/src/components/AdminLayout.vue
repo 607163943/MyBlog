@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import { Document, FolderOpened, PriceTag } from '@element-plus/icons-vue'
+import { Document, FolderOpened, Odometer, PriceTag } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const activeMenu = computed(() => {
@@ -20,6 +20,10 @@ const activeMenu = computed(() => {
     <div class="admin-body">
       <aside class="admin-aside">
         <el-menu :default-active="activeMenu" router class="side-menu">
+          <el-menu-item index="/dashboard">
+            <el-icon><Odometer /></el-icon>
+            <span>数据总览</span>
+          </el-menu-item>
           <el-menu-item index="/article">
             <el-icon><Document /></el-icon>
             <span>文章管理</span>

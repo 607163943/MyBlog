@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.DashboardMapper">
+
+    <!-- 统计卡片：文章总数、草稿、已发布、分类总数、标签总数 -->
+    <select id="selectStatistics" resultType="com.blog.pojo.vo.DashboardStatisticsVO">
+        SELECT COALESCE(SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END), 0) AS draft_count,
+               COALESCE(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END), 0) AS published_count,
+               COUNT(*) AS article_total,
+               (SELECT COUNT(*) FROM tb_category) AS category_count,
+               (SELECT COUNT(*) FROM tb_tag) AS tag_count
+        FROM tb_article
+    </select>
+
+    <!-- 分页查询文章浏览量排行：标题模糊、分类、标签过滤 -->
+    <select id="selectArticleRankPage" resultType="com.blog.pojo.vo.ArticleRankVO">
+        SELECT a.id,
+               a.title,
+               a.category_id,
+               c.name AS category_name,
+               a.view_count
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        <where>
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND a.category_id = #{categoryId}
+            </if>
+            <if test="tagId != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM tb_article_tag fat
+                    WHERE fat.article_id = a.id
+                      AND fat.tag_id = #{tagId}
+                )
+            </if>
+        </where>
+        ORDER BY a.view_count DESC, a.id ASC
+    </select>
+
+    <!-- 查询文章标签名称，供排行结果回填 -->
+    <select id="selectTagNamesByArticleIds" resultType="com.blog.pojo.vo.ArticleTagNameVO">
+        SELECT artag.article_id,
+               t.name AS tag_name
+        FROM tb_article_tag artag
+        INNER JOIN tb_tag t ON artag.tag_id = t.id
+        WHERE artag.article_id IN
+        <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+            #{articleId}
+        </foreach>
+        ORDER BY artag.article_id ASC, t.id ASC
+    </select>
+
+    <!-- 分页查询分类文章数排行：派生表先聚合，再按数量范围过滤 -->
+    <select id="selectCategoryRankPage" resultType="com.blog.pojo.vo.CategoryRankVO">
+        SELECT t.id,
+               t.name,
+               t.article_count
+        FROM (
+            SELECT c.id,
+                   c.name,
+                   COUNT(a.id) AS article_count
+            FROM tb_category c
+            LEFT JOIN tb_article a ON a.category_id = c.id
+            <where>
+                <if test="name != null and name != ''">
+                    AND c.name LIKE CONCAT('%', #{name}, '%')
+                </if>
+            </where>
+            GROUP BY c.id, c.name
+        ) t
+        <where>
+            <if test="minCount != null">
+                AND t.article_count &gt;= #{minCount}
+            </if>
+            <if test="maxCount != null">
+                AND t.article_count &lt;= #{maxCount}
+            </if>
+        </where>
+        ORDER BY t.article_count DESC, t.id ASC
+    </select>
+
+</mapper>
