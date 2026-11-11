@@ -1,9 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '@/components/AdminLayout.vue'
+import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { title: '登录' },
+    },
     {
       path: '/',
       component: AdminLayout,
@@ -54,6 +61,18 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+// 未登录时跳转登录页，已登录时不再进入登录页
+router.beforeEach((to) => {
+  const userStore = useUserStore()
+  if (to.name !== 'login' && !userStore.isLoggedIn) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.name === 'login' && userStore.isLoggedIn) {
+    return { path: '/' }
+  }
+  return true
 })
 
 export default router

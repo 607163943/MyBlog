@@ -1,5 +1,6 @@
 package com.blog.handler;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.blog.common.Result;
 import com.blog.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public Result<Void> handleBusinessException(BusinessException e) {
         return Result.error(e.getMessage());
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    public Result<Void> handleNotLoginException(NotLoginException e) {
+        log.warn("未登录或登录已过期：{}", e.getMessage());
+        return Result.error(401, "未登录或登录已过期，请重新登录");
     }
 
     @ExceptionHandler(DuplicateKeyException.class)

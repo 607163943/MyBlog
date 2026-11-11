@@ -4,3 +4,6 @@ mysql:
   database: myblog
   username: root
   password: 123456
+
+jwt:
+  key: myblog

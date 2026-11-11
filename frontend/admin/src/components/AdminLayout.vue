@@ -1,20 +1,66 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
-import { ChatDotRound, Document, FolderOpened, Odometer, PriceTag } from '@element-plus/icons-vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import {
+  ArrowDown,
+  ChatDotRound,
+  Document,
+  FolderOpened,
+  Odometer,
+  PriceTag,
+  SwitchButton,
+} from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+
 const activeMenu = computed(() => {
   const menu = route.meta.activeMenu
   return typeof menu === 'string' ? menu : route.path
 })
+
+const displayName = computed(
+  () => userStore.userInfo?.nickname || userStore.userInfo?.username || '管理员',
+)
+const avatarText = computed(() => displayName.value.charAt(0).toUpperCase())
+
+/** 顶部用户菜单命令 */
+async function handleCommand(command: string) {
+  if (command !== 'logout') {
+    return
+  }
+  try {
+    await userStore.logout()
+  } catch {
+    // 退出接口失败时仍清理本地状态并返回登录页
+  }
+  await router.replace('/login')
+}
 </script>
 
 <template>
   <div class="admin-layout">
     <header class="admin-header">
       <div class="brand">MyBlog 管理后台</div>
-      <div class="admin-user">管理员</div>
+      <el-dropdown trigger="click" @command="handleCommand">
+        <div class="admin-user">
+          <el-avatar :size="32" :src="userStore.userInfo?.avatar ?? undefined">
+            {{ avatarText }}
+          </el-avatar>
+          <span class="admin-user-name">{{ displayName }}</span>
+          <el-icon class="admin-user-arrow"><ArrowDown /></el-icon>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="logout">
+              <el-icon><SwitchButton /></el-icon>
+              退出登录
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </header>
 
     <div class="admin-body">
@@ -82,8 +128,23 @@ const activeMenu = computed(() => {
 }
 
 .admin-user {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--el-text-color-regular);
+  cursor: pointer;
+
+  &:hover .admin-user-name {
+    color: var(--el-color-primary);
+  }
+}
+
+.admin-user-name {
+  font-size: 14px;
+}
+
+.admin-user-arrow {
+  font-size: 12px;
 }
 
 .admin-body {
