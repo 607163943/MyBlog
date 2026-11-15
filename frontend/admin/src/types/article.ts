@@ -7,12 +7,16 @@ export interface ArticleVO {
   cover: string | null
   categoryId: number
   categoryName: string | null
+  /** 分类内排序值，null 表示未编号 */
+  categorySort: number | null
   /** 标签 ID 列表，列表查询不返回该字段 */
   tagIds: number[] | null
   authorId: number
   authorName: string | null
   status: number
   viewCount: number
+  /** 首次发布时间，草稿为 null */
+  publishTime: string | null
   createTime: string
   updateTime: string
 }
@@ -25,6 +29,8 @@ export interface ArticleDTO {
   content: string
   cover?: string
   categoryId: number
+  /** 分类内排序值，不传表示由服务端按现有规则处理 */
+  categorySort?: number
   tagIds?: number[]
   status: number
 }
@@ -34,6 +40,8 @@ export interface ArticlePageQuery {
   title: string
   /** 发布状态：0-草稿，1-已发布，空串表示全部 */
   status: number | ''
+  /** 所属分类 ID，空串表示全部分类 */
+  categoryId: number | ''
   page: number
   pageSize: number
 }

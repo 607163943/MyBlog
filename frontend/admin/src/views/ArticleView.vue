@@ -81,11 +81,12 @@ function handleSizeChange(pageSize: number) {
   store.fetchList()
 }
 
-function formatDateTime(value?: string) {
+function formatDateTime(value?: string | null) {
   return value ? value.replace('T', ' ').slice(0, 19) : '-'
 }
 
 onMounted(() => {
+  store.fetchCategoryOptions()
   store.fetchList()
 })
 </script>
@@ -111,6 +112,22 @@ onMounted(() => {
             <el-option label="全部" value="" />
             <el-option label="草稿" :value="0" />
             <el-option label="已发布" :value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-select
+            v-model="store.query.categoryId"
+            placeholder="请选择分类"
+            filterable
+            class="category-select"
+          >
+            <el-option label="全部" value="" />
+            <el-option
+              v-for="category in store.categoryOptions"
+              :key="category.id"
+              :label="category.name"
+              :value="category.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -155,6 +172,9 @@ onMounted(() => {
         <el-table-column label="分类" width="140" align="center">
           <template #default="{ row }">{{ row.categoryName ?? '-' }}</template>
         </el-table-column>
+        <el-table-column label="排序" width="90" align="center">
+          <template #default="{ row }">{{ row.categorySort ?? '-' }}</template>
+        </el-table-column>
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'info'">
@@ -163,6 +183,9 @@ onMounted(() => {
           </template>
         </el-table-column>
         <el-table-column prop="viewCount" label="浏览量" width="100" align="center" />
+        <el-table-column label="发布时间" width="170" align="center">
+          <template #default="{ row }">{{ formatDateTime(row.publishTime) }}</template>
+        </el-table-column>
         <el-table-column label="更新时间" width="170" align="center">
           <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
         </el-table-column>
@@ -208,6 +231,10 @@ onMounted(() => {
 
   .status-select {
     width: 160px;
+  }
+
+  .category-select {
+    width: 180px;
   }
 }
 

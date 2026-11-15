@@ -28,6 +28,7 @@ export const useArticleStore = defineStore('article', () => {
   const query = reactive<ArticlePageQuery>({
     title: '',
     status: '',
+    categoryId: '',
     page: 1,
     pageSize: 10,
   })
@@ -41,6 +42,15 @@ export const useArticleStore = defineStore('article', () => {
   /** 查询文章详情 */
   function fetchArticleDetail(id: number) {
     return getArticleById(id)
+  }
+
+  /** 查询分类下拉选项（列表筛选、编辑页共用） */
+  async function fetchCategoryOptions() {
+    try {
+      categoryOptions.value = await getCategoryOptions()
+    } catch {
+      categoryOptions.value = []
+    }
   }
 
   /** 查询编辑页所需的分类、标签选项 */
@@ -99,6 +109,7 @@ export const useArticleStore = defineStore('article', () => {
   async function resetQuery() {
     query.title = ''
     query.status = ''
+    query.categoryId = ''
     query.page = 1
     await fetchList()
   }
@@ -111,6 +122,7 @@ export const useArticleStore = defineStore('article', () => {
     categoryOptions,
     tagOptions,
     fetchArticleDetail,
+    fetchCategoryOptions,
     fetchArticleOptions,
     fetchList,
     createArticle,

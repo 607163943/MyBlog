@@ -10,6 +10,7 @@ export function getArticlePage(params: ArticlePageQuery) {
     params: {
       ...params,
       status: params.status === '' ? undefined : params.status,
+      categoryId: params.categoryId === '' ? undefined : params.categoryId,
     },
   })
 }

@@ -33,8 +33,12 @@ const form = reactive({
   content: '',
   cover: '',
   categoryId: null as number | null,
+  categorySort: null as number | null,
   tagIds: [] as number[],
 })
+
+/** 编辑页加载时的原始分类，换分类时清空排序值以避免沿用旧分类的编号 */
+let loadedCategoryId: number | null = null
 
 const rules: FormRules = {
   title: [
@@ -45,6 +49,7 @@ const rules: FormRules = {
   content: [{ required: true, message: '请输入文章正文', trigger: 'change' }],
   cover: [{ max: 255, message: '封面地址不能超过 255 个字符', trigger: 'blur' }],
   description: [{ max: 500, message: '文章摘要不能超过 500 个字符', trigger: 'blur' }],
+  categorySort: [{ type: 'number', min: 1, message: '排序值必须为正整数', trigger: 'change' }],
 }
 
 function resetForm() {
@@ -53,7 +58,9 @@ function resetForm() {
   form.content = ''
   form.cover = ''
   form.categoryId = null
+  form.categorySort = null
   form.tagIds = []
+  loadedCategoryId = null
 }
 
 async function loadPage() {
@@ -69,7 +76,9 @@ async function loadPage() {
       form.content = article.content ?? ''
       form.cover = article.cover ?? ''
       form.categoryId = article.categoryId
+      form.categorySort = article.categorySort ?? null
       form.tagIds = article.tagIds ?? []
+      loadedCategoryId = article.categoryId
     }
     await nextTick()
     formRef.value?.clearValidate()
@@ -106,6 +115,7 @@ async function handleSubmit(status: number) {
     content: form.content,
     cover: form.cover.trim() || undefined,
     categoryId: form.categoryId,
+    categorySort: form.categorySort ?? undefined,
     tagIds: form.tagIds,
     status,
   }
@@ -124,6 +134,13 @@ async function handleSubmit(status: number) {
     // 请求错误已由 request.ts 统一提示
   } finally {
     submitting.value = false
+  }
+}
+
+/** 换分类时清空排序值：排序值只在分类内有效，留空由服务端重新编号 */
+function handleCategoryChange(value: number) {
+  if (loadedCategoryId !== null && value !== loadedCategoryId) {
+    form.categorySort = null
   }
 }
 
@@ -170,6 +187,7 @@ onMounted(loadPage)
               placeholder="请选择分类"
               filterable
               class="full-width"
+              @change="handleCategoryChange"
             >
               <el-option
                 v-for="category in store.categoryOptions"
@@ -178,6 +196,19 @@ onMounted(loadPage)
                 :value="category.id"
               />
             </el-select>
+          </el-form-item>
+
+          <el-form-item label="分类排序" prop="categorySort" class="meta-item">
+            <el-input-number
+              v-model="form.categorySort"
+              :min="1"
+              :max="999999"
+              :controls="false"
+              :value-on-clear="null"
+              align="left"
+              placeholder="留空自动编号"
+              class="full-width"
+            />
           </el-form-item>
 
           <el-form-item label="标签" prop="tagIds" class="meta-item">
