@@ -1,0 +1,240 @@
+/* 基础重置：只做跨浏览器的低层归一化，主题样式统一放在 Element Plus 变量中 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  color: var(--el-color-white);
+  background-color: var(--el-color-primary);
+}
+
+/* ------------------------------------------------------------------
+ * 全局页面样式
+ * 主题色、组件外观等 Element Plus 相关覆盖统一放在 src/styles/element-plus.css
+ * ------------------------------------------------------------------ */
+:root {
+  --app-header-height: 68px;
+  --app-content-width: 1040px;
+  --app-content-width-wide: 1200px;
+  --app-sidebar-width: 300px;
+  --app-gutter: 24px;
+  /* 所有卡片共用同一圆角：统计条、文章卡片、侧边栏卡片、详情页卡片等 */
+  --app-card-radius: 15px;
+  /* 卡片悬浮阴影：文章卡片、用户信息卡片、侧边栏可悬浮卡片共用 */
+  --app-card-hover-shadow: 0 7px 23px rgba(31, 45, 61, 0.15);
+  /* 卡片悬浮阴影的过渡时长：放慢让阴影渐显 */
+  --app-card-hover-duration: 1s;
+  /* 正文级说明文字（文章摘要、博主简介、统计标签）：比 EP secondary 的 #909399 更深 */
+  --app-text-color-body: #4c4948;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--el-text-color-primary);
+  background-color: hsla(39, 80%, 96%, 1);
+  background-image:
+    radial-gradient(at 86% 22%, hsla(35, 84%, 86%, 0.38) 0px, transparent 50%),
+    radial-gradient(at 41% 85%, hsla(48, 89%, 90%, 0.48) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(190, 45%, 86%, 0.18) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(48, 0%, 98%, 0.75) 0px, transparent 50%);
+  background-repeat: no-repeat;
+  font-family: var(--el-font-family);
+  font-size: var(--el-font-size-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--el-color-primary-light-5);
+  outline-offset: 2px;
+}
+
+/* 页面容器：当前页面统一使用宽栏「主内容 + 侧边栏」；默认窄栏保留作备用 */
+.page-container {
+  width: 100%;
+  max-width: var(--app-content-width);
+  margin: 0 auto;
+}
+
+.page-container--wide {
+  max-width: var(--app-content-width-wide);
+}
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 主内容 + 侧边栏布局 */
+.layout-with-aside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--app-sidebar-width);
+  gap: var(--app-gutter);
+  align-items: start;
+}
+
+.layout-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 文章列表：每篇文章是独立卡片，卡片之间留出间距 */
+.post-list {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 卡片标题行 */
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.card-heading-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-heading-title h2 {
+  color: var(--el-color-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.heading-accent {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: var(--el-color-primary);
+}
+
+.card-heading-meta {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.card-heading-meta strong {
+  margin: 0 2px;
+  color: var(--el-color-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 列表卡片底部操作区 */
+.list-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 24px;
+}
+
+/* 带底部线条的链接列表（侧边栏卡片使用） */
+.text-link-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-link-list li + li {
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+
+.text-link-list a {
+  display: block;
+  overflow: hidden;
+  padding: 10px 0;
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--el-transition-duration-fast);
+}
+
+.text-link-list a:hover {
+  color: var(--el-color-primary);
+}
+
+@media (max-width: 1024px) {
+  .layout-with-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --app-gutter: 16px;
+  }
+
+  .page-shell {
+    gap: 16px;
+  }
+
+  .list-footer {
+    padding: 14px 16px;
+  }
+
+  .post-list {
+    gap: 12px;
+  }
+}

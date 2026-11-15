@@ -21,7 +21,7 @@ import java.util.List;
  * 评论管理接口
  */
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("/admin/comment")
 @RequiredArgsConstructor
 public class CommentController {
 

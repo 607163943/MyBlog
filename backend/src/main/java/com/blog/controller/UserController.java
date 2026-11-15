@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 用户与登录接口
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/admin/user")
 @RequiredArgsConstructor
 public class UserController {
 

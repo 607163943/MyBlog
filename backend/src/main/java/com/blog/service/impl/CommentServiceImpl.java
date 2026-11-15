@@ -9,10 +9,12 @@ import com.blog.exception.BusinessException;
 import com.blog.mapper.CommentMapper;
 import com.blog.pojo.dto.CommentDTO;
 import com.blog.pojo.dto.CommentPageQueryDTO;
+import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.po.Comment;
 import com.blog.pojo.vo.CommentVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.CommentService;
+import com.blog.util.PageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +30,6 @@ import java.util.stream.Collectors;
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
-    private static final int DEFAULT_PAGE_NUM = 1;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-
     private static final int NO_PARENT_ID = 0;
 
     private static final int STATUS_PENDING = 0;
@@ -38,10 +37,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public PageVO<CommentVO> pageQuery(CommentPageQueryDTO dto) {
-        int pageNum = dto.getPage() == null || dto.getPage() < 1 ? DEFAULT_PAGE_NUM : dto.getPage();
-        int pageSize = dto.getPageSize() == null || dto.getPageSize() < 1 ? DEFAULT_PAGE_SIZE : dto.getPageSize();
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<CommentVO> page = new Page<>(pageNum, pageSize);
+        Page<CommentVO> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<CommentVO> pageResult = baseMapper.selectCommentPage(page, dto.getArticleTitle(), dto.getStatus());
 
         PageVO<CommentVO> pageVO = new PageVO<>();

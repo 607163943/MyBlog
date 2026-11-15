@@ -8,10 +8,12 @@ import com.blog.exception.BusinessException;
 import com.blog.mapper.CategoryMapper;
 import com.blog.pojo.dto.CategoryDTO;
 import com.blog.pojo.dto.CategoryPageQueryDTO;
+import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.po.Category;
 import com.blog.pojo.vo.CategoryVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.CategoryService;
+import com.blog.util.PageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +26,11 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
-    private static final int DEFAULT_PAGE_NUM = 1;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-
     @Override
     public PageVO<CategoryVO> pageQuery(CategoryPageQueryDTO dto) {
-        int pageNum = dto.getPage() == null || dto.getPage() < 1 ? DEFAULT_PAGE_NUM : dto.getPage();
-        int pageSize = dto.getPageSize() == null || dto.getPageSize() < 1 ? DEFAULT_PAGE_SIZE : dto.getPageSize();
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<CategoryVO> page = new Page<>(pageNum, pageSize);
+        Page<CategoryVO> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<CategoryVO> pageResult = baseMapper.selectCategoryPage(page, dto.getName());
 
         PageVO<CategoryVO> pageVO = new PageVO<>();

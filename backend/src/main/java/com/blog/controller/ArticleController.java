@@ -22,7 +22,7 @@ import java.util.List;
  * 文章管理接口
  */
 @RestController
-@RequestMapping("/article")
+@RequestMapping("/admin/article")
 @RequiredArgsConstructor
 public class ArticleController {
 

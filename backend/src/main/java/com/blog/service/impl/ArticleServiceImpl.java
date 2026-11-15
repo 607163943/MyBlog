@@ -13,11 +13,13 @@ import com.blog.mapper.CategoryMapper;
 import com.blog.mapper.TagMapper;
 import com.blog.pojo.dto.ArticleDTO;
 import com.blog.pojo.dto.ArticlePageQueryDTO;
+import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.po.Article;
 import com.blog.pojo.po.ArticleTag;
 import com.blog.pojo.vo.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.ArticleService;
+import com.blog.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +36,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    private static final int DEFAULT_PAGE_NUM = 1;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-
     private static final int STATUS_DRAFT = 0;
     private static final int STATUS_PUBLISHED = 1;
 
@@ -48,10 +47,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticlePageQueryDTO dto) {
-        int pageNum = dto.getPage() == null || dto.getPage() < 1 ? DEFAULT_PAGE_NUM : dto.getPage();
-        int pageSize = dto.getPageSize() == null || dto.getPageSize() < 1 ? DEFAULT_PAGE_SIZE : dto.getPageSize();
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<ArticleVO> page = new Page<>(pageNum, pageSize);
+        Page<ArticleVO> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<ArticleVO> pageResult = baseMapper.selectArticlePage(page, dto.getTitle(), dto.getStatus());
 
         PageVO<ArticleVO> pageVO = new PageVO<>();

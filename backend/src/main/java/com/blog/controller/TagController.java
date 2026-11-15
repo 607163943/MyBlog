@@ -22,7 +22,7 @@ import java.util.List;
  * 标签管理接口
  */
 @RestController
-@RequestMapping("/tag")
+@RequestMapping("/admin/tag")
 @RequiredArgsConstructor
 public class TagController {
 

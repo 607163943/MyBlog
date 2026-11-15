@@ -1,0 +1,143 @@
+/* ------------------------------------------------------------------
+ * Element Plus 主题变量与全局组件样式修改
+ * 组件内部的局部样式一律写在各自 SFC 的 <style scoped> 中
+ * ------------------------------------------------------------------ */
+:root {
+  /* 保持 Element Plus 默认蓝色主题，仅补充设计稿使用的全局变量 */
+  --el-border-radius-base: 4px;
+}
+
+/* 卡片：统一的描边风格，弱化阴影，与浅灰页面底色协调 */
+.el-card {
+  --el-card-border-color: var(--el-border-color-light);
+  --el-card-border-radius: var(--app-card-radius);
+  --el-card-padding: 20px;
+
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-card-border-radius);
+  box-shadow: none;
+}
+
+.el-card.is-always-shadow,
+.el-card.is-hover-shadow,
+.el-card.is-hover-shadow:hover {
+  box-shadow: none;
+}
+
+.el-card__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.el-card__body {
+  padding: var(--el-card-padding);
+}
+
+/* 带列表的卡片：内容区不加内边距，由列表项自己控制 */
+.archive-card > .el-card__body {
+  padding: 0;
+}
+
+/* 只有标题栏的卡片：去掉标题与空内容区之间的分隔线 */
+.head-only-card > .el-card__header {
+  border-bottom: none;
+}
+
+/* CheckTag：降低默认粗体、增加描边，让分类 / 标签云更接近 Element Plus Tag 的观感 */
+.el-check-tag {
+  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-fill-color-blank);
+  color: var(--el-text-color-regular);
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 6px 12px;
+  transition:
+    color var(--el-transition-duration-fast),
+    border-color var(--el-transition-duration-fast),
+    background-color var(--el-transition-duration-fast);
+}
+
+.el-check-tag:hover {
+  border-color: var(--el-color-primary-light-5);
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.el-check-tag.el-check-tag--primary.is-checked {
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.el-check-tag.el-check-tag--primary.is-checked:hover {
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-8);
+}
+
+/* 顶部导航：ElMenu 横向模式去掉自带下边框，交给 Header 自己控制 */
+.app-nav.el-menu--horizontal {
+  --el-menu-horizontal-height: var(--app-header-height);
+
+  height: var(--app-header-height);
+  border-bottom: none;
+  background-color: transparent;
+}
+
+.app-nav.el-menu--horizontal > .el-menu-item {
+  height: var(--app-header-height);
+  padding: 0 18px;
+  border-bottom: 2px solid transparent;
+  color: var(--el-text-color-regular);
+  font-size: 16px;
+  font-weight: 600;
+  transition: color var(--el-transition-duration) ease;
+}
+
+.app-nav.el-menu--horizontal > .el-menu-item:hover,
+.app-nav.el-menu--horizontal > .el-menu-item:focus {
+  color: var(--el-color-primary);
+  background-color: transparent;
+}
+
+.app-nav.el-menu--horizontal > .el-menu-item.is-active {
+  border-bottom-color: transparent;
+  color: var(--el-color-primary);
+  font-weight: 600;
+}
+
+.app-nav .el-menu-item .el-icon {
+  margin-right: 4px;
+}
+
+/* 移动端抽屉中的导航：去掉边框与缩进 */
+.mobile-nav.el-menu {
+  border-right: none;
+}
+
+.mobile-nav .el-menu-item {
+  font-size: 15px;
+}
+
+/* 分类目录抽屉：去掉 body 默认内边距，头/尾固定、列表独立滚动 */
+.category-drawer .el-drawer__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .el-card__header {
+    padding: 14px 16px;
+  }
+
+  .el-card__body {
+    padding: 16px;
+  }
+
+  .archive-card > .el-card__body {
+    padding: 0;
+  }
+}

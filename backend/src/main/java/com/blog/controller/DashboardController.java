@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 数据总览接口
  */
 @RestController
-@RequestMapping("/dashboard")
+@RequestMapping("/admin/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 

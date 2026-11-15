@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.CategoryMapper">
 
+    <!-- ==================== 后台管理 ==================== -->
+
     <!-- 分页查询分类：按名称模糊搜索，按排序值升序 -->
     <select id="selectCategoryPage" resultType="com.blog.pojo.vo.CategoryVO">
         SELECT id, name, description, sort, create_time, update_time
@@ -12,6 +14,88 @@
             </if>
         </where>
         ORDER BY sort ASC, id ASC
+    </select>
+
+    <!-- 分页查询分类文章数排行：派生表先聚合，再按数量范围过滤 -->
+    <select id="selectCategoryRankPage" resultType="com.blog.pojo.vo.CategoryRankVO">
+        SELECT t.id,
+               t.name,
+               t.article_count
+        FROM (
+            SELECT c.id,
+                   c.name,
+                   COUNT(a.id) AS article_count
+            FROM tb_category c
+            LEFT JOIN tb_article a ON a.category_id = c.id
+            <where>
+                <if test="name != null and name != ''">
+                    AND c.name LIKE CONCAT('%', #{name}, '%')
+                </if>
+            </where>
+            GROUP BY c.id, c.name
+        ) t
+        <where>
+            <if test="minCount != null">
+                AND t.article_count &gt;= #{minCount}
+            </if>
+            <if test="maxCount != null">
+                AND t.article_count &lt;= #{maxCount}
+            </if>
+        </where>
+        ORDER BY t.article_count DESC, t.id ASC
+    </select>
+
+    <!-- ==================== 前台展示 ==================== -->
+
+    <!-- 前台查询全部分类及其已发布文章数 -->
+    <select id="selectWebCategoryList" resultType="com.blog.pojo.vo.web.WebCategoryVO">
+        SELECT c.id,
+               c.name,
+               c.description,
+               COUNT(a.id) AS article_count
+        FROM tb_category c
+        LEFT JOIN tb_article a ON a.category_id = c.id AND a.status = 1
+        GROUP BY c.id, c.name, c.description, c.sort
+        ORDER BY c.sort ASC, c.id ASC
+    </select>
+
+    <!-- 前台根据 ID 查询分类及其已发布文章数 -->
+    <select id="selectWebCategoryById" resultType="com.blog.pojo.vo.web.WebCategoryVO">
+        SELECT c.id,
+               c.name,
+               c.description,
+               COUNT(a.id) AS article_count
+        FROM tb_category c
+        LEFT JOIN tb_article a ON a.category_id = c.id AND a.status = 1
+        WHERE c.id = #{id}
+        GROUP BY c.id, c.name, c.description
+    </select>
+
+    <!-- 查询指定分类下浏览量 Top N 的已发布文章 -->
+    <select id="selectTopArticlesByCategoryIds"
+            resultType="com.blog.pojo.vo.web.WebCategoryHotArticleVO">
+        SELECT t.category_id,
+               t.id,
+               t.title,
+               t.view_count
+        FROM (
+            SELECT a.category_id,
+                   a.id,
+                   a.title,
+                   a.view_count,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY a.category_id
+                       ORDER BY a.view_count DESC, a.id ASC
+                   ) AS rn
+            FROM tb_article a
+            WHERE a.status = 1
+              AND a.category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        ) t
+        WHERE t.rn &lt;= #{limit}
+        ORDER BY t.category_id ASC, t.rn ASC
     </select>
 
 </mapper>

@@ -11,9 +11,9 @@ export interface Result<T = unknown> {
 /** 登录状态在 localStorage 中的持久化键名 */
 const USER_STORAGE_KEY = 'user'
 
-/** axios 请求实例，开发环境由 Vite 代理 /api 到后端 8080 端口 */
+/** axios 请求实例，baseURL 指向后端后台 /admin 接口；开发环境由 Vite 代理去掉 /api */
 const instance = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/admin',
   timeout: 10000,
 })
 

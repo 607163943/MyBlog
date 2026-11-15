@@ -14,15 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 校验现有业务接口的登录状态，登录接口放行
+        // 仅校验后台管理接口的登录状态，登录接口放行；前台 /web/** 接口公开
         registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
-                .addPathPatterns(
-                        "/dashboard/**",
-                        "/article/**",
-                        "/category/**",
-                        "/tag/**",
-                        "/comment/**",
-                        "/user/**")
-                .excludePathPatterns("/user/login");
+                .addPathPatterns("/admin/**")
+                .excludePathPatterns("/admin/user/login");
     }
 }

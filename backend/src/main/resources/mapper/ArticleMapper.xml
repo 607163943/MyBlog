@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.ArticleMapper">
 
+    <!-- ==================== 后台管理 ==================== -->
+
     <!-- 分页查询文章：按标题模糊搜索、状态过滤，按 ID 倒序 -->
     <select id="selectArticlePage" resultType="com.blog.pojo.vo.ArticleVO">
         SELECT a.id,
@@ -49,6 +51,197 @@
         LEFT JOIN tb_category c ON a.category_id = c.id
         LEFT JOIN tb_user u ON a.author_id = u.id
         WHERE a.id = #{id}
+    </select>
+
+    <!-- ==================== 前台展示 ==================== -->
+
+    <!-- 前台分页查询已发布文章：支持分类、标签、关键词过滤 -->
+    <select id="selectWebArticlePage" resultType="com.blog.pojo.vo.web.WebArticleVO">
+        SELECT a.id,
+               a.title,
+               a.description,
+               a.cover,
+               a.category_id,
+               c.name AS category_name,
+               a.view_count,
+               a.create_time
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        WHERE a.status = 1
+        <if test="categoryId != null">
+            AND a.category_id = #{categoryId}
+        </if>
+        <if test="tagId != null">
+            AND EXISTS (
+                SELECT 1
+                FROM tb_article_tag wat
+                WHERE wat.article_id = a.id
+                  AND wat.tag_id = #{tagId}
+            )
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                a.title LIKE CONCAT('%', #{keyword}, '%')
+                OR a.description LIKE CONCAT('%', #{keyword}, '%')
+                OR c.name LIKE CONCAT('%', #{keyword}, '%')
+                OR EXISTS (
+                    SELECT 1
+                    FROM tb_article_tag wat2
+                    INNER JOIN tb_tag wt2 ON wat2.tag_id = wt2.id
+                    WHERE wat2.article_id = a.id
+                      AND wt2.name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            )
+        </if>
+        ORDER BY a.create_time DESC, a.id DESC
+    </select>
+
+    <!-- 前台根据 ID 查询已发布文章详情 -->
+    <select id="selectWebArticleDetailById" resultType="com.blog.pojo.vo.web.WebArticleDetailVO">
+        SELECT a.id,
+               a.title,
+               a.description,
+               a.content,
+               a.cover,
+               a.category_id,
+               c.name AS category_name,
+               a.view_count,
+               a.create_time
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        WHERE a.id = #{id}
+          AND a.status = 1
+    </select>
+
+    <!-- 自增文章浏览量 -->
+    <update id="incrementViewCount">
+        UPDATE tb_article
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+          AND status = 1
+    </update>
+
+    <!-- 较新的上一篇已发布文章 -->
+    <select id="selectNewerPublished" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+        SELECT id, title, view_count
+        FROM tb_article
+        WHERE status = 1
+          AND (
+            create_time &gt; #{createTime}
+            OR (create_time = #{createTime} AND id &gt; #{id})
+          )
+        ORDER BY create_time ASC, id ASC
+        LIMIT 1
+    </select>
+
+    <!-- 较旧的下一篇已发布文章 -->
+    <select id="selectOlderPublished" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+        SELECT id, title, view_count
+        FROM tb_article
+        WHERE status = 1
+          AND (
+            create_time &lt; #{createTime}
+            OR (create_time = #{createTime} AND id &lt; #{id})
+          )
+        ORDER BY create_time DESC, id DESC
+        LIMIT 1
+    </select>
+
+    <!-- 最新发布的文章 -->
+    <select id="selectLatestPublished" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+        SELECT id, title, view_count
+        FROM tb_article
+        WHERE status = 1
+        ORDER BY create_time DESC, id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 指定分类下的全部已发布文章 -->
+    <select id="selectPublishedByCategory" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+        SELECT id, title, view_count
+        FROM tb_article
+        WHERE status = 1
+          AND category_id = #{categoryId}
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 归档概览：按年月统计已发布文章数 -->
+    <select id="selectWebArchiveOverview" resultType="com.blog.pojo.vo.web.WebArchiveMonthVO">
+        SELECT YEAR(create_time)  AS `year`,
+               MONTH(create_time) AS `month`,
+               COUNT(*)           AS article_count
+        FROM tb_article
+        WHERE status = 1
+        GROUP BY YEAR(create_time), MONTH(create_time)
+        ORDER BY `year` DESC, `month` DESC
+    </select>
+
+    <!-- 指定时间范围内的已发布文章 -->
+    <select id="selectPublishedByTimeRange" resultType="com.blog.pojo.vo.web.WebArticleVO">
+        SELECT a.id,
+               a.title,
+               a.description,
+               a.cover,
+               a.category_id,
+               c.name AS category_name,
+               a.view_count,
+               a.create_time
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        WHERE a.status = 1
+          AND a.create_time &gt;= #{startTime}
+          AND a.create_time &lt; #{endTime}
+        ORDER BY a.create_time DESC, a.id DESC
+    </select>
+
+    <!-- ==================== 数据统计 ==================== -->
+
+    <!-- 统计卡片：文章总数、草稿、已发布、分类总数、标签总数 -->
+    <select id="selectStatistics" resultType="com.blog.pojo.vo.DashboardStatisticsVO">
+        SELECT COALESCE(SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END), 0) AS draft_count,
+               COALESCE(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END), 0) AS published_count,
+               COUNT(*) AS article_total,
+               (SELECT COUNT(*) FROM tb_category) AS category_count,
+               (SELECT COUNT(*) FROM tb_tag) AS tag_count
+        FROM tb_article
+    </select>
+
+    <!-- 分页查询文章浏览量排行：标题模糊、分类、标签过滤 -->
+    <select id="selectArticleRankPage" resultType="com.blog.pojo.vo.ArticleRankVO">
+        SELECT a.id,
+               a.title,
+               a.category_id,
+               c.name AS category_name,
+               a.view_count
+        FROM tb_article a
+        LEFT JOIN tb_category c ON a.category_id = c.id
+        <where>
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND a.category_id = #{categoryId}
+            </if>
+            <if test="tagId != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM tb_article_tag fat
+                    WHERE fat.article_id = a.id
+                      AND fat.tag_id = #{tagId}
+                )
+            </if>
+        </where>
+        ORDER BY a.view_count DESC, a.id ASC
+    </select>
+
+    <!-- 前台站点统计：已发布文章数、分类数、标签数、总浏览量 -->
+    <select id="selectWebSiteStatistics" resultType="com.blog.pojo.vo.web.WebSiteStatisticsVO">
+        SELECT (SELECT COUNT(*) FROM tb_article WHERE status = 1)          AS article_count,
+               (SELECT COUNT(*) FROM tb_category)                         AS category_count,
+               (SELECT COUNT(*) FROM tb_tag)                              AS tag_count,
+               (SELECT COALESCE(SUM(view_count), 0)
+                FROM tb_article
+                WHERE status = 1)                                         AS view_count
     </select>
 
 </mapper>

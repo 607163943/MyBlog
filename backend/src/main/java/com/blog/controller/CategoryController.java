@@ -22,7 +22,7 @@ import java.util.List;
  * 分类管理接口
  */
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/admin/category")
 @RequiredArgsConstructor
 public class CategoryController {
 

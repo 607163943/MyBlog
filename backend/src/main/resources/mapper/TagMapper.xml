@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.TagMapper">
 
+    <!-- ==================== 后台管理 ==================== -->
+
     <!-- 分页查询标签：按名称模糊搜索，按 ID 升序 -->
     <select id="selectTagPage" resultType="com.blog.pojo.vo.TagVO">
         SELECT id, name, create_time, update_time
@@ -12,6 +14,59 @@
             </if>
         </where>
         ORDER BY id ASC
+    </select>
+
+    <!-- 查询文章标签名称，供排行结果回填 -->
+    <select id="selectTagNamesByArticleIds" resultType="com.blog.pojo.vo.ArticleTagNameVO">
+        SELECT artag.article_id,
+               t.name AS tag_name
+        FROM tb_article_tag artag
+        INNER JOIN tb_tag t ON artag.tag_id = t.id
+        WHERE artag.article_id IN
+        <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+            #{articleId}
+        </foreach>
+        ORDER BY artag.article_id ASC, t.id ASC
+    </select>
+
+    <!-- ==================== 前台展示 ==================== -->
+
+    <!-- 前台查询全部标签及其已发布文章数 -->
+    <select id="selectWebTagList" resultType="com.blog.pojo.vo.web.WebTagVO">
+        SELECT t.id,
+               t.name,
+               COUNT(a.id) AS article_count
+        FROM tb_tag t
+        LEFT JOIN tb_article_tag wat ON wat.tag_id = t.id
+        LEFT JOIN tb_article a ON a.id = wat.article_id AND a.status = 1
+        GROUP BY t.id, t.name
+        ORDER BY article_count DESC, t.name ASC
+    </select>
+
+    <!-- 前台根据 ID 查询标签及其已发布文章数 -->
+    <select id="selectWebTagById" resultType="com.blog.pojo.vo.web.WebTagVO">
+        SELECT t.id,
+               t.name,
+               COUNT(a.id) AS article_count
+        FROM tb_tag t
+        LEFT JOIN tb_article_tag wat ON wat.tag_id = t.id
+        LEFT JOIN tb_article a ON a.id = wat.article_id AND a.status = 1
+        WHERE t.id = #{id}
+        GROUP BY t.id, t.name
+    </select>
+
+    <!-- 批量查询文章关联的标签 -->
+    <select id="selectTagsByArticleIds" resultType="com.blog.pojo.vo.web.WebArticleTagVO">
+        SELECT wat.article_id,
+               t.id   AS tag_id,
+               t.name AS tag_name
+        FROM tb_article_tag wat
+        INNER JOIN tb_tag t ON wat.tag_id = t.id
+        WHERE wat.article_id IN
+        <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+            #{articleId}
+        </foreach>
+        ORDER BY wat.article_id ASC, t.id ASC
     </select>
 
 </mapper>

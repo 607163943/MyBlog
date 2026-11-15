@@ -46,4 +46,21 @@
         WHERE cm.id = #{id}
     </select>
 
+    <!-- 前台查询指定文章下已通过的评论（含被回复者昵称） -->
+    <select id="selectApprovedCommentsByArticleId"
+            resultType="com.blog.pojo.vo.web.WebCommentVO">
+        SELECT cm.id,
+               cm.parent_id,
+               cm.reply_to_id,
+               cm.nickname,
+               cm.content,
+               cm.create_time,
+               rc.nickname AS reply_to_nickname
+        FROM tb_comment cm
+        LEFT JOIN tb_comment rc ON rc.id = cm.reply_to_id
+        WHERE cm.article_id = #{articleId}
+          AND cm.status = 1
+        ORDER BY cm.create_time ASC, cm.id ASC
+    </select>
+
 </mapper>

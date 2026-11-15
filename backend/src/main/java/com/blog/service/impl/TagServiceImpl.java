@@ -7,11 +7,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.TagMapper;
 import com.blog.pojo.dto.TagDTO;
+import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.dto.TagPageQueryDTO;
 import com.blog.pojo.po.Tag;
 import com.blog.pojo.vo.PageVO;
 import com.blog.pojo.vo.TagVO;
 import com.blog.service.TagService;
+import com.blog.util.PageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +26,11 @@ import java.util.List;
 @Service
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
 
-    private static final int DEFAULT_PAGE_NUM = 1;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-
     @Override
     public PageVO<TagVO> pageQuery(TagPageQueryDTO dto) {
-        int pageNum = dto.getPage() == null || dto.getPage() < 1 ? DEFAULT_PAGE_NUM : dto.getPage();
-        int pageSize = dto.getPageSize() == null || dto.getPageSize() < 1 ? DEFAULT_PAGE_SIZE : dto.getPageSize();
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<TagVO> page = new Page<>(pageNum, pageSize);
+        Page<TagVO> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<TagVO> pageResult = baseMapper.selectTagPage(page, dto.getName());
 
         PageVO<TagVO> pageVO = new PageVO<>();

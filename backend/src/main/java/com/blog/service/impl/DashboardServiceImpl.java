@@ -3,15 +3,19 @@ package com.blog.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.exception.BusinessException;
-import com.blog.mapper.DashboardMapper;
+import com.blog.mapper.ArticleMapper;
+import com.blog.mapper.CategoryMapper;
+import com.blog.mapper.TagMapper;
 import com.blog.pojo.dto.ArticleRankQueryDTO;
 import com.blog.pojo.dto.CategoryRankQueryDTO;
+import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.vo.ArticleRankVO;
 import com.blog.pojo.vo.ArticleTagNameVO;
 import com.blog.pojo.vo.CategoryRankVO;
 import com.blog.pojo.vo.DashboardStatisticsVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.DashboardService;
+import com.blog.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,25 +33,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
-    private static final int DEFAULT_PAGE_NUM = 1;
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    private final ArticleMapper articleMapper;
 
-    private final DashboardMapper dashboardMapper;
+    private final CategoryMapper categoryMapper;
+
+    private final TagMapper tagMapper;
 
     @Override
     @Transactional(readOnly = true)
     public DashboardStatisticsVO getStatistics() {
-        return dashboardMapper.selectStatistics();
+        return articleMapper.selectStatistics();
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageVO<ArticleRankVO> pageArticleRank(ArticleRankQueryDTO dto) {
-        int pageNum = resolvePage(dto.getPage());
-        int pageSize = resolvePageSize(dto.getPageSize());
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<ArticleRankVO> page = new Page<>(pageNum, pageSize);
-        IPage<ArticleRankVO> pageResult = dashboardMapper.selectArticleRankPage(
+        Page<ArticleRankVO> page = new Page<>(query.getPage(), query.getPageSize());
+        IPage<ArticleRankVO> pageResult = articleMapper.selectArticleRankPage(
                 page,
                 normalizeText(dto.getTitle()),
                 dto.getCategoryId(),
@@ -61,13 +65,12 @@ public class DashboardServiceImpl implements DashboardService {
     public PageVO<CategoryRankVO> pageCategoryRank(CategoryRankQueryDTO dto) {
         validateCountRange(dto.getMinCount(), dto.getMaxCount());
 
-        int pageNum = resolvePage(dto.getPage());
-        int pageSize = resolvePageSize(dto.getPageSize());
+        PageQueryDTO query = PageUtil.checkPage(dto);
 
-        Page<CategoryRankVO> page = new Page<>(pageNum, pageSize);
+        Page<CategoryRankVO> page = new Page<>(query.getPage(), query.getPageSize());
         // 派生表 + 数量范围过滤时关闭 count 优化，确保过滤条件参与 count
         page.setOptimizeCountSql(false);
-        IPage<CategoryRankVO> pageResult = dashboardMapper.selectCategoryRankPage(
+        IPage<CategoryRankVO> pageResult = categoryMapper.selectCategoryRankPage(
                 page,
                 normalizeText(dto.getName()),
                 dto.getMinCount(),
@@ -85,7 +88,7 @@ public class DashboardServiceImpl implements DashboardService {
         List<Integer> articleIds = records.stream()
                 .map(ArticleRankVO::getId)
                 .collect(Collectors.toList());
-        List<ArticleTagNameVO> tagNames = dashboardMapper.selectTagNamesByArticleIds(articleIds);
+        List<ArticleTagNameVO> tagNames = tagMapper.selectTagNamesByArticleIds(articleIds);
         Map<Integer, List<String>> tagNameMap = tagNames.stream()
                 .collect(Collectors.groupingBy(
                         ArticleTagNameVO::getArticleId,
@@ -105,20 +108,6 @@ public class DashboardServiceImpl implements DashboardService {
         pageVO.setSize(pageResult.getSize());
         pageVO.setPages(pageResult.getPages());
         return pageVO;
-    }
-
-    /**
-     * 处理页码默认值
-     */
-    private int resolvePage(Integer page) {
-        return page == null || page < 1 ? DEFAULT_PAGE_NUM : page;
-    }
-
-    /**
-     * 处理每页条数默认值
-     */
-    private int resolvePageSize(Integer pageSize) {
-        return pageSize == null || pageSize < 1 ? DEFAULT_PAGE_SIZE : pageSize;
     }
 
     /**
