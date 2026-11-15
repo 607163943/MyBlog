@@ -29,6 +29,8 @@ export interface ArticleVO {
 /** 文章详情 */
 export interface ArticleDetailVO extends ArticleVO {
   content: string
+  /** 分类内排序值，null 表示未编号 */
+  categorySort: number | null
   prevArticle: ArticleBriefVO | null
   nextArticle: ArticleBriefVO | null
 }

@@ -24,4 +24,9 @@ public class ArticlePageQueryDTO extends PageQueryDTO {
      * 文章状态：0-草稿，1-已发布，为空表示全部
      */
     private Integer status;
+
+    /**
+     * 所属分类 ID，为空表示全部分类
+     */
+    private Integer categoryId;
 }

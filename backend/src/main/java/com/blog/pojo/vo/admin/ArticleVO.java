@@ -51,6 +51,11 @@ public class ArticleVO {
     private String categoryName;
 
     /**
+     * 分类内排序值：值越小越靠前，null 表示未编号
+     */
+    private Integer categorySort;
+
+    /**
      * 标签 ID 列表
      */
     private List<Integer> tagIds;
@@ -74,6 +79,11 @@ public class ArticleVO {
      * 浏览量
      */
     private Integer viewCount;
+
+    /**
+     * 首次发布时间：草稿为 null
+     */
+    private LocalDateTime publishTime;
 
     /**
      * 创建时间

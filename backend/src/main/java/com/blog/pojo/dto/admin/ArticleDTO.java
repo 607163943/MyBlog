@@ -45,6 +45,11 @@ public class ArticleDTO {
     private Integer categoryId;
 
     /**
+     * 分类内排序值：null 表示未填写，由服务端按现有规则处理
+     */
+    private Integer categorySort;
+
+    /**
      * 标签 ID 列表
      */
     private List<Integer> tagIds;

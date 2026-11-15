@@ -54,7 +54,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         PageQueryDTO query = PageUtil.checkPage(dto);
 
         Page<ArticleVO> page = new Page<>(query.getPage(), query.getPageSize());
-        IPage<ArticleVO> pageResult = baseMapper.selectArticlePage(page, dto.getTitle(), dto.getStatus());
+        IPage<ArticleVO> pageResult = baseMapper.selectArticlePage(
+                page, dto.getTitle(), dto.getStatus(), dto.getCategoryId());
 
         PageVO<ArticleVO> pageVO = new PageVO<>();
         pageVO.setRecords(pageResult.getRecords());
@@ -94,6 +95,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setAuthorId(StpUtil.getLoginIdAsInt());
         article.setStatus(status);
         article.setViewCount(0);
+
+        // 后台可手动指定分类内排序值；未填写时已发布文章自动追加到分类末尾
+        Integer categorySort = dto.getCategorySort();
+        if (categorySort != null) {
+            validateCategorySort(categoryId, categorySort, null);
+        } else if (status == STATUS_PUBLISHED) {
+            categorySort = nextCategorySort(categoryId);
+        }
+        article.setCategorySort(categorySort);
         if (status == STATUS_PUBLISHED) {
             article.setPublishTime(LocalDateTime.now());
         }
@@ -126,6 +136,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             publishTime = LocalDateTime.now();
         }
 
+        // 后台可手动修改分类内排序值；未填写时沿用原有自动规则：
+        // 换分类后已发布文章重新追加到新分类末尾，已发布但未编号的补到分类末尾
+        Integer categorySort = dto.getCategorySort();
+        boolean categoryChanged = !Objects.equals(existing.getCategoryId(), categoryId);
+        if (categorySort != null) {
+            validateCategorySort(categoryId, categorySort, dto.getId());
+        } else {
+            categorySort = existing.getCategorySort();
+            if (categoryChanged) {
+                categorySort = status == STATUS_PUBLISHED ? nextCategorySort(categoryId) : null;
+            } else if (status == STATUS_PUBLISHED && categorySort == null) {
+                categorySort = nextCategorySort(categoryId);
+            }
+        }
+
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
                 .eq(Article::getId, dto.getId())
                 .set(Article::getTitle, title)
@@ -133,6 +158,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getContent, content)
                 .set(Article::getCover, normalizeOptionalText(dto.getCover()))
                 .set(Article::getCategoryId, categoryId)
+                .set(Article::getCategorySort, categorySort)
                 .set(Article::getStatus, status)
                 .set(Article::getPublishTime, publishTime);
         baseMapper.update(null, updateWrapper);
@@ -161,6 +187,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         removeByIds(ids);
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
                 .in(ArticleTag::getArticleId, ids));
+    }
+
+    /**
+     * 取分类内下一个排序值：当前最大值 + 1，空分类从 1 开始
+     */
+    private Integer nextCategorySort(Integer categoryId) {
+        Integer maxSort = baseMapper.selectMaxCategorySort(categoryId);
+        return (maxSort == null ? 0 : maxSort) + 1;
+    }
+
+    /**
+     * 校验手动指定的分类内排序值：必须为正整数且同分类内唯一
+     */
+    private void validateCategorySort(Integer categoryId, Integer categorySort, Integer excludeId) {
+        if (categorySort <= 0) {
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_INVALID);
+        }
+        Long count = baseMapper.selectCount(new LambdaQueryWrapper<Article>()
+                .eq(Article::getCategoryId, categoryId)
+                .eq(Article::getCategorySort, categorySort)
+                .ne(excludeId != null, Article::getId, excludeId));
+        if (count != null && count > 0) {
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_DUPLICATED);
+        }
     }
 
     /**

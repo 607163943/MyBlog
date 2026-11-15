@@ -63,7 +63,17 @@ public enum ArticleExceptionEnum implements ExceptionEnum {
     /**
      * 归档月份不正确
      */
-    ARTICLE_MONTH_INVALID(211, "月份不正确", 400);
+    ARTICLE_MONTH_INVALID(211, "月份不正确", 400),
+
+    /**
+     * 分类内排序值不合法
+     */
+    ARTICLE_CATEGORY_SORT_INVALID(212, "分类内排序值必须为正整数", 400),
+
+    /**
+     * 分类内排序值重复
+     */
+    ARTICLE_CATEGORY_SORT_DUPLICATED(213, "该分类下已存在相同的排序值", 409);
 
     private final Integer code;
 

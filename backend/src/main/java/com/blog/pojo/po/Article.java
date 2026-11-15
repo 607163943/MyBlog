@@ -50,6 +50,11 @@ public class Article {
     private Integer categoryId;
 
     /**
+     * 分类内排序值：值越小越靠前，null 表示未编号
+     */
+    private Integer categorySort;
+
+    /**
      * 作者 ID
      */
     private Integer authorId;

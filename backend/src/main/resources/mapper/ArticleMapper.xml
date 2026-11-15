@@ -11,11 +11,13 @@
                a.description,
                a.cover,
                a.category_id,
+               a.category_sort,
                c.name AS category_name,
                a.author_id,
                u.nickname AS author_name,
                a.status,
                a.view_count,
+               a.publish_time,
                a.create_time,
                a.update_time
         FROM tb_article a
@@ -28,8 +30,18 @@
             <if test="status != null">
                 AND a.status = #{status}
             </if>
+            <if test="categoryId != null">
+                AND a.category_id = #{categoryId}
+            </if>
         </where>
         ORDER BY a.id DESC
+    </select>
+
+    <!-- 查询分类内最大排序值：首次发布时追加到分类末尾 -->
+    <select id="selectMaxCategorySort" resultType="java.lang.Integer">
+        SELECT MAX(category_sort)
+        FROM tb_article
+        WHERE category_id = #{categoryId}
     </select>
 
     <!-- 根据 ID 查询文章详情 -->
@@ -40,11 +52,13 @@
                a.content,
                a.cover,
                a.category_id,
+               a.category_sort,
                c.name AS category_name,
                a.author_id,
                u.nickname AS author_name,
                a.status,
                a.view_count,
+               a.publish_time,
                a.create_time,
                a.update_time
         FROM tb_article a
@@ -93,7 +107,15 @@
                 )
             )
         </if>
-        ORDER BY a.publish_time DESC, a.id DESC
+        <!-- 分类页按分类内排序值升序（未编号的排最后）；其余场景按发布时间倒序 -->
+        <choose>
+            <when test="categoryId != null">
+                ORDER BY a.category_sort IS NULL, a.category_sort ASC, a.publish_time ASC, a.id ASC
+            </when>
+            <otherwise>
+                ORDER BY a.publish_time DESC, a.id DESC
+            </otherwise>
+        </choose>
     </select>
 
     <!-- 前台根据 ID 查询已发布文章详情 -->
@@ -104,6 +126,7 @@
                a.content,
                a.cover,
                a.category_id,
+               a.category_sort,
                c.name AS category_name,
                a.view_count,
                a.publish_time
@@ -121,29 +144,27 @@
           AND status = 1
     </update>
 
-    <!-- 较新的上一篇已发布文章 -->
-    <select id="selectNewerPublished" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+    <!-- 同分类中排序值更小的上一篇已发布文章 -->
+    <select id="selectPrevByCategorySort" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
         SELECT id, title, view_count
         FROM tb_article
         WHERE status = 1
-          AND (
-            publish_time &gt; #{publishTime}
-            OR (publish_time = #{publishTime} AND id &gt; #{id})
-          )
-        ORDER BY publish_time ASC, id ASC
+          AND category_id = #{categoryId}
+          AND category_sort IS NOT NULL
+          AND category_sort &lt; #{categorySort}
+        ORDER BY category_sort DESC
         LIMIT 1
     </select>
 
-    <!-- 较旧的下一篇已发布文章 -->
-    <select id="selectOlderPublished" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
+    <!-- 同分类中排序值更大的下一篇已发布文章 -->
+    <select id="selectNextByCategorySort" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
         SELECT id, title, view_count
         FROM tb_article
         WHERE status = 1
-          AND (
-            publish_time &lt; #{publishTime}
-            OR (publish_time = #{publishTime} AND id &lt; #{id})
-          )
-        ORDER BY publish_time DESC, id DESC
+          AND category_id = #{categoryId}
+          AND category_sort IS NOT NULL
+          AND category_sort &gt; #{categorySort}
+        ORDER BY category_sort ASC
         LIMIT 1
     </select>
 
@@ -156,13 +177,13 @@
         LIMIT #{limit}
     </select>
 
-    <!-- 指定分类下的全部已发布文章 -->
+    <!-- 指定分类下的全部已发布文章：按分类内排序值升序，未编号的排最后 -->
     <select id="selectPublishedByCategory" resultType="com.blog.pojo.vo.web.WebArticleBriefVO">
         SELECT id, title, view_count
         FROM tb_article
         WHERE status = 1
           AND category_id = #{categoryId}
-        ORDER BY publish_time DESC, id DESC
+        ORDER BY category_sort IS NULL, category_sort ASC, publish_time ASC, id ASC
     </select>
 
     <!-- 归档概览：按年月统计已发布文章数 -->

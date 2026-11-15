@@ -28,12 +28,18 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     IPage<ArticleVO> selectArticlePage(IPage<ArticleVO> page,
                                        @Param("title") String title,
-                                       @Param("status") Integer status);
+                                       @Param("status") Integer status,
+                                       @Param("categoryId") Integer categoryId);
 
     /**
      * 根据 ID 查询文章详情（含分类名称、作者昵称）
      */
     ArticleVO selectArticleDetailById(@Param("id") Integer id);
+
+    /**
+     * 查询分类内最大排序值，用于首次发布时追加到分类末尾
+     */
+    Integer selectMaxCategorySort(@Param("categoryId") Integer categoryId);
 
     /* ==================== 前台展示 ==================== */
 
@@ -56,16 +62,16 @@ public interface ArticleMapper extends BaseMapper<Article> {
     int incrementViewCount(@Param("id") Integer id);
 
     /**
-     * 查询较新的上一篇已发布文章
+     * 查询同分类中排序值更小的上一篇已发布文章
      */
-    WebArticleBriefVO selectNewerPublished(@Param("publishTime") LocalDateTime publishTime,
-                                           @Param("id") Integer id);
+    WebArticleBriefVO selectPrevByCategorySort(@Param("categoryId") Integer categoryId,
+                                               @Param("categorySort") Integer categorySort);
 
     /**
-     * 查询较旧的下一篇已发布文章
+     * 查询同分类中排序值更大的下一篇已发布文章
      */
-    WebArticleBriefVO selectOlderPublished(@Param("publishTime") LocalDateTime publishTime,
-                                           @Param("id") Integer id);
+    WebArticleBriefVO selectNextByCategorySort(@Param("categoryId") Integer categoryId,
+                                               @Param("categorySort") Integer categorySort);
 
     /**
      * 查询最新发布的文章
