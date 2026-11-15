@@ -6,7 +6,7 @@ import com.blog.pojo.vo.PageVO;
 import com.blog.pojo.vo.web.WebArticleBriefVO;
 import com.blog.pojo.vo.web.WebArticleDetailVO;
 import com.blog.pojo.vo.web.WebArticleVO;
-import com.blog.service.WebArticleService;
+import com.blog.service.web.WebArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -5,7 +5,7 @@
     <!-- ==================== 后台管理 ==================== -->
 
     <!-- 分页查询分类：按名称模糊搜索，按排序值升序 -->
-    <select id="selectCategoryPage" resultType="com.blog.pojo.vo.CategoryVO">
+    <select id="selectCategoryPage" resultType="com.blog.pojo.vo.admin.CategoryVO">
         SELECT id, name, description, sort, create_time, update_time
         FROM tb_category
         <where>
@@ -17,7 +17,7 @@
     </select>
 
     <!-- 分页查询分类文章数排行：派生表先聚合，再按数量范围过滤 -->
-    <select id="selectCategoryRankPage" resultType="com.blog.pojo.vo.CategoryRankVO">
+    <select id="selectCategoryRankPage" resultType="com.blog.pojo.vo.admin.CategoryRankVO">
         SELECT t.id,
                t.name,
                t.article_count

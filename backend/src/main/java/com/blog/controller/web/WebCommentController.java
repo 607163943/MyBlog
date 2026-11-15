@@ -3,7 +3,7 @@ package com.blog.controller.web;
 import com.blog.common.Result;
 import com.blog.pojo.dto.web.WebCommentSubmitDTO;
 import com.blog.pojo.vo.web.WebCommentVO;
-import com.blog.service.WebCommentService;
+import com.blog.service.web.WebCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

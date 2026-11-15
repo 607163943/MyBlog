@@ -2,7 +2,7 @@ package com.blog.controller.web;
 
 import com.blog.common.Result;
 import com.blog.pojo.vo.web.WebSiteStatisticsVO;
-import com.blog.service.WebSiteService;
+import com.blog.service.web.WebSiteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

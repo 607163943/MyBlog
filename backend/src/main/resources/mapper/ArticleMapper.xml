@@ -5,7 +5,7 @@
     <!-- ==================== 后台管理 ==================== -->
 
     <!-- 分页查询文章：按标题模糊搜索、状态过滤，按 ID 倒序 -->
-    <select id="selectArticlePage" resultType="com.blog.pojo.vo.ArticleVO">
+    <select id="selectArticlePage" resultType="com.blog.pojo.vo.admin.ArticleVO">
         SELECT a.id,
                a.title,
                a.description,
@@ -33,7 +33,7 @@
     </select>
 
     <!-- 根据 ID 查询文章详情 -->
-    <select id="selectArticleDetailById" resultType="com.blog.pojo.vo.ArticleVO">
+    <select id="selectArticleDetailById" resultType="com.blog.pojo.vo.admin.ArticleVO">
         SELECT a.id,
                a.title,
                a.description,
@@ -197,7 +197,7 @@
     <!-- ==================== 数据统计 ==================== -->
 
     <!-- 统计卡片：文章总数、草稿、已发布、分类总数、标签总数 -->
-    <select id="selectStatistics" resultType="com.blog.pojo.vo.DashboardStatisticsVO">
+    <select id="selectStatistics" resultType="com.blog.pojo.vo.admin.DashboardStatisticsVO">
         SELECT COALESCE(SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END), 0) AS draft_count,
                COALESCE(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END), 0) AS published_count,
                COUNT(*) AS article_total,
@@ -207,7 +207,7 @@
     </select>
 
     <!-- 分页查询文章浏览量排行：标题模糊、分类、标签过滤 -->
-    <select id="selectArticleRankPage" resultType="com.blog.pojo.vo.ArticleRankVO">
+    <select id="selectArticleRankPage" resultType="com.blog.pojo.vo.admin.ArticleRankVO">
         SELECT a.id,
                a.title,
                a.category_id,

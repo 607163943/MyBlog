@@ -3,7 +3,7 @@ package com.blog.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.blog.pojo.po.Comment;
-import com.blog.pojo.vo.CommentVO;
+import com.blog.pojo.vo.admin.CommentVO;
 import com.blog.pojo.vo.web.WebCommentVO;
 import org.apache.ibatis.annotations.Param;
 

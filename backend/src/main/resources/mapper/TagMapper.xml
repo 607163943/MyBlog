@@ -5,7 +5,7 @@
     <!-- ==================== 后台管理 ==================== -->
 
     <!-- 分页查询标签：按名称模糊搜索，按 ID 升序 -->
-    <select id="selectTagPage" resultType="com.blog.pojo.vo.TagVO">
+    <select id="selectTagPage" resultType="com.blog.pojo.vo.admin.TagVO">
         SELECT id, name, create_time, update_time
         FROM tb_tag
         <where>
@@ -17,7 +17,7 @@
     </select>
 
     <!-- 查询文章标签名称，供排行结果回填 -->
-    <select id="selectTagNamesByArticleIds" resultType="com.blog.pojo.vo.ArticleTagNameVO">
+    <select id="selectTagNamesByArticleIds" resultType="com.blog.pojo.vo.admin.ArticleTagNameVO">
         SELECT artag.article_id,
                t.name AS tag_name
         FROM tb_article_tag artag

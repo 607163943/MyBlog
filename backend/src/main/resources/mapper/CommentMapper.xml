@@ -3,7 +3,7 @@
 <mapper namespace="com.blog.mapper.CommentMapper">
 
     <!-- 分页查询评论：按所属文章标题模糊搜索、审核状态过滤，按 ID 倒序 -->
-    <select id="selectCommentPage" resultType="com.blog.pojo.vo.CommentVO">
+    <select id="selectCommentPage" resultType="com.blog.pojo.vo.admin.CommentVO">
         SELECT cm.id,
                cm.article_id,
                a.title AS article_title,
@@ -29,7 +29,7 @@
     </select>
 
     <!-- 根据 ID 查询评论详情（含所属文章标题） -->
-    <select id="selectCommentDetailById" resultType="com.blog.pojo.vo.CommentVO">
+    <select id="selectCommentDetailById" resultType="com.blog.pojo.vo.admin.CommentVO">
         SELECT cm.id,
                cm.article_id,
                a.title AS article_title,
