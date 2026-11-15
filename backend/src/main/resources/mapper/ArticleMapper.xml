@@ -64,7 +64,7 @@
                a.category_id,
                c.name AS category_name,
                a.view_count,
-               a.create_time
+               a.publish_time
         FROM tb_article a
         LEFT JOIN tb_category c ON a.category_id = c.id
         WHERE a.status = 1
@@ -93,7 +93,7 @@
                 )
             )
         </if>
-        ORDER BY a.create_time DESC, a.id DESC
+        ORDER BY a.publish_time DESC, a.id DESC
     </select>
 
     <!-- 前台根据 ID 查询已发布文章详情 -->
@@ -106,7 +106,7 @@
                a.category_id,
                c.name AS category_name,
                a.view_count,
-               a.create_time
+               a.publish_time
         FROM tb_article a
         LEFT JOIN tb_category c ON a.category_id = c.id
         WHERE a.id = #{id}
@@ -127,10 +127,10 @@
         FROM tb_article
         WHERE status = 1
           AND (
-            create_time &gt; #{createTime}
-            OR (create_time = #{createTime} AND id &gt; #{id})
+            publish_time &gt; #{publishTime}
+            OR (publish_time = #{publishTime} AND id &gt; #{id})
           )
-        ORDER BY create_time ASC, id ASC
+        ORDER BY publish_time ASC, id ASC
         LIMIT 1
     </select>
 
@@ -140,10 +140,10 @@
         FROM tb_article
         WHERE status = 1
           AND (
-            create_time &lt; #{createTime}
-            OR (create_time = #{createTime} AND id &lt; #{id})
+            publish_time &lt; #{publishTime}
+            OR (publish_time = #{publishTime} AND id &lt; #{id})
           )
-        ORDER BY create_time DESC, id DESC
+        ORDER BY publish_time DESC, id DESC
         LIMIT 1
     </select>
 
@@ -152,7 +152,7 @@
         SELECT id, title, view_count
         FROM tb_article
         WHERE status = 1
-        ORDER BY create_time DESC, id DESC
+        ORDER BY publish_time DESC, id DESC
         LIMIT #{limit}
     </select>
 
@@ -162,17 +162,17 @@
         FROM tb_article
         WHERE status = 1
           AND category_id = #{categoryId}
-        ORDER BY create_time DESC, id DESC
+        ORDER BY publish_time DESC, id DESC
     </select>
 
     <!-- 归档概览：按年月统计已发布文章数 -->
     <select id="selectWebArchiveOverview" resultType="com.blog.pojo.vo.web.WebArchiveMonthVO">
-        SELECT YEAR(create_time)  AS `year`,
-               MONTH(create_time) AS `month`,
+        SELECT YEAR(publish_time)  AS `year`,
+               MONTH(publish_time) AS `month`,
                COUNT(*)           AS article_count
         FROM tb_article
         WHERE status = 1
-        GROUP BY YEAR(create_time), MONTH(create_time)
+        GROUP BY YEAR(publish_time), MONTH(publish_time)
         ORDER BY `year` DESC, `month` DESC
     </select>
 
@@ -185,13 +185,13 @@
                a.category_id,
                c.name AS category_name,
                a.view_count,
-               a.create_time
+               a.publish_time
         FROM tb_article a
         LEFT JOIN tb_category c ON a.category_id = c.id
         WHERE a.status = 1
-          AND a.create_time &gt;= #{startTime}
-          AND a.create_time &lt; #{endTime}
-        ORDER BY a.create_time DESC, a.id DESC
+          AND a.publish_time &gt;= #{startTime}
+          AND a.publish_time &lt; #{endTime}
+        ORDER BY a.publish_time DESC, a.id DESC
     </select>
 
     <!-- ==================== 数据统计 ==================== -->

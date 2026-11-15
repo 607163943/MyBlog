@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -93,6 +94,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setAuthorId(StpUtil.getLoginIdAsInt());
         article.setStatus(status);
         article.setViewCount(0);
+        if (status == STATUS_PUBLISHED) {
+            article.setPublishTime(LocalDateTime.now());
+        }
         save(article);
         saveArticleTags(article.getId(), dto.getTagIds());
     }
@@ -116,6 +120,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 ? existing.getStatus()
                 : normalizeStatus(dto.getStatus());
 
+        // 首次发布时写入发布时间，之后编辑、重新发布均不再变更
+        LocalDateTime publishTime = existing.getPublishTime();
+        if (publishTime == null && status == STATUS_PUBLISHED) {
+            publishTime = LocalDateTime.now();
+        }
+
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
                 .eq(Article::getId, dto.getId())
                 .set(Article::getTitle, title)
@@ -123,7 +133,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getContent, content)
                 .set(Article::getCover, normalizeOptionalText(dto.getCover()))
                 .set(Article::getCategoryId, categoryId)
-                .set(Article::getStatus, status);
+                .set(Article::getStatus, status)
+                .set(Article::getPublishTime, publishTime);
         baseMapper.update(null, updateWrapper);
 
         if (dto.getTagIds() != null) {

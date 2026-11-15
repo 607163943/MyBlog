@@ -26,7 +26,7 @@ function tagLink(tagId: number) {
   <div class="post-meta">
     <span class="meta-item">
       <el-icon><Calendar /></el-icon>
-      {{ formatDate(post.createTime) }}
+      {{ formatDate(post.publishTime) }}
     </span>
     <span class="meta-item">
       <el-icon><View /></el-icon>

@@ -56,7 +56,7 @@ public class WebArticleVO {
     private Integer viewCount;
 
     /**
-     * 创建时间
+     * 首次发布时间
      */
-    private LocalDateTime createTime;
+    private LocalDateTime publishTime;
 }

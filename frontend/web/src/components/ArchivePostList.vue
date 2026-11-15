@@ -22,7 +22,7 @@ function formatArchiveDate(date: string) {
       </RouterLink>
 
       <el-tag class="archive-date" size="small" effect="plain">
-        {{ formatArchiveDate(post.createTime) }}
+        {{ formatArchiveDate(post.publishTime) }}
       </el-tag>
     </li>
   </ul>

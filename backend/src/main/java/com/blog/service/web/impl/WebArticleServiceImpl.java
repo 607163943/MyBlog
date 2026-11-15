@@ -107,8 +107,8 @@ public class WebArticleServiceImpl implements WebArticleService {
             throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_PUBLISHED);
         }
         fillTags(Collections.<WebArticleVO>singletonList(detail));
-        detail.setPrevArticle(articleMapper.selectNewerPublished(detail.getCreateTime(), id));
-        detail.setNextArticle(articleMapper.selectOlderPublished(detail.getCreateTime(), id));
+        detail.setPrevArticle(articleMapper.selectNewerPublished(detail.getPublishTime(), id));
+        detail.setNextArticle(articleMapper.selectOlderPublished(detail.getPublishTime(), id));
         return detail;
     }
 

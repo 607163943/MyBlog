@@ -58,13 +58,13 @@ public interface ArticleMapper extends BaseMapper<Article> {
     /**
      * 查询较新的上一篇已发布文章
      */
-    WebArticleBriefVO selectNewerPublished(@Param("createTime") LocalDateTime createTime,
+    WebArticleBriefVO selectNewerPublished(@Param("publishTime") LocalDateTime publishTime,
                                            @Param("id") Integer id);
 
     /**
      * 查询较旧的下一篇已发布文章
      */
-    WebArticleBriefVO selectOlderPublished(@Param("createTime") LocalDateTime createTime,
+    WebArticleBriefVO selectOlderPublished(@Param("publishTime") LocalDateTime publishTime,
                                            @Param("id") Integer id);
 
     /**

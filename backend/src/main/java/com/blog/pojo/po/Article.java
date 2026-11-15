@@ -65,6 +65,11 @@ public class Article {
     private Integer viewCount;
 
     /**
+     * 首次发布时间：草稿为 null，首次发布时写入，之后不再变更
+     */
+    private LocalDateTime publishTime;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;

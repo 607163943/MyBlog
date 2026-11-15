@@ -23,7 +23,7 @@ export interface ArticleVO {
   categoryName: string | null
   tags: ArticleTagVO[]
   viewCount: number
-  createTime: string
+  publishTime: string
 }
 
 /** 文章详情 */
