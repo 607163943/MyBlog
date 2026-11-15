@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.enums.CommentExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.CommentMapper;
 import com.blog.pojo.dto.admin.CommentDTO;
@@ -53,11 +54,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public CommentVO getCommentById(Integer id) {
         if (id == null) {
-            throw new BusinessException("评论不存在");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NOT_FOUND);
         }
         CommentVO commentVO = baseMapper.selectCommentDetailById(id);
         if (commentVO == null) {
-            throw new BusinessException("评论不存在");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NOT_FOUND);
         }
         return commentVO;
     }
@@ -66,11 +67,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Transactional(rollbackFor = Exception.class)
     public void updateComment(CommentDTO dto) {
         if (dto.getId() == null) {
-            throw new BusinessException("评论ID不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_ID_REQUIRED);
         }
         Comment existing = getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException("评论不存在");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NOT_FOUND);
         }
 
         String nickname = normalizeNickname(dto.getNickname());
@@ -93,7 +94,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Integer id) {
         if (id == null || getById(id) == null) {
-            throw new BusinessException("评论不存在");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NOT_FOUND);
         }
         removeCommentsWithCascade(Collections.singletonList(id));
     }
@@ -102,7 +103,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Transactional(rollbackFor = Exception.class)
     public void deleteComments(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择要删除的评论");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_DELETE_IDS_REQUIRED);
         }
         removeCommentsWithCascade(ids);
     }
@@ -149,10 +150,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private String normalizeNickname(String nickname) {
         String trimmed = nickname == null ? "" : nickname.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("评论者昵称不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_REQUIRED);
         }
         if (trimmed.length() > 50) {
-            throw new BusinessException("评论者昵称不能超过 50 个字符");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_TOO_LONG);
         }
         return trimmed;
     }
@@ -166,7 +167,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         String trimmed = email.trim();
         if (trimmed.length() > 100) {
-            throw new BusinessException("邮箱不能超过 100 个字符");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_TOO_LONG);
         }
         return trimmed;
     }
@@ -176,7 +177,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     private String normalizeContent(String content) {
         if (content == null || content.trim().isEmpty()) {
-            throw new BusinessException("评论内容不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_REQUIRED);
         }
         return content;
     }
@@ -186,7 +187,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     private int normalizeStatus(Integer status) {
         if (status != STATUS_PENDING && status != STATUS_APPROVED) {
-            throw new BusinessException("审核状态不正确");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_STATUS_INVALID);
         }
         return status;
     }

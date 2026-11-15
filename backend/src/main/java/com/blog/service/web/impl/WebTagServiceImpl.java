@@ -1,6 +1,7 @@
 package com.blog.service.web.impl;
 
 import com.blog.common.Constants;
+import com.blog.enums.TagExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.TagMapper;
 import com.blog.pojo.vo.web.WebTagVO;
@@ -28,11 +29,11 @@ public class WebTagServiceImpl implements WebTagService {
     @Override
     public WebTagVO getDetail(Integer id) {
         if (id == null) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
         WebTagVO tag = tagMapper.selectWebTagById(id);
         if (tag == null) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
         return tag;
     }

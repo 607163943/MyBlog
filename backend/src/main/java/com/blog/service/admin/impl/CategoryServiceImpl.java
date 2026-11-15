@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.enums.CategoryExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.CategoryMapper;
 import com.blog.pojo.dto.admin.CategoryDTO;
@@ -44,11 +45,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public CategoryVO getCategoryById(Integer id) {
         if (id == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         Category category = getById(id);
         if (category == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         CategoryVO categoryVO = new CategoryVO();
         BeanUtils.copyProperties(category, categoryVO);
@@ -72,11 +73,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(CategoryDTO dto) {
         if (dto.getId() == null) {
-            throw new BusinessException("分类ID不能为空");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_ID_REQUIRED);
         }
         Category existing = getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         String name = normalizeName(dto.getName());
         checkNameUnique(name, dto.getId());
@@ -92,7 +93,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public void deleteCategory(Integer id) {
         if (id == null || !removeById(id)) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
     }
 
@@ -100,7 +101,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Transactional(rollbackFor = Exception.class)
     public void deleteCategories(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择要删除的分类");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_DELETE_IDS_REQUIRED);
         }
         removeByIds(ids);
     }
@@ -111,7 +112,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     private String normalizeName(String name) {
         String trimmed = name == null ? "" : name.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("分类名称不能为空");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NAME_REQUIRED);
         }
         return trimmed;
     }
@@ -125,7 +126,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             wrapper.ne(Category::getId, excludeId);
         }
         if (count(wrapper) > 0) {
-            throw new BusinessException("分类名称已存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NAME_EXISTS);
         }
     }
 }

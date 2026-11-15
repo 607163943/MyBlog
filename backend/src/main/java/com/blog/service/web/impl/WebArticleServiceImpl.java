@@ -3,6 +3,8 @@ package com.blog.service.web.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.common.Constants;
+import com.blog.enums.ArticleExceptionEnum;
+import com.blog.enums.CategoryExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.TagMapper;
@@ -69,7 +71,7 @@ public class WebArticleServiceImpl implements WebArticleService {
     @Override
     public List<WebArticleBriefVO> listByCategory(Integer categoryId) {
         if (categoryId == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         return articleMapper.selectPublishedByCategory(categoryId);
     }
@@ -77,10 +79,10 @@ public class WebArticleServiceImpl implements WebArticleService {
     @Override
     public List<WebArticleVO> listByMonth(int year, int month) {
         if (year < MIN_YEAR || year > MAX_YEAR) {
-            throw new BusinessException("年份不正确");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_YEAR_INVALID);
         }
         if (month < 1 || month > 12) {
-            throw new BusinessException("月份不正确");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_MONTH_INVALID);
         }
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime startTime = yearMonth.atDay(1).atStartOfDay();
@@ -94,15 +96,15 @@ public class WebArticleServiceImpl implements WebArticleService {
     @Transactional(rollbackFor = Exception.class)
     public WebArticleDetailVO getDetail(Integer id) {
         if (id == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         int updated = articleMapper.incrementViewCount(id);
         if (updated == 0) {
-            throw new BusinessException("文章不存在或未发布");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_PUBLISHED);
         }
         WebArticleDetailVO detail = articleMapper.selectWebArticleDetailById(id);
         if (detail == null) {
-            throw new BusinessException("文章不存在或未发布");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_PUBLISHED);
         }
         fillTags(Collections.<WebArticleVO>singletonList(detail));
         detail.setPrevArticle(articleMapper.selectNewerPublished(detail.getCreateTime(), id));

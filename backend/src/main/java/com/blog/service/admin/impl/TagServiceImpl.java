@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.enums.TagExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.TagMapper;
 import com.blog.pojo.dto.admin.TagDTO;
@@ -44,11 +45,11 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Override
     public TagVO getTagById(Integer id) {
         if (id == null) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
         Tag tag = getById(id);
         if (tag == null) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
         TagVO tagVO = new TagVO();
         BeanUtils.copyProperties(tag, tagVO);
@@ -70,11 +71,11 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Transactional(rollbackFor = Exception.class)
     public void updateTag(TagDTO dto) {
         if (dto.getId() == null) {
-            throw new BusinessException("标签ID不能为空");
+            throw new BusinessException(TagExceptionEnum.TAG_ID_REQUIRED);
         }
         Tag existing = getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
         String name = normalizeName(dto.getName());
         checkNameUnique(name, dto.getId());
@@ -88,7 +89,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Override
     public void deleteTag(Integer id) {
         if (id == null || !removeById(id)) {
-            throw new BusinessException("标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NOT_FOUND);
         }
     }
 
@@ -96,7 +97,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Transactional(rollbackFor = Exception.class)
     public void deleteTags(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择要删除的标签");
+            throw new BusinessException(TagExceptionEnum.TAG_DELETE_IDS_REQUIRED);
         }
         removeByIds(ids);
     }
@@ -107,7 +108,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     private String normalizeName(String name) {
         String trimmed = name == null ? "" : name.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("标签名称不能为空");
+            throw new BusinessException(TagExceptionEnum.TAG_NAME_REQUIRED);
         }
         return trimmed;
     }
@@ -121,7 +122,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
             wrapper.ne(Tag::getId, excludeId);
         }
         if (count(wrapper) > 0) {
-            throw new BusinessException("标签名称已存在");
+            throw new BusinessException(TagExceptionEnum.TAG_NAME_EXISTS);
         }
     }
 }

@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.enums.ArticleExceptionEnum;
+import com.blog.enums.CategoryExceptionEnum;
+import com.blog.enums.TagExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.ArticleTagMapper;
@@ -63,11 +66,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ArticleVO getArticleById(Integer id) {
         if (id == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         ArticleVO articleVO = baseMapper.selectArticleDetailById(id);
         if (articleVO == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         articleVO.setTagIds(listTagIds(id));
         return articleVO;
@@ -98,11 +101,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional(rollbackFor = Exception.class)
     public void updateArticle(ArticleDTO dto) {
         if (dto.getId() == null) {
-            throw new BusinessException("文章ID不能为空");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_ID_REQUIRED);
         }
         Article existing = getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
 
         String title = normalizeTitle(dto.getTitle());
@@ -132,7 +135,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional(rollbackFor = Exception.class)
     public void deleteArticle(Integer id) {
         if (id == null || !removeById(id)) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
                 .eq(ArticleTag::getArticleId, id));
@@ -142,7 +145,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional(rollbackFor = Exception.class)
     public void deleteArticles(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择要删除的文章");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_DELETE_IDS_REQUIRED);
         }
         removeByIds(ids);
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
@@ -198,7 +201,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return Collections.emptyList();
         }
         if (tagMapper.selectBatchIds(normalizedTagIds).size() != normalizedTagIds.size()) {
-            throw new BusinessException("所选标签不存在");
+            throw new BusinessException(TagExceptionEnum.TAG_SELECTED_NOT_FOUND);
         }
         return normalizedTagIds;
     }
@@ -209,10 +212,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private String normalizeTitle(String title) {
         String trimmed = title == null ? "" : title.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("文章标题不能为空");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_TITLE_REQUIRED);
         }
         if (trimmed.length() > 200) {
-            throw new BusinessException("文章标题不能超过 200 个字符");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_TITLE_TOO_LONG);
         }
         return trimmed;
     }
@@ -222,7 +225,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private String normalizeContent(String content) {
         if (content == null || content.trim().isEmpty()) {
-            throw new BusinessException("文章正文不能为空");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CONTENT_REQUIRED);
         }
         return content;
     }
@@ -232,10 +235,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private Integer requireCategory(Integer categoryId) {
         if (categoryId == null) {
-            throw new BusinessException("请选择文章分类");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_REQUIRED);
         }
         if (categoryMapper.selectById(categoryId) == null) {
-            throw new BusinessException("所选分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_SELECTED_NOT_FOUND);
         }
         return categoryId;
     }
@@ -245,7 +248,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private int normalizeStatus(Integer status) {
         if (status != STATUS_DRAFT && status != STATUS_PUBLISHED) {
-            throw new BusinessException("文章状态不正确");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_STATUS_INVALID);
         }
         return status;
     }

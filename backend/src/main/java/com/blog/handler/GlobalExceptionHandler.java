@@ -2,9 +2,12 @@ package com.blog.handler;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import com.blog.common.Result;
+import com.blog.enums.CommonExceptionEnum;
+import com.blog.enums.ExceptionEnum;
 import com.blog.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -16,25 +19,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    public Result<Void> handleBusinessException(BusinessException e) {
-        return Result.error(e.getMessage());
+    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException e) {
+        return buildResponse(e.getExceptionEnum());
     }
 
     @ExceptionHandler(NotLoginException.class)
-    public Result<Void> handleNotLoginException(NotLoginException e) {
+    public ResponseEntity<Result<Void>> handleNotLoginException(NotLoginException e) {
         log.warn("未登录或登录已过期：{}", e.getMessage());
-        return Result.error(401, "未登录或登录已过期，请重新登录");
+        return buildResponse(CommonExceptionEnum.NOT_LOGIN);
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
-    public Result<Void> handleDuplicateKeyException(DuplicateKeyException e) {
+    public ResponseEntity<Result<Void>> handleDuplicateKeyException(DuplicateKeyException e) {
         log.warn("唯一约束冲突", e);
-        return Result.error("数据已存在，请勿重复添加");
+        return buildResponse(CommonExceptionEnum.DUPLICATE_KEY);
     }
 
     @ExceptionHandler(Exception.class)
-    public Result<Void> handleException(Exception e) {
+    public ResponseEntity<Result<Void>> handleException(Exception e) {
         log.error("系统异常", e);
-        return Result.error("系统繁忙，请稍后重试");
+        return buildResponse(CommonExceptionEnum.SYSTEM_ERROR);
+    }
+
+    /**
+     * 按异常枚举设置响应体业务码、消息与 HTTP 状态码
+     */
+    private ResponseEntity<Result<Void>> buildResponse(ExceptionEnum exceptionEnum) {
+        return ResponseEntity.status(exceptionEnum.getHttpCode())
+                .body(Result.<Void>of(exceptionEnum.getCode(), exceptionEnum.getMsg(), null));
     }
 }

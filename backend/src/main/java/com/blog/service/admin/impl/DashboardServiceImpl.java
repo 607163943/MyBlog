@@ -2,6 +2,7 @@ package com.blog.service.admin.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.blog.enums.DashboardExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.CategoryMapper;
@@ -126,13 +127,13 @@ public class DashboardServiceImpl implements DashboardService {
      */
     private void validateCountRange(Integer minCount, Integer maxCount) {
         if (minCount != null && minCount < 0) {
-            throw new BusinessException("最小文章数不能为负数");
+            throw new BusinessException(DashboardExceptionEnum.DASHBOARD_MIN_COUNT_NEGATIVE);
         }
         if (maxCount != null && maxCount < 0) {
-            throw new BusinessException("最大文章数不能为负数");
+            throw new BusinessException(DashboardExceptionEnum.DASHBOARD_MAX_COUNT_NEGATIVE);
         }
         if (minCount != null && maxCount != null && minCount > maxCount) {
-            throw new BusinessException("最小文章数不能大于最大文章数");
+            throw new BusinessException(DashboardExceptionEnum.DASHBOARD_COUNT_RANGE_INVALID);
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.blog.service.web.impl;
 
+import com.blog.enums.ArticleExceptionEnum;
+import com.blog.enums.CommentExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.CommentMapper;
@@ -42,7 +44,7 @@ public class WebCommentServiceImpl implements WebCommentService {
     @Override
     public List<WebCommentVO> listApproved(Integer articleId) {
         if (articleId == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         List<WebCommentVO> comments = commentMapper.selectApprovedCommentsByArticleId(articleId);
         Map<Integer, WebCommentVO> commentMap = new LinkedHashMap<>();
@@ -76,15 +78,15 @@ public class WebCommentServiceImpl implements WebCommentService {
     @Transactional(rollbackFor = Exception.class)
     public void submit(Integer articleId, WebCommentSubmitDTO dto) {
         if (articleId == null) {
-            throw new BusinessException("文章不存在");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
         Article article = articleMapper.selectById(articleId);
         if (article == null || article.getStatus() == null
                 || article.getStatus() != STATUS_PUBLISHED) {
-            throw new BusinessException("文章不存在或未发布");
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_PUBLISHED);
         }
         if (dto == null) {
-            throw new BusinessException("评论内容不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_REQUIRED);
         }
 
         String nickname = normalizeNickname(dto.getNickname());
@@ -98,7 +100,7 @@ public class WebCommentServiceImpl implements WebCommentService {
                     || !articleId.equals(target.getArticleId())
                     || target.getStatus() == null
                     || target.getStatus() != STATUS_APPROVED) {
-                throw new BusinessException("回复的评论不存在或未通过审核");
+                throw new BusinessException(CommentExceptionEnum.COMMENT_REPLY_TARGET_INVALID);
             }
             parentId = target.getParentId() == null || target.getParentId() == NO_PARENT_ID
                     ? target.getId()
@@ -122,10 +124,10 @@ public class WebCommentServiceImpl implements WebCommentService {
     private String normalizeNickname(String nickname) {
         String trimmed = nickname == null ? "" : nickname.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("评论者昵称不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_REQUIRED);
         }
         if (trimmed.length() > MAX_NICKNAME_LENGTH) {
-            throw new BusinessException("评论者昵称不能超过 50 个字符");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_TOO_LONG);
         }
         return trimmed;
     }
@@ -139,10 +141,10 @@ public class WebCommentServiceImpl implements WebCommentService {
         }
         String trimmed = email.trim();
         if (trimmed.length() > MAX_EMAIL_LENGTH) {
-            throw new BusinessException("邮箱不能超过 100 个字符");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_TOO_LONG);
         }
         if (!EMAIL_PATTERN.matcher(trimmed).matches()) {
-            throw new BusinessException("邮箱格式不正确");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_INVALID);
         }
         return trimmed;
     }
@@ -153,10 +155,10 @@ public class WebCommentServiceImpl implements WebCommentService {
     private String normalizeContent(String content) {
         String trimmed = content == null ? "" : content.trim();
         if (trimmed.isEmpty()) {
-            throw new BusinessException("评论内容不能为空");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_REQUIRED);
         }
         if (trimmed.length() > MAX_CONTENT_LENGTH) {
-            throw new BusinessException("评论内容不能超过 500 个字符");
+            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_TOO_LONG);
         }
         return trimmed;
     }

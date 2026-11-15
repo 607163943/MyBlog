@@ -3,6 +3,7 @@ package com.blog.service.admin.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.enums.UserExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.UserMapper;
 import com.blog.pojo.dto.admin.UserLoginDTO;
@@ -24,13 +25,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String username = dto.getUsername() == null ? "" : dto.getUsername().trim();
         String password = dto.getPassword() == null ? "" : dto.getPassword();
         if (username.isEmpty() || password.isEmpty()) {
-            throw new BusinessException("用户名和密码不能为空");
+            throw new BusinessException(UserExceptionEnum.USERNAME_OR_PASSWORD_EMPTY);
         }
 
         User user = getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
         // 当前阶段密码暂用明文比对
         if (user == null || !password.equals(user.getPassword())) {
-            throw new BusinessException("用户名或密码错误");
+            throw new BusinessException(UserExceptionEnum.USERNAME_OR_PASSWORD_ERROR);
         }
 
         StpUtil.login(user.getId());
@@ -46,7 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public UserInfoVO getUserInfo() {
         User user = getById(StpUtil.getLoginIdAsInt());
         if (user == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(UserExceptionEnum.USER_NOT_FOUND);
         }
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(user, userInfoVO);

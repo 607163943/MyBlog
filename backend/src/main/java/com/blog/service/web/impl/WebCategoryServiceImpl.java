@@ -1,6 +1,7 @@
 package com.blog.service.web.impl;
 
 import com.blog.common.Constants;
+import com.blog.enums.CategoryExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.CategoryMapper;
 import com.blog.pojo.vo.web.WebArticleBriefVO;
@@ -36,11 +37,11 @@ public class WebCategoryServiceImpl implements WebCategoryService {
     @Override
     public WebCategoryVO getDetail(Integer id) {
         if (id == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         WebCategoryVO category = categoryMapper.selectWebCategoryById(id);
         if (category == null) {
-            throw new BusinessException("分类不存在");
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         category.setHotArticles(new ArrayList<>());
         return category;
