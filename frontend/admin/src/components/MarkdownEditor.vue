@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
+import { uploadImage } from '@/api/upload'
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +35,16 @@ onMounted(async () => {
     defaultValue: props.modelValue,
     featureConfigs: {
       [Crepe.Feature.Placeholder]: { text: props.placeholder },
+      [Crepe.Feature.ImageBlock]: {
+        onUpload: uploadImage,
+        blockUploadButton: '上传图片',
+        blockUploadPlaceholderText: '或粘贴图片链接',
+        blockConfirmButton: '确认',
+        blockCaptionPlaceholderText: '填写图片说明',
+        inlineUploadButton: '上传',
+        inlineUploadPlaceholderText: '或粘贴图片链接',
+        inlineConfirmButton: '确认',
+      },
     },
   })
   crepe = instance

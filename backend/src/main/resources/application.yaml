@@ -1,11 +1,20 @@
 # tomcat
 server:
   port: 8080
+  tomcat:
+    # 上传超限时尽量把 413 JSON 响应返回给客户端，避免连接被提前断开
+    max-swallow-size: 10MB
 
 # springboot
 spring:
   profiles:
     active: dev
+  servlet:
+    multipart:
+      # 单张图片最大 5MB
+      max-file-size: 5MB
+      # 单次 multipart 请求最大 10MB
+      max-request-size: 10MB
   datasource:
     username: ${mysql.username}
     password: ${mysql.password}
@@ -22,6 +31,13 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+# 图片上传
+upload:
+  # 图片访问路由前缀，同时作为静态资源映射路径；不要以 / 结尾
+  route-prefix: /image
+  # 默认存储目录，相对 JVM 工作目录；dev 环境由 application-dev.yaml 覆盖
+  dir: ./upload
 
 ############## Sa-Token 配置 (文档: https://sa-token.com) ##############
 sa-token:

@@ -4,12 +4,15 @@ import cn.dev33.satoken.exception.NotLoginException;
 import com.blog.common.Result;
 import com.blog.enums.CommonExceptionEnum;
 import com.blog.enums.ExceptionEnum;
+import com.blog.enums.UploadExceptionEnum;
 import com.blog.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 /**
  * 全局异常处理
@@ -35,10 +38,44 @@ public class GlobalExceptionHandler {
         return buildResponse(CommonExceptionEnum.DUPLICATE_KEY);
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Result<Void>> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException e) {
+        log.warn("上传文件超过大小限制：{}", e.getMessage());
+        return buildResponse(UploadExceptionEnum.UPLOAD_FILE_TOO_LARGE);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Result<Void>> handleMultipartException(MultipartException e) {
+        if (isSizeLimitExceeded(e)) {
+            log.warn("上传文件超过大小限制：{}", e.getMessage());
+            return buildResponse(UploadExceptionEnum.UPLOAD_FILE_TOO_LARGE);
+        }
+        log.warn("上传请求解析失败：{}", e.getMessage(), e);
+        return buildResponse(UploadExceptionEnum.UPLOAD_MULTIPART_INVALID);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleException(Exception e) {
         log.error("系统异常", e);
         return buildResponse(CommonExceptionEnum.SYSTEM_ERROR);
+    }
+
+    /**
+     * 兼容不同 Servlet 容器把大小超限包装成 MultipartException 的情况
+     */
+    private boolean isSizeLimitExceeded(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof MaxUploadSizeExceededException) {
+                return true;
+            }
+            if (current.getClass().getName().endsWith("SizeLimitExceededException")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     /**

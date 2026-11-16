@@ -20,6 +20,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      // 上传接口返回 /image/... 相对 URL，开发环境直接代理到后端，不能 rewrite
+      '/image': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })

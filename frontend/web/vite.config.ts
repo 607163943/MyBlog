@@ -21,6 +21,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      // 文章封面与正文图片使用后端返回的 /image/... 相对 URL，不能 rewrite
+      '/image': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })

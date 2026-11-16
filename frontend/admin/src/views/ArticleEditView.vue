@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import CoverUpload from '@/components/CoverUpload.vue'
 import { useArticleStore } from '@/stores/article'
 import type { ArticleDTO } from '@/types/article'
 
@@ -14,6 +15,8 @@ const store = useArticleStore()
 const formRef = ref<FormInstance>()
 const loading = ref(true)
 const submitting = ref(false)
+/** 封面上传中禁止提交，避免把旧封面当作新封面保存 */
+const coverUploading = ref(false)
 
 const articleId = computed(() => {
   const id = route.params.id
@@ -144,6 +147,10 @@ function handleCategoryChange(value: number) {
   }
 }
 
+function handleCoverUploading(value: boolean) {
+  coverUploading.value = value
+}
+
 function handleBack() {
   router.push({ name: 'article' })
 }
@@ -231,12 +238,7 @@ onMounted(loadPage)
         </div>
 
         <el-form-item label="封面" prop="cover">
-          <el-input
-            v-model="form.cover"
-            placeholder="请输入封面图片地址"
-            maxlength="255"
-            clearable
-          />
+          <CoverUpload v-model="form.cover" @uploading="handleCoverUploading" />
         </el-form-item>
 
         <el-form-item label="摘要" prop="description">
@@ -252,10 +254,23 @@ onMounted(loadPage)
 
         <div class="actions">
           <el-button @click="handleBack">返回</el-button>
-          <el-button type="primary" plain :loading="submitting" @click="handleSubmit(0)">
+          <el-button
+            type="primary"
+            plain
+            :loading="submitting"
+            :disabled="coverUploading"
+            @click="handleSubmit(0)"
+          >
             保存草稿
           </el-button>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">发布</el-button>
+          <el-button
+            type="primary"
+            :loading="submitting"
+            :disabled="coverUploading"
+            @click="handleSubmit(1)"
+          >
+            发布
+          </el-button>
         </div>
       </el-form>
     </el-card>
