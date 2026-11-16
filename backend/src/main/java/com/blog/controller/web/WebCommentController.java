@@ -1,5 +1,6 @@
 package com.blog.controller.web;
 
+import com.blog.annotation.OperationLog;
 import com.blog.common.Result;
 import com.blog.pojo.dto.web.WebCommentSubmitDTO;
 import com.blog.pojo.vo.web.WebCommentVO;
@@ -35,6 +36,7 @@ public class WebCommentController {
     /**
      * 提交评论（默认待审核）
      */
+    @OperationLog(module = "web-comment", action = "提交评论", key = "#a0")
     @PostMapping("/{articleId}/comments")
     public Result<Void> submit(@PathVariable Integer articleId,
                                @RequestBody WebCommentSubmitDTO dto) {

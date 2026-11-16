@@ -1,5 +1,6 @@
 package com.blog.controller.admin;
 
+import com.blog.annotation.OperationLog;
 import com.blog.common.Result;
 import com.blog.pojo.dto.admin.ArticleDTO;
 import com.blog.pojo.dto.admin.ArticlePageQueryDTO;
@@ -47,6 +48,7 @@ public class ArticleController {
     /**
      * 新增文章
      */
+    @OperationLog(module = "article", action = "新增文章", key = "#a0.title")
     @PostMapping
     public Result<Void> add(@RequestBody ArticleDTO dto) {
         articleService.addArticle(dto);
@@ -56,6 +58,7 @@ public class ArticleController {
     /**
      * 修改文章
      */
+    @OperationLog(module = "article", action = "修改文章", key = "#a0.id")
     @PutMapping
     public Result<Void> update(@RequestBody ArticleDTO dto) {
         articleService.updateArticle(dto);
@@ -65,6 +68,7 @@ public class ArticleController {
     /**
      * 删除单个文章
      */
+    @OperationLog(module = "article", action = "删除文章", key = "#a0")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Integer id) {
         articleService.deleteArticle(id);
@@ -74,6 +78,7 @@ public class ArticleController {
     /**
      * 批量删除文章
      */
+    @OperationLog(module = "article", action = "批量删除文章", key = "#a0")
     @DeleteMapping("/batch")
     public Result<Void> deleteBatch(@RequestBody List<Integer> ids) {
         articleService.deleteArticles(ids);

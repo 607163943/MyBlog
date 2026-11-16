@@ -42,9 +42,11 @@ public class UploadProperties {
         if (!prefix.startsWith("/")) {
             prefix = "/" + prefix;
         }
+        // 去除末尾斜杠
         while (prefix.length() > 1 && prefix.endsWith("/")) {
             prefix = prefix.substring(0, prefix.length() - 1);
         }
+        // 避免只有斜杠
         return "/".equals(prefix) ? DEFAULT_ROUTE_PREFIX : prefix;
     }
 

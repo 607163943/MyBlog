@@ -32,6 +32,26 @@ mybatis-plus:
     db-config:
       id-type: auto
 
+# 运行日志（纯 application 配置，不使用 logback-spring.xml）
+# 按激活的 profile 分目录：dev -> log/dev/blog-dev.log，pro -> log/pro/blog-pro.log；
+# 相对路径基于 JVM 工作目录，在 MyBlog/backend 下启动时即 backend/log/**
+logging:
+  level:
+    root: info
+    com.blog: info
+  file:
+    name: ./log/${spring.profiles.active:dev}/blog-${spring.profiles.active:dev}.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} - %msg%n"
+  charset:
+    file: UTF-8
+  logback:
+    rollingpolicy:
+      # 单个文件最大 10MB，按天 + 大小滚动，保留 30 份归档，归档总量上限 2GB
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 2GB
+
 # 图片上传
 upload:
   # 图片访问路由前缀，同时作为静态资源映射路径；不要以 / 结尾

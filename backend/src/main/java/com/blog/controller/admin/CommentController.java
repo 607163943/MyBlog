@@ -1,5 +1,6 @@
 package com.blog.controller.admin;
 
+import com.blog.annotation.OperationLog;
 import com.blog.common.Result;
 import com.blog.pojo.dto.admin.CommentDTO;
 import com.blog.pojo.dto.admin.CommentPageQueryDTO;
@@ -46,6 +47,7 @@ public class CommentController {
     /**
      * 修改评论
      */
+    @OperationLog(module = "comment", action = "修改评论", key = "#a0.id")
     @PutMapping
     public Result<Void> update(@RequestBody CommentDTO dto) {
         commentService.updateComment(dto);
@@ -55,6 +57,7 @@ public class CommentController {
     /**
      * 删除单个评论
      */
+    @OperationLog(module = "comment", action = "删除评论", key = "#a0")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Integer id) {
         commentService.deleteComment(id);
@@ -64,6 +67,7 @@ public class CommentController {
     /**
      * 批量删除评论
      */
+    @OperationLog(module = "comment", action = "批量删除评论", key = "#a0")
     @DeleteMapping("/batch")
     public Result<Void> deleteBatch(@RequestBody List<Integer> ids) {
         commentService.deleteComments(ids);

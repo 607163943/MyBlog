@@ -1,5 +1,6 @@
 package com.blog.controller.admin;
 
+import com.blog.annotation.OperationLog;
 import com.blog.common.Result;
 import com.blog.pojo.dto.admin.ChangePasswordDTO;
 import com.blog.pojo.dto.admin.UpdateUserInfoDTO;
@@ -29,6 +30,7 @@ public class UserController {
     /**
      * 用户登录
      */
+    @OperationLog(module = "user", action = "登录", key = "#a0.username")
     @PostMapping("/login")
     public Result<LoginVO> login(@RequestBody UserLoginDTO dto) {
         return Result.success(userService.login(dto));
@@ -37,6 +39,7 @@ public class UserController {
     /**
      * 退出登录
      */
+    @OperationLog(module = "user", action = "退出登录")
     @PostMapping("/logout")
     public Result<Void> logout() {
         userService.logout();
@@ -62,6 +65,7 @@ public class UserController {
     /**
      * 修改当前登录用户的基本信息
      */
+    @OperationLog(module = "user", action = "修改个人信息")
     @PutMapping("/info")
     public Result<Void> updateUserInfo(@RequestBody UpdateUserInfoDTO dto) {
         userService.updateUserInfo(dto);
@@ -71,6 +75,7 @@ public class UserController {
     /**
      * 修改当前登录用户的密码
      */
+    @OperationLog(module = "user", action = "修改密码")
     @PutMapping("/password")
     public Result<Void> changePassword(@RequestBody ChangePasswordDTO dto) {
         userService.changePassword(dto);
