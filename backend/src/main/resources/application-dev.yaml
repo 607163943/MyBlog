@@ -7,6 +7,3 @@ mysql:
 
 jwt:
   key: myblog
-
-upload:
-  dir: D:/VScodefile/Web/Blog/MyBlog/upload

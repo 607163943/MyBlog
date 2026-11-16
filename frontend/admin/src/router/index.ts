@@ -58,6 +58,12 @@ const router = createRouter({
           component: () => import('@/views/CommentView.vue'),
           meta: { title: '评论管理' },
         },
+        {
+          path: 'profile',
+          name: 'profile',
+          component: () => import('@/views/ProfileView.vue'),
+          meta: { title: '个人中心' },
+        },
       ],
     },
   ],

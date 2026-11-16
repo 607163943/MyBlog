@@ -9,6 +9,7 @@ import {
   Odometer,
   PriceTag,
   SwitchButton,
+  User as UserIcon,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -28,6 +29,10 @@ const avatarText = computed(() => displayName.value.charAt(0).toUpperCase())
 
 /** 顶部用户菜单命令 */
 async function handleCommand(command: string) {
+  if (command === 'profile') {
+    await router.push('/profile')
+    return
+  }
   if (command !== 'logout') {
     return
   }
@@ -54,7 +59,11 @@ async function handleCommand(command: string) {
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="logout">
+            <el-dropdown-item command="profile">
+              <el-icon><UserIcon /></el-icon>
+              个人中心
+            </el-dropdown-item>
+            <el-dropdown-item command="logout" divided>
               <el-icon><SwitchButton /></el-icon>
               退出登录
             </el-dropdown-item>

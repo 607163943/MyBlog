@@ -21,6 +21,8 @@ public class UploadController {
 
     /**
      * 上传图片，返回可直接访问的相对 URL
+     * <p>
+     * file 非必传：避免缺文件时被 Spring 抛异常后兜底成 500，改由 Service 返回 701/400。
      */
     @PostMapping("/image")
     public Result<String> uploadImage(
