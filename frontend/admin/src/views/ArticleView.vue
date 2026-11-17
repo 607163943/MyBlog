@@ -1,14 +1,91 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Edit, Plus, Refresh, RefreshLeft, Search } from '@element-plus/icons-vue'
+import { Delete, Edit, Plus, Rank, Refresh, RefreshLeft, Search } from '@element-plus/icons-vue'
+import ArticleSortDialog from '@/components/ArticleSortDialog.vue'
 import { useArticleStore } from '@/stores/article'
 import type { ArticleVO } from '@/types/article'
 
 const store = useArticleStore()
 const router = useRouter()
 const selection = ref<ArticleVO[]>([])
+
+/** 分类内排序弹窗 */
+const sortDialogVisible = ref(false)
+
+/** 排序弹窗的目标分类（支持从表格行内按钮直接指定） */
+const sortTarget = ref<{
+  categoryId: number
+  categoryName: string
+  articleId: number | null
+} | null>(null)
+
+/** 表格中仅选中一行时，该行文章 */
+const onlySelected = computed(() => (selection.value.length === 1 ? selection.value[0] : undefined))
+
+/** 选中行的共同分类：未选中为 undefined，含无分类文章或分类不一致为 null */
+const selectedCategory = computed<{ id: number; name: string } | null | undefined>(() => {
+  const rows = selection.value
+  const first = rows[0]
+  if (!first) {
+    return undefined
+  }
+  if (first.categoryId <= 0 || !rows.every((row) => row.categoryId === first.categoryId)) {
+    return null
+  }
+  return { id: first.categoryId, name: first.categoryName ?? '' }
+})
+
+/** 排序目标分类：选中行有共同分类时以选中行为准，否则退回筛选栏选中的分类 */
+const sortCategoryId = computed<number | null>(() => {
+  const selected = selectedCategory.value
+  if (selected !== undefined) {
+    return selected?.id ?? null
+  }
+  return store.query.categoryId === '' ? null : store.query.categoryId
+})
+
+const sortCategoryName = computed(() => {
+  const selected = selectedCategory.value
+  if (selected !== undefined) {
+    return selected?.name ?? ''
+  }
+  const categoryId = sortCategoryId.value
+  if (categoryId === null) {
+    return ''
+  }
+  return store.categoryOptions.find((category) => category.id === categoryId)?.name ?? ''
+})
+
+function openSortFor(categoryId: number, categoryName: string, articleId: number | null) {
+  sortTarget.value = { categoryId, categoryName, articleId }
+  sortDialogVisible.value = true
+}
+
+function openSortDialog() {
+  const categoryId = sortCategoryId.value
+  if (categoryId === null) {
+    ElMessage.warning(
+      selection.value.length > 0
+        ? '所选文章未设置分类或分类不一致，无法调整分类内排序'
+        : '请先在筛选栏选择具体分类，或勾选同一分类的文章',
+    )
+    return
+  }
+  openSortFor(categoryId, sortCategoryName.value, onlySelected.value?.id ?? null)
+}
+
+function openRowSortDialog(row: ArticleVO) {
+  if (row.categoryId <= 0) {
+    return
+  }
+  openSortFor(row.categoryId, row.categoryName ?? '', row.id)
+}
+
+async function handleSortSaved() {
+  await store.fetchList()
+}
 
 function handleSelectionChange(rows: ArticleVO[]) {
   selection.value = rows
@@ -157,6 +234,17 @@ onMounted(() => {
           删除
         </el-button>
         <el-button :icon="Refresh" @click="handleRefresh">刷新</el-button>
+        <el-tooltip
+          content="请先在筛选栏选择具体分类，或勾选同一分类的文章"
+          :disabled="sortCategoryId !== null"
+          placement="top"
+        >
+          <span class="sort-button-wrap">
+            <el-button :icon="Rank" :disabled="sortCategoryId === null" @click="openSortDialog">
+              分类内排序
+            </el-button>
+          </span>
+        </el-tooltip>
       </div>
 
       <el-table
@@ -189,8 +277,25 @@ onMounted(() => {
         <el-table-column label="更新时间" width="170" align="center">
           <template #default="{ row }">{{ formatDateTime(row.updateTime) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="150" align="center" fixed="right">
+        <el-table-column label="操作" width="220" align="center" fixed="right">
           <template #default="{ row }">
+            <el-tooltip
+              content="该文章未设置分类，无法调整排序"
+              :disabled="row.categoryId > 0"
+              placement="top"
+            >
+              <span class="row-sort-wrap">
+                <el-button
+                  link
+                  type="primary"
+                  :icon="Rank"
+                  :disabled="row.categoryId <= 0"
+                  @click="openRowSortDialog(row)"
+                >
+                  排序
+                </el-button>
+              </span>
+            </el-tooltip>
             <el-button link type="primary" :icon="Edit" @click="handleEdit(row)">编辑</el-button>
             <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -210,6 +315,14 @@ onMounted(() => {
         />
       </div>
     </el-card>
+
+    <ArticleSortDialog
+      v-model="sortDialogVisible"
+      :category-id="sortTarget?.categoryId ?? 0"
+      :category-name="sortTarget?.categoryName ?? ''"
+      :current-article-id="sortTarget?.articleId ?? null"
+      @saved="handleSortSaved"
+    />
   </div>
 </template>
 
@@ -243,6 +356,15 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.sort-button-wrap {
+  display: inline-flex;
+}
+
+.row-sort-wrap {
+  display: inline-flex;
+  margin-right: 12px;
 }
 
 .pagination {

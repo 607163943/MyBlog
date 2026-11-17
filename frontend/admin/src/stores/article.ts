@@ -6,7 +6,9 @@ import {
   deleteArticles,
   getArticleById,
   getArticlePage,
+  getArticleSortList,
   updateArticle,
+  updateArticleSort,
 } from '@/api/article'
 import { getCategoryOptions } from '@/api/category'
 import { getTagOptions } from '@/api/tag'
@@ -85,6 +87,16 @@ export const useArticleStore = defineStore('article', () => {
     await fetchList()
   }
 
+  /** 查询分类内已发布文章排序列表 */
+  function fetchArticleSortList(categoryId: number) {
+    return getArticleSortList(categoryId)
+  }
+
+  /** 批量保存分类内排序 */
+  async function saveArticleSort(categoryId: number, ids: number[]) {
+    await updateArticleSort(categoryId, ids)
+  }
+
   /** 删除当前页数据后修正页码 */
   async function refreshAfterDelete(removedCount: number) {
     if (records.value.length <= removedCount && query.page > 1) {
@@ -127,6 +139,8 @@ export const useArticleStore = defineStore('article', () => {
     fetchList,
     createArticle,
     editArticle,
+    fetchArticleSortList,
+    saveArticleSort,
     removeArticle,
     removeArticles,
     resetQuery,

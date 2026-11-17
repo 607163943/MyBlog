@@ -187,7 +187,7 @@ async function handleCommand(command: string) {
 
 .admin-footer {
   flex: none;
-  padding: 16px;
+  padding: 6px 16px;
   font-size: 13px;
   color: var(--el-text-color-secondary);
   text-align: center;

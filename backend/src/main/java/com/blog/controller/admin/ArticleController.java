@@ -4,6 +4,7 @@ import com.blog.annotation.OperationLog;
 import com.blog.common.Result;
 import com.blog.pojo.dto.admin.ArticleDTO;
 import com.blog.pojo.dto.admin.ArticlePageQueryDTO;
+import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.ArticleService;
@@ -82,6 +83,25 @@ public class ArticleController {
     @DeleteMapping("/batch")
     public Result<Void> deleteBatch(@RequestBody List<Integer> ids) {
         articleService.deleteArticles(ids);
+        return Result.success();
+    }
+
+    /**
+     * 查询分类内已发布文章排序列表
+     */
+    @GetMapping("/category/{categoryId}/sort")
+    public Result<List<ArticleSortVO>> listCategorySort(@PathVariable Integer categoryId) {
+        return Result.success(articleService.listCategorySort(categoryId));
+    }
+
+    /**
+     * 批量调整分类内文章排序
+     */
+    @OperationLog(module = "article", action = "调整分类内排序", key = "#a0")
+    @PutMapping("/category/{categoryId}/sort")
+    public Result<Void> updateCategorySort(@PathVariable Integer categoryId,
+                                           @RequestBody List<Integer> ids) {
+        articleService.updateCategorySort(categoryId, ids);
         return Result.success();
     }
 }

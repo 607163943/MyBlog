@@ -91,6 +91,7 @@ watch(
     v-model="visible"
     title="全部分类文章数排行"
     width="640px"
+    top="6vh"
     :close-on-click-modal="false"
   >
     <el-form :model="query" inline class="search-form" @submit.prevent="handleSearch">

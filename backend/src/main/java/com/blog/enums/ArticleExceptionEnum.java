@@ -68,7 +68,17 @@ public enum ArticleExceptionEnum implements ExceptionEnum {
     /**
      * 分类内排序值重复
      */
-    ARTICLE_CATEGORY_SORT_DUPLICATED(213, "该分类下已存在相同的排序值", 409);
+    ARTICLE_CATEGORY_SORT_DUPLICATED(213, "该分类下已存在相同的排序值", 409),
+
+    /**
+     * 批量调整分类内排序时未提交文章
+     */
+    ARTICLE_CATEGORY_SORT_IDS_REQUIRED(214, "请选择要排序的文章", 400),
+
+    /**
+     * 批量调整分类内排序时文章集合已变化
+     */
+    ARTICLE_CATEGORY_SORT_STALE(215, "分类内排序数据已变化，请刷新后重试", 409);
 
     private final Integer code;
 

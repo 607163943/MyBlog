@@ -22,6 +22,14 @@ export interface ArticleVO {
   updateTime: string
 }
 
+/** 分类内文章排序项 */
+export interface ArticleSortVO {
+  id: number
+  title: string
+  /** 分类内排序值，null 表示未编号 */
+  categorySort: number | null
+}
+
 /** 文章新增 / 修改参数 */
 export interface ArticleDTO {
   id?: number

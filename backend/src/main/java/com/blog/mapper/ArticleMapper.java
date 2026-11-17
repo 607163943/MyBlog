@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.blog.pojo.po.Article;
 import com.blog.pojo.vo.admin.ArticleRankVO;
+import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.admin.DashboardStatisticsVO;
 import com.blog.pojo.vo.web.WebArchiveMonthVO;
@@ -40,6 +41,28 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * 查询分类内最大排序值，用于首次发布时追加到分类末尾
      */
     Integer selectMaxCategorySort(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 查询分类内已发布文章排序列表（未编号的排最后）
+     */
+    List<ArticleSortVO> selectCategorySortList(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 清空分类内非已发布文章的历史排序值，避免批量重排时唯一索引冲突
+     */
+    int clearUnpublishedCategorySort(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 批量重排第一阶段：写入唯一负值临时序号，规避唯一索引的逐行校验
+     */
+    int updateTempCategorySort(@Param("categoryId") Integer categoryId,
+                               @Param("ids") List<Integer> ids);
+
+    /**
+     * 批量重排第二阶段：按提交顺序写入连续序号 1..N
+     */
+    int updateCategorySort(@Param("categoryId") Integer categoryId,
+                           @Param("ids") List<Integer> ids);
 
     /* ==================== 前台展示 ==================== */
 

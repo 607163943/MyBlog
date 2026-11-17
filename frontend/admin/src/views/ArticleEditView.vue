@@ -2,11 +2,12 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, Rank } from '@element-plus/icons-vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import CoverUpload from '@/components/CoverUpload.vue'
+import ArticleSortDialog from '@/components/ArticleSortDialog.vue'
 import { useArticleStore } from '@/stores/article'
-import type { ArticleDTO } from '@/types/article'
+import type { ArticleDTO, ArticleSortVO } from '@/types/article'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,7 +46,72 @@ const form = reactive({
 const hasCategory = computed(() => form.categoryId > 0)
 
 /** 编辑页加载时的原始分类，换分类时清空排序值以避免沿用旧分类的编号 */
-let loadedCategoryId = 0
+const loadedCategoryId = ref(0)
+
+/** 原始分类下的排序值，切回原分类时恢复展示 */
+const loadedCategorySort = ref<number | null>(null)
+
+/** 当前文章的发布状态，null 表示新增文章 */
+const articleStatus = ref<number | null>(null)
+
+/** 分类内排序弹窗 */
+const sortDialogVisible = ref(false)
+
+/** 当前选中分类的名称，用于排序弹窗标题 */
+const selectedCategoryName = computed(
+  () => store.categoryOptions.find((category) => category.id === form.categoryId)?.name ?? '',
+)
+
+/** 分类排序字段的只读展示文案 */
+const categorySortText = computed(() => {
+  if (!hasCategory.value) {
+    return '无分类不参与排序'
+  }
+  if (!isEdit.value) {
+    return '保存后可调整'
+  }
+  if (form.categoryId !== loadedCategoryId.value) {
+    return '保存分类后可调整'
+  }
+  if (articleStatus.value !== 1) {
+    return '发布后可调整'
+  }
+  return form.categorySort == null ? '未编号（排在末尾）' : `第 ${form.categorySort} 位`
+})
+
+/** 无法打开排序弹窗的原因，空串表示可以打开 */
+const sortDisabledReason = computed(() => {
+  if (!hasCategory.value) {
+    return '无分类文章不参与排序'
+  }
+  if (!isEdit.value) {
+    return '请先保存文章'
+  }
+  if (form.categoryId !== loadedCategoryId.value) {
+    return '请先保存新的分类'
+  }
+  if (articleStatus.value !== 1) {
+    return '文章发布后才能调整分类内顺序'
+  }
+  return ''
+})
+
+const canOpenSortDialog = computed(() => sortDisabledReason.value === '')
+
+function openSortDialog() {
+  if (canOpenSortDialog.value) {
+    sortDialogVisible.value = true
+  }
+}
+
+/** 排序保存后同步当前文章在分类内的新位置 */
+function handleSortSaved(list: ArticleSortVO[]) {
+  const index = list.findIndex((item) => item.id === articleId.value)
+  if (index >= 0) {
+    form.categorySort = index + 1
+    loadedCategorySort.value = form.categorySort
+  }
+}
 
 const rules: FormRules = {
   title: [
@@ -55,7 +121,6 @@ const rules: FormRules = {
   content: [{ required: true, message: '请输入文章正文', trigger: 'change' }],
   cover: [{ max: 255, message: '封面地址不能超过 255 个字符', trigger: 'blur' }],
   description: [{ max: 500, message: '文章摘要不能超过 500 个字符', trigger: 'blur' }],
-  categorySort: [{ type: 'number', min: 1, message: '排序值必须为正整数', trigger: 'change' }],
 }
 
 function resetForm() {
@@ -66,7 +131,9 @@ function resetForm() {
   form.categoryId = 0
   form.categorySort = null
   form.tagIds = []
-  loadedCategoryId = 0
+  loadedCategoryId.value = 0
+  loadedCategorySort.value = null
+  articleStatus.value = null
 }
 
 async function loadPage() {
@@ -84,7 +151,9 @@ async function loadPage() {
       form.categoryId = article.categoryId ?? 0
       form.categorySort = form.categoryId > 0 ? (article.categorySort ?? null) : null
       form.tagIds = article.tagIds ?? []
-      loadedCategoryId = form.categoryId
+      loadedCategoryId.value = form.categoryId
+      loadedCategorySort.value = form.categorySort
+      articleStatus.value = article.status
     }
     await nextTick()
     formRef.value?.clearValidate()
@@ -141,8 +210,10 @@ async function handleSubmit(status: number) {
 
 /** 换分类时清空排序值：排序值只在分类内有效，留空由服务端重新编号；无分类时不参与排序 */
 function handleCategoryChange(value: number) {
-  if (value <= 0 || value !== loadedCategoryId) {
+  if (value <= 0 || value !== loadedCategoryId.value) {
     form.categorySort = null
+  } else {
+    form.categorySort = loadedCategorySort.value
   }
 }
 
@@ -206,17 +277,22 @@ onMounted(loadPage)
           </el-form-item>
 
           <el-form-item label="分类排序" prop="categorySort" class="meta-item">
-            <el-input-number
-              v-model="form.categorySort"
-              :min="1"
-              :max="999999"
-              :controls="false"
-              :value-on-clear="null"
-              :disabled="!hasCategory"
-              align="left"
-              :placeholder="hasCategory ? '留空自动编号' : '无分类不参与排序'"
-              class="full-width"
-            />
+            <div class="sort-field">
+              <span class="sort-value" :class="{ 'is-muted': !hasCategory }">
+                {{ categorySortText }}
+              </span>
+              <el-tooltip
+                :content="sortDisabledReason"
+                :disabled="sortDisabledReason === ''"
+                placement="top"
+              >
+                <span class="sort-button-wrap">
+                  <el-button :icon="Rank" :disabled="!canOpenSortDialog" @click="openSortDialog">
+                    调整顺序
+                  </el-button>
+                </span>
+              </el-tooltip>
+            </div>
           </el-form-item>
 
           <el-form-item label="标签" prop="tagIds" class="meta-item">
@@ -275,6 +351,14 @@ onMounted(loadPage)
         </div>
       </el-form>
     </el-card>
+
+    <ArticleSortDialog
+      v-model="sortDialogVisible"
+      :category-id="form.categoryId"
+      :category-name="selectedCategoryName"
+      :current-article-id="articleId"
+      @saved="handleSortSaved"
+    />
   </div>
 </template>
 
@@ -329,6 +413,28 @@ onMounted(loadPage)
 
 .full-width {
   width: 100%;
+}
+
+.sort-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.sort-value {
+  color: var(--el-text-color-regular);
+  font-size: 14px;
+}
+
+.sort-value.is-muted {
+  color: var(--el-text-color-placeholder);
+}
+
+.sort-button-wrap {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .actions {

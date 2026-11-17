@@ -19,6 +19,7 @@ import com.blog.pojo.dto.admin.ArticlePageQueryDTO;
 import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.po.Article;
 import com.blog.pojo.po.ArticleTag;
+import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.ArticleService;
@@ -29,8 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -200,6 +203,58 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         removeByIds(ids);
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
                 .in(ArticleTag::getArticleId, ids));
+    }
+
+    @Override
+    public List<ArticleSortVO> listCategorySort(Integer categoryId) {
+        checkCategoryExists(categoryId);
+        return baseMapper.selectCategorySortList(categoryId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCategorySort(Integer categoryId, List<Integer> ids) {
+        checkCategoryExists(categoryId);
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_IDS_REQUIRED);
+        }
+
+        Set<Integer> submittedIds = new LinkedHashSet<>();
+        for (Integer id : ids) {
+            if (id == null || !submittedIds.add(id)) {
+                throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_STALE);
+            }
+        }
+
+        // 锁定分类下全部文章，避免并发新增 / 删除 / 发布导致提交的集合过期
+        List<Article> categoryArticles = baseMapper.selectList(
+                new LambdaQueryWrapper<Article>()
+                        .select(Article::getId, Article::getStatus)
+                        .eq(Article::getCategoryId, categoryId)
+                        .last("FOR UPDATE"));
+        Set<Integer> publishedIds = categoryArticles.stream()
+                .filter(article -> Objects.equals(article.getStatus(), STATUS_PUBLISHED))
+                .map(Article::getId)
+                .collect(Collectors.toSet());
+        if (!publishedIds.equals(submittedIds)) {
+            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_STALE);
+        }
+
+        // 唯一索引 (category_id, category_sort) 逐行校验，交换 / 移动序号时必须两阶段更新：
+        // 先清空草稿的历史排序值，再把已发布文章写成唯一负值，最后写入连续序号 1..N
+        baseMapper.clearUnpublishedCategorySort(categoryId);
+        baseMapper.updateTempCategorySort(categoryId, ids);
+        baseMapper.updateCategorySort(categoryId, ids);
+    }
+
+    /**
+     * 校验分类存在且不是“无分类”
+     */
+    private void checkCategoryExists(Integer categoryId) {
+        if (categoryId == null || categoryId == NO_CATEGORY
+                || categoryMapper.selectById(categoryId) == null) {
+            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
+        }
     }
 
     /**

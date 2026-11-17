@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.blog.pojo.dto.admin.ArticleDTO;
 import com.blog.pojo.dto.admin.ArticlePageQueryDTO;
 import com.blog.pojo.po.Article;
+import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 
@@ -43,4 +44,14 @@ public interface ArticleService extends IService<Article> {
      * 批量删除文章
      */
     void deleteArticles(List<Integer> ids);
+
+    /**
+     * 查询分类内已发布文章排序列表
+     */
+    List<ArticleSortVO> listCategorySort(Integer categoryId);
+
+    /**
+     * 批量调整分类内文章排序
+     */
+    void updateCategorySort(Integer categoryId, List<Integer> ids);
 }

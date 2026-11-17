@@ -44,6 +44,55 @@
         WHERE category_id = #{categoryId}
     </select>
 
+    <!-- 查询分类内已发布文章排序列表：前端拖拽排序弹窗使用 -->
+    <select id="selectCategorySortList" resultType="com.blog.pojo.vo.admin.ArticleSortVO">
+        SELECT id, title, category_sort
+        FROM tb_article
+        WHERE category_id = #{categoryId}
+          AND status = 1
+        <!-- 未编号（category_sort 为 NULL）的排最后：MySQL 升序默认 NULL 在前，故先用 IS NULL 的 0/1 结果做首排序键 -->
+        ORDER BY category_sort IS NULL, category_sort ASC, publish_time ASC, id ASC
+    </select>
+
+    <!-- 清空分类内非已发布文章的历史排序值：草稿不参与分类内排序 -->
+    <!-- update_time = update_time：仅调整排序，不刷新文章更新时间 -->
+    <update id="clearUnpublishedCategorySort">
+        UPDATE tb_article
+        SET category_sort = NULL,
+            update_time  = update_time
+        WHERE category_id = #{categoryId}
+          AND status &lt;&gt; 1
+          AND category_sort IS NOT NULL
+    </update>
+
+    <!-- 批量重排第一阶段：先写唯一负值，避免唯一索引逐行校验导致交换冲突 -->
+    <update id="updateTempCategorySort">
+        UPDATE tb_article
+        SET category_sort = -id,
+            update_time  = update_time
+        WHERE category_id = #{categoryId}
+          AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量重排第二阶段：FIELD 返回 id 在提交列表中的位置（从 1 开始），即最终序号 -->
+    <update id="updateCategorySort">
+        UPDATE tb_article
+        SET category_sort = FIELD(id,
+            <foreach collection="ids" item="id" separator=",">
+                #{id}
+            </foreach>
+        ),
+            update_time  = update_time
+        WHERE category_id = #{categoryId}
+          AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
     <!-- 根据 ID 查询文章详情 -->
     <select id="selectArticleDetailById" resultType="com.blog.pojo.vo.admin.ArticleVO">
         SELECT a.id,
