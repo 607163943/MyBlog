@@ -35,20 +35,23 @@ const form = reactive({
   description: '',
   content: '',
   cover: '',
-  categoryId: null as number | null,
+  /** 所属分类 ID，0 表示无分类 */
+  categoryId: 0,
   categorySort: null as number | null,
   tagIds: [] as number[],
 })
 
+/** 无分类文章不参与分类内排序 */
+const hasCategory = computed(() => form.categoryId > 0)
+
 /** 编辑页加载时的原始分类，换分类时清空排序值以避免沿用旧分类的编号 */
-let loadedCategoryId: number | null = null
+let loadedCategoryId = 0
 
 const rules: FormRules = {
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' },
     { max: 200, message: '文章标题不能超过 200 个字符', trigger: 'blur' },
   ],
-  categoryId: [{ required: true, message: '请选择文章分类', trigger: 'change' }],
   content: [{ required: true, message: '请输入文章正文', trigger: 'change' }],
   cover: [{ max: 255, message: '封面地址不能超过 255 个字符', trigger: 'blur' }],
   description: [{ max: 500, message: '文章摘要不能超过 500 个字符', trigger: 'blur' }],
@@ -60,10 +63,10 @@ function resetForm() {
   form.description = ''
   form.content = ''
   form.cover = ''
-  form.categoryId = null
+  form.categoryId = 0
   form.categorySort = null
   form.tagIds = []
-  loadedCategoryId = null
+  loadedCategoryId = 0
 }
 
 async function loadPage() {
@@ -78,10 +81,10 @@ async function loadPage() {
       form.description = article.description ?? ''
       form.content = article.content ?? ''
       form.cover = article.cover ?? ''
-      form.categoryId = article.categoryId
-      form.categorySort = article.categorySort ?? null
+      form.categoryId = article.categoryId ?? 0
+      form.categorySort = form.categoryId > 0 ? (article.categorySort ?? null) : null
       form.tagIds = article.tagIds ?? []
-      loadedCategoryId = article.categoryId
+      loadedCategoryId = form.categoryId
     }
     await nextTick()
     formRef.value?.clearValidate()
@@ -107,10 +110,6 @@ async function handleSubmit(status: number) {
     ElMessage.warning('请输入文章正文')
     return
   }
-  if (form.categoryId === null) {
-    ElMessage.warning('请选择文章分类')
-    return
-  }
 
   const data: ArticleDTO = {
     title: form.title.trim(),
@@ -118,7 +117,7 @@ async function handleSubmit(status: number) {
     content: form.content,
     cover: form.cover.trim() || undefined,
     categoryId: form.categoryId,
-    categorySort: form.categorySort ?? undefined,
+    categorySort: hasCategory.value ? (form.categorySort ?? undefined) : undefined,
     tagIds: form.tagIds,
     status,
   }
@@ -140,9 +139,9 @@ async function handleSubmit(status: number) {
   }
 }
 
-/** 换分类时清空排序值：排序值只在分类内有效，留空由服务端重新编号 */
+/** 换分类时清空排序值：排序值只在分类内有效，留空由服务端重新编号；无分类时不参与排序 */
 function handleCategoryChange(value: number) {
-  if (loadedCategoryId !== null && value !== loadedCategoryId) {
+  if (value <= 0 || value !== loadedCategoryId) {
     form.categorySort = null
   }
 }
@@ -196,6 +195,7 @@ onMounted(loadPage)
               class="full-width"
               @change="handleCategoryChange"
             >
+              <el-option label="无分类" :value="0" />
               <el-option
                 v-for="category in store.categoryOptions"
                 :key="category.id"
@@ -212,8 +212,9 @@ onMounted(loadPage)
               :max="999999"
               :controls="false"
               :value-on-clear="null"
+              :disabled="!hasCategory"
               align="left"
-              placeholder="留空自动编号"
+              :placeholder="hasCategory ? '留空自动编号' : '无分类不参与排序'"
               class="full-width"
             />
           </el-form-item>

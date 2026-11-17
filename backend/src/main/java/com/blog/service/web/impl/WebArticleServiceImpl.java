@@ -70,7 +70,8 @@ public class WebArticleServiceImpl implements WebArticleService {
 
     @Override
     public List<WebArticleBriefVO> listByCategory(Integer categoryId) {
-        if (categoryId == null) {
+        // categoryId = 0 表示无分类，不对应任何分类目录
+        if (categoryId == null || categoryId <= 0) {
             throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
         }
         return articleMapper.selectPublishedByCategory(categoryId);
@@ -108,8 +109,10 @@ public class WebArticleServiceImpl implements WebArticleService {
         }
         fillTags(Collections.<WebArticleVO>singletonList(detail));
         // 上一篇 / 下一篇仅在同分类已发布文章中按 category_sort 查找；
-        // 当前文章未编号（category_sort 为 null）时不返回相邻文章
-        if (detail.getCategoryId() != null && detail.getCategorySort() != null) {
+        // 无分类（category_id = 0）或未编号（category_sort 为 null）时不返回相邻文章
+        if (detail.getCategoryId() != null
+                && detail.getCategoryId() > 0
+                && detail.getCategorySort() != null) {
             detail.setPrevArticle(articleMapper.selectPrevByCategorySort(
                     detail.getCategoryId(), detail.getCategorySort()));
             detail.setNextArticle(articleMapper.selectNextByCategorySort(

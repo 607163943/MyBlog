@@ -43,6 +43,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private static final int STATUS_DRAFT = 0;
     private static final int STATUS_PUBLISHED = 1;
 
+    /**
+     * 无分类：文章表 category_id 的默认值，表示该文章不属于任何分类
+     */
+    private static final int NO_CATEGORY = 0;
+
     private final CategoryMapper categoryMapper;
 
     private final TagMapper tagMapper;
@@ -83,7 +88,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public void addArticle(ArticleDTO dto) {
         String title = normalizeTitle(dto.getTitle());
         String content = normalizeContent(dto.getContent());
-        Integer categoryId = requireCategory(dto.getCategoryId());
+        Integer categoryId = normalizeCategory(dto.getCategoryId());
         int status = normalizeStatus(dto.getStatus() == null ? STATUS_DRAFT : dto.getStatus());
 
         Article article = new Article();
@@ -96,12 +101,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setStatus(status);
         article.setViewCount(0);
 
-        // 后台可手动指定分类内排序值；未填写时已发布文章自动追加到分类末尾
-        Integer categorySort = dto.getCategorySort();
-        if (categorySort != null) {
-            validateCategorySort(categoryId, categorySort, null);
-        } else if (status == STATUS_PUBLISHED) {
-            categorySort = nextCategorySort(categoryId);
+        // 分类内排序仅对有分类文章生效；无分类时固定为 null
+        Integer categorySort = null;
+        if (categoryId != NO_CATEGORY) {
+            // 后台可手动指定分类内排序值；未填写时已发布文章自动追加到分类末尾
+            categorySort = dto.getCategorySort();
+            if (categorySort != null) {
+                validateCategorySort(categoryId, categorySort, null);
+            } else if (status == STATUS_PUBLISHED) {
+                categorySort = nextCategorySort(categoryId);
+            }
         }
         article.setCategorySort(categorySort);
         if (status == STATUS_PUBLISHED) {
@@ -124,8 +133,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         String title = normalizeTitle(dto.getTitle());
         String content = normalizeContent(dto.getContent());
-        Integer categoryId = dto.getCategoryId() == null ? existing.getCategoryId() : dto.getCategoryId();
-        requireCategory(categoryId);
+        Integer categoryId = normalizeCategory(
+                dto.getCategoryId() == null ? existing.getCategoryId() : dto.getCategoryId());
         int status = dto.getStatus() == null
                 ? existing.getStatus()
                 : normalizeStatus(dto.getStatus());
@@ -136,12 +145,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             publishTime = LocalDateTime.now();
         }
 
-        // 后台可手动修改分类内排序值；未填写时沿用原有自动规则：
-        // 换分类后已发布文章重新追加到新分类末尾，已发布但未编号的补到分类末尾
-        Integer categorySort = dto.getCategorySort();
+        // 分类内排序仅对有分类文章生效；无分类时固定为 null
+        Integer categorySort;
         boolean categoryChanged = !Objects.equals(existing.getCategoryId(), categoryId);
-        if (categorySort != null) {
-            validateCategorySort(categoryId, categorySort, dto.getId());
+        if (categoryId == NO_CATEGORY) {
+            categorySort = null;
+        } else if (dto.getCategorySort() != null) {
+            // 后台可手动修改分类内排序值；未填写时沿用原有自动规则：
+            // 换分类后已发布文章重新追加到新分类末尾，已发布但未编号的补到分类末尾
+            validateCategorySort(categoryId, dto.getCategorySort(), dto.getId());
+            categorySort = dto.getCategorySort();
         } else {
             categorySort = existing.getCategorySort();
             if (categoryChanged) {
@@ -292,11 +305,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 校验分类存在
+     * 归一化分类：null 与 0 都表示无分类；其余取值必须为已存在的分类
      */
-    private Integer requireCategory(Integer categoryId) {
-        if (categoryId == null) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_REQUIRED);
+    private Integer normalizeCategory(Integer categoryId) {
+        if (categoryId == null || categoryId == NO_CATEGORY) {
+            return NO_CATEGORY;
         }
         if (categoryMapper.selectById(categoryId) == null) {
             throw new BusinessException(CategoryExceptionEnum.CATEGORY_SELECTED_NOT_FOUND);

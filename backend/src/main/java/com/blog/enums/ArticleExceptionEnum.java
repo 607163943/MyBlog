@@ -46,11 +46,6 @@ public enum ArticleExceptionEnum implements ExceptionEnum {
     ARTICLE_CONTENT_REQUIRED(207, "文章正文不能为空", 400),
 
     /**
-     * 未选择文章分类
-     */
-    ARTICLE_CATEGORY_REQUIRED(208, "请选择文章分类", 400),
-
-    /**
      * 文章状态取值不正确
      */
     ARTICLE_STATUS_INVALID(209, "文章状态不正确", 400),

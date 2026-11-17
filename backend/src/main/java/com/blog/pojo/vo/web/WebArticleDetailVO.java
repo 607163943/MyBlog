@@ -20,7 +20,7 @@ public class WebArticleDetailVO extends WebArticleVO {
     private String content;
 
     /**
-     * 分类内排序值：值越小越靠前，null 表示未编号
+     * 分类内排序值：值越小越靠前，null 表示未编号或无分类
      */
     private Integer categorySort;
 

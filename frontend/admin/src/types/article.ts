@@ -5,6 +5,7 @@ export interface ArticleVO {
   description: string | null
   content: string | null
   cover: string | null
+  /** 所属分类 ID，0 表示无分类 */
   categoryId: number
   categoryName: string | null
   /** 分类内排序值，null 表示未编号 */
@@ -28,8 +29,9 @@ export interface ArticleDTO {
   description?: string
   content: string
   cover?: string
+  /** 所属分类 ID，传 0 表示无分类 */
   categoryId: number
-  /** 分类内排序值，不传表示由服务端按现有规则处理 */
+  /** 分类内排序值，不传表示由服务端按现有规则处理；无分类时不生效 */
   categorySort?: number
   tagIds?: number[]
   status: number

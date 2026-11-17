@@ -11,10 +11,11 @@ const { post, activeTagId } = defineProps<{
   activeTagId?: number
 }>()
 
+/** 无分类文章（categoryId = 0）不展示分类 */
+const showCategory = computed(() => post.categoryId > 0 && !!post.categoryName)
+
 const categoryLink = computed(() => {
-  return post.categoryId
-    ? { name: 'category-detail', params: { id: post.categoryId } }
-    : { name: 'category' }
+  return { name: 'category-detail', params: { id: post.categoryId } }
 })
 
 function tagLink(tagId: number) {
@@ -33,9 +34,9 @@ function tagLink(tagId: number) {
       {{ formatNumber(post.viewCount) }}
     </span>
 
-    <RouterLink class="meta-item meta-link post-category" :to="categoryLink">
+    <RouterLink v-if="showCategory" class="meta-item meta-link post-category" :to="categoryLink">
       <el-icon><Folder /></el-icon>
-      {{ post.categoryName || '未分类' }}
+      {{ post.categoryName }}
     </RouterLink>
 
     <span class="meta-item post-tags">

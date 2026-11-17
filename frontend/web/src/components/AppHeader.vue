@@ -57,13 +57,14 @@ const currentPost = computed(() => {
 
 const categoryPosts = computed(() => {
   const post = currentPost.value
-  if (!post) return []
+  if (!post || post.categoryId <= 0) return []
   return articleStore.categoryIndex[post.categoryId] ?? []
 })
 
 const currentCategory = computed<CategoryVO | undefined>(() => {
   const post = currentPost.value
-  if (!post) return undefined
+  // categoryId = 0 表示无分类，不提供分类目录
+  if (!post || post.categoryId <= 0) return undefined
   return {
     id: post.categoryId,
     name: post.categoryName || '未分类',

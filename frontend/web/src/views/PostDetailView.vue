@@ -22,9 +22,15 @@ const postId = computed(() => parsePositiveInt(route.params.id))
 const post = computed(() => articleStore.detail)
 const previewId = computed(() => `post-detail-preview-${postId.value ?? 0}`)
 
+/** 无分类文章（categoryId = 0）不展示任何分类入口 */
+const showCategory = computed(() => {
+  const current = post.value
+  return !!current && current.categoryId > 0 && !!current.categoryName
+})
+
 const categoryLink = computed(() => {
   const current = post.value
-  return current?.categoryId
+  return current
     ? { name: 'category-detail', params: { id: current.categoryId } }
     : { name: 'category' }
 })
@@ -71,8 +77,8 @@ watch(post, (current) => {
             <el-button class="article-back" text :icon="ArrowLeft" @click="goBack">返回</el-button>
             <el-breadcrumb class="article-breadcrumb" separator="/">
               <el-breadcrumb-item :to="{ name: 'home' }">首页</el-breadcrumb-item>
-              <el-breadcrumb-item :to="categoryLink">
-                {{ post.categoryName || '未分类' }}
+              <el-breadcrumb-item v-if="showCategory" :to="categoryLink">
+                {{ post.categoryName }}
               </el-breadcrumb-item>
               <el-breadcrumb-item>正文</el-breadcrumb-item>
             </el-breadcrumb>
@@ -104,11 +110,11 @@ watch(post, (current) => {
           <el-divider />
 
           <div class="article-taxonomies">
-            <div class="article-taxonomy-row">
+            <div v-if="showCategory" class="article-taxonomy-row">
               <span class="article-taxonomy-label">分类</span>
               <RouterLink :to="categoryLink">
                 <el-tag type="warning" effect="plain" size="small">
-                  {{ post.categoryName || '未分类' }}
+                  {{ post.categoryName }}
                 </el-tag>
               </RouterLink>
             </div>

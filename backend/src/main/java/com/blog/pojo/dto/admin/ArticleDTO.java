@@ -40,7 +40,7 @@ public class ArticleDTO {
     private String cover;
 
     /**
-     * 所属分类 ID
+     * 所属分类 ID：null 或 0 表示无分类
      */
     private Integer categoryId;
 

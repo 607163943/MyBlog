@@ -45,7 +45,7 @@ public class Article {
     private String cover;
 
     /**
-     * 所属分类 ID
+     * 所属分类 ID：0 表示无分类
      */
     private Integer categoryId;
 

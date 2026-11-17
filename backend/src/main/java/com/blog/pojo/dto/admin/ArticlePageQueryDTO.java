@@ -26,7 +26,7 @@ public class ArticlePageQueryDTO extends PageQueryDTO {
     private Integer status;
 
     /**
-     * 所属分类 ID，为空表示全部分类
+     * 所属分类 ID：0 表示筛选无分类文章，为空表示全部分类
      */
     private Integer categoryId;
 }

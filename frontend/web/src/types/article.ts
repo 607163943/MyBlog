@@ -19,6 +19,7 @@ export interface ArticleVO {
   title: string
   description: string | null
   cover: string | null
+  /** 所属分类 ID，0 表示无分类 */
   categoryId: number
   categoryName: string | null
   tags: ArticleTagVO[]
@@ -29,7 +30,7 @@ export interface ArticleVO {
 /** 文章详情 */
 export interface ArticleDetailVO extends ArticleVO {
   content: string
-  /** 分类内排序值，null 表示未编号 */
+  /** 分类内排序值，null 表示未编号或无分类 */
   categorySort: number | null
   prevArticle: ArticleBriefVO | null
   nextArticle: ArticleBriefVO | null
