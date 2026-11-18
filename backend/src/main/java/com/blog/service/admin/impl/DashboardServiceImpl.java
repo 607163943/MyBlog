@@ -1,5 +1,7 @@
 package com.blog.service.admin.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.enums.DashboardExceptionEnum;
@@ -7,20 +9,25 @@ import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.CategoryMapper;
 import com.blog.mapper.TagMapper;
+import com.blog.mapper.ViewSnapshotMapper;
 import com.blog.pojo.dto.admin.ArticleRankQueryDTO;
 import com.blog.pojo.dto.admin.CategoryRankQueryDTO;
 import com.blog.pojo.dto.PageQueryDTO;
+import com.blog.pojo.po.ViewSnapshot;
 import com.blog.pojo.vo.admin.ArticleRankVO;
 import com.blog.pojo.vo.admin.ArticleTagNameVO;
 import com.blog.pojo.vo.admin.CategoryRankVO;
 import com.blog.pojo.vo.admin.DashboardStatisticsVO;
+import com.blog.pojo.vo.admin.ViewTrendVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.DashboardService;
 import com.blog.util.PageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,15 +37,23 @@ import java.util.stream.Collectors;
 /**
  * 数据总览服务实现
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
+
+    /**
+     * 趋势图展示的天数
+     */
+    private static final int VIEW_TREND_DAYS = 90;
 
     private final ArticleMapper articleMapper;
 
     private final CategoryMapper categoryMapper;
 
     private final TagMapper tagMapper;
+
+    private final ViewSnapshotMapper viewSnapshotMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,6 +92,37 @@ public class DashboardServiceImpl implements DashboardService {
                 dto.getMinCount(),
                 dto.getMaxCount());
         return toPageVO(pageResult);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ViewTrendVO> getViewTrend() {
+        return viewSnapshotMapper.selectDailyViewTrend(
+                LocalDate.now().minusDays(VIEW_TREND_DAYS - 1L));
+    }
+
+    @Override
+    @Transactional
+    public void recordViewSnapshot() {
+        Long totalViewCount = articleMapper.selectPublishedTotalViewCount();
+        LocalDate today = LocalDate.now();
+        ViewSnapshot snapshot = viewSnapshotMapper.selectOne(
+                new LambdaQueryWrapper<ViewSnapshot>()
+                        .eq(ViewSnapshot::getSnapshotDate, today));
+        if (snapshot == null) {
+            ViewSnapshot newSnapshot = new ViewSnapshot();
+            newSnapshot.setSnapshotDate(today);
+            newSnapshot.setTotalViewCount(totalViewCount);
+            viewSnapshotMapper.insert(newSnapshot);
+        } else {
+            // 仅更新总量，update_time 由数据库自动维护
+            viewSnapshotMapper.update(null,
+                    new LambdaUpdateWrapper<ViewSnapshot>()
+                            .eq(ViewSnapshot::getId, snapshot.getId())
+                            .set(ViewSnapshot::getTotalViewCount, totalViewCount));
+        }
+        log.info("[VIEW_SNAPSHOT] date={} totalViewCount={} action={}",
+                today, totalViewCount, snapshot == null ? "INSERT" : "UPDATE");
     }
 
     /**

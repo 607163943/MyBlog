@@ -6,12 +6,15 @@ import com.blog.pojo.dto.admin.CategoryRankQueryDTO;
 import com.blog.pojo.vo.admin.ArticleRankVO;
 import com.blog.pojo.vo.admin.CategoryRankVO;
 import com.blog.pojo.vo.admin.DashboardStatisticsVO;
+import com.blog.pojo.vo.admin.ViewTrendVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 数据总览接口
@@ -45,5 +48,13 @@ public class DashboardController {
     @GetMapping("/category-rank/page")
     public Result<PageVO<CategoryRankVO>> categoryRankPage(CategoryRankQueryDTO dto) {
         return Result.success(dashboardService.pageCategoryRank(dto));
+    }
+
+    /**
+     * 查询文章每日浏览量趋势（最近 90 天）
+     */
+    @GetMapping("/view-trend")
+    public Result<List<ViewTrendVO>> viewTrend() {
+        return Result.success(dashboardService.getViewTrend());
     }
 }

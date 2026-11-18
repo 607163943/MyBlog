@@ -5,6 +5,7 @@ import type {
   CategoryRankQuery,
   CategoryRankVO,
   DashboardStatisticsVO,
+  ViewTrendVO,
 } from '@/types/dashboard'
 import type { PageVO } from '@/types/common'
 
@@ -31,5 +32,13 @@ export function getCategoryRankPage(params: CategoryRankQuery) {
     url: '/dashboard/category-rank/page',
     method: 'get',
     params,
+  })
+}
+
+/** 查询文章每日浏览量趋势（最近 90 天） */
+export function getViewTrend() {
+  return request<ViewTrendVO[]>({
+    url: '/dashboard/view-trend',
+    method: 'get',
   })
 }

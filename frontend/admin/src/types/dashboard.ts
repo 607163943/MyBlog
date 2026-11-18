@@ -53,3 +53,11 @@ export interface CategoryRankVO {
   name: string
   articleCount: number
 }
+
+/** 文章每日浏览量趋势点 */
+export interface ViewTrendVO {
+  /** 快照日期，格式 yyyy-MM-dd */
+  snapshotDate: string
+  /** 当日新增浏览量；无前一日快照时为 null */
+  dailyViewCount: number | null
+}

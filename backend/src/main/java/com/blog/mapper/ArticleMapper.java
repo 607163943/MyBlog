@@ -120,6 +120,11 @@ public interface ArticleMapper extends BaseMapper<Article> {
     /* ==================== 数据统计 ==================== */
 
     /**
+     * 查询已发布文章的总浏览量
+     */
+    Long selectPublishedTotalViewCount();
+
+    /**
      * 查询后台统计卡片数据：文章总数、草稿数、已发布数，以及分类数、标签数
      */
     DashboardStatisticsVO selectStatistics();

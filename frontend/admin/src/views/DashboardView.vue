@@ -5,6 +5,7 @@ import { useDashboardStore } from '@/stores/dashboard'
 import { formatNumber } from '@/util/format'
 import ArticleRankCard from '@/components/dashboard/ArticleRankCard.vue'
 import CategoryRankCard from '@/components/dashboard/CategoryRankCard.vue'
+import ViewTrendChart from '@/components/dashboard/ViewTrendChart.vue'
 
 const store = useDashboardStore()
 
@@ -54,6 +55,8 @@ onMounted(() => {
         </el-card>
       </el-col>
     </el-row>
+
+    <ViewTrendChart />
 
     <el-row :gutter="16" class="rank-row">
       <el-col :xs="24" :md="14">

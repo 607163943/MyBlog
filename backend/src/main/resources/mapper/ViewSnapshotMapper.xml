@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.ViewSnapshotMapper">
+
+    <!-- 每日浏览量趋势：当天快照总量减去前一日快照总量，无前一日快照时为 NULL -->
+    <select id="selectDailyViewTrend" resultType="com.blog.pojo.vo.admin.ViewTrendVO">
+        SELECT s.snapshot_date,
+               s.total_view_count - p.total_view_count AS daily_view_count
+        FROM tb_view_snapshot s
+                 LEFT JOIN tb_view_snapshot p
+                           ON p.snapshot_date = DATE_SUB(s.snapshot_date, INTERVAL 1 DAY)
+        WHERE s.snapshot_date &gt;= #{startDate}
+        ORDER BY s.snapshot_date ASC
+    </select>
+
+</mapper>
