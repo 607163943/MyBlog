@@ -2,6 +2,7 @@ package com.blog.service.admin;
 
 import com.blog.pojo.dto.admin.ArticleRankQueryDTO;
 import com.blog.pojo.dto.admin.CategoryRankQueryDTO;
+import com.blog.pojo.vo.admin.ArticleContributionVO;
 import com.blog.pojo.vo.admin.ArticleRankVO;
 import com.blog.pojo.vo.admin.CategoryRankVO;
 import com.blog.pojo.vo.admin.DashboardStatisticsVO;
@@ -31,9 +32,14 @@ public interface DashboardService {
     PageVO<CategoryRankVO> pageCategoryRank(CategoryRankQueryDTO dto);
 
     /**
-     * 查询最近 90 天的文章每日浏览量趋势
+     * 查询最近 30 天的文章每日浏览量趋势
      */
     List<ViewTrendVO> getViewTrend();
+
+    /**
+     * 查询当前用户最近一年的文章每日贡献
+     */
+    List<ArticleContributionVO> getArticleContribution();
 
     /**
      * 记录当天已发布文章总浏览量快照：不存在则插入，存在则更新

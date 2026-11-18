@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.ArticleContributionMapper">
+
+    <!-- 按 (user_id, contribution_date) 唯一索引做原子累加，避免并发保存时丢失贡献 -->
+    <insert id="increaseDailyContribution">
+        INSERT INTO tb_article_contribution (user_id, contribution_date, contribution_count)
+        VALUES (#{userId}, #{contributionDate}, 1)
+        ON DUPLICATE KEY UPDATE contribution_count = contribution_count + 1
+    </insert>
+
+    <!-- 查询指定用户在日期范围内的每日贡献，无记录的日期由前端补 0 -->
+    <select id="selectDailyContribution" resultType="com.blog.pojo.vo.admin.ArticleContributionVO">
+        SELECT contribution_date,
+               contribution_count
+        FROM tb_article_contribution
+        WHERE user_id = #{userId}
+          AND contribution_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY contribution_date ASC
+    </select>
+
+</mapper>

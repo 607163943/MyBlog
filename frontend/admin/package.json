@@ -24,9 +24,11 @@
     "element-plus": "^2.14.8",
     "pinia": "^4.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
+    "tippy.js": "^6.3.7",
     "vue": "^3.5.42",
     "vue-draggable-plus": "^0.6.1",
-    "vue-router": "^5.3.1"
+    "vue-router": "^5.3.1",
+    "vue3-calendar-heatmap": "^2.0.5"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.5",

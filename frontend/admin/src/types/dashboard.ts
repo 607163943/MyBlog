@@ -61,3 +61,11 @@ export interface ViewTrendVO {
   /** 当日新增浏览量；无前一日快照时为 null */
   dailyViewCount: number | null
 }
+
+/** 文章每日贡献 */
+export interface ArticleContributionVO {
+  /** 贡献日期，格式 yyyy-MM-dd */
+  contributionDate: string
+  /** 当日贡献次数 */
+  contributionCount: number
+}

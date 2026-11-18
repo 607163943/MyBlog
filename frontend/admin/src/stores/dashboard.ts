@@ -1,12 +1,14 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
+  getArticleContribution,
   getArticleRankPage,
   getCategoryRankPage,
   getDashboardStatistics,
   getViewTrend,
 } from '@/api/dashboard'
 import type {
+  ArticleContributionVO,
   ArticleRankVO,
   CategoryRankVO,
   DashboardStatisticsVO,
@@ -32,11 +34,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
   /** 分类 Top5 加载状态 */
   const categoryTopLoading = ref(false)
 
-  /** 文章每日浏览量趋势（最近 90 天） */
+  /** 文章每日浏览量趋势（最近 30 天） */
   const viewTrend = ref<ViewTrendVO[]>([])
 
   /** 趋势图加载状态 */
   const viewTrendLoading = ref(false)
+
+  /** 当前用户最近一年的文章每日贡献 */
+  const contributions = ref<ArticleContributionVO[]>([])
+
+  /** 贡献热力图加载状态 */
+  const contributionLoading = ref(false)
 
   /** 查询统计卡片 */
   async function fetchStats() {
@@ -88,6 +96,16 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  /** 查询当前用户最近一年的文章每日贡献 */
+  async function fetchContribution() {
+    contributionLoading.value = true
+    try {
+      contributions.value = await getArticleContribution()
+    } finally {
+      contributionLoading.value = false
+    }
+  }
+
   /** 并发加载总览数据，单块失败不影响其他区块 */
   async function fetchOverview() {
     await Promise.allSettled([
@@ -95,6 +113,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       fetchArticleTop5(),
       fetchCategoryTop5(),
       fetchViewTrend(),
+      fetchContribution(),
     ])
   }
 
@@ -107,10 +126,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
     categoryTopLoading,
     viewTrend,
     viewTrendLoading,
+    contributions,
+    contributionLoading,
     fetchStats,
     fetchArticleTop5,
     fetchCategoryTop5,
     fetchViewTrend,
+    fetchContribution,
     fetchOverview,
   }
 })

@@ -5,6 +5,7 @@ import { useDashboardStore } from '@/stores/dashboard'
 import { formatNumber } from '@/util/format'
 import ArticleRankCard from '@/components/dashboard/ArticleRankCard.vue'
 import CategoryRankCard from '@/components/dashboard/CategoryRankCard.vue'
+import ContributionHeatmap from '@/components/dashboard/ContributionHeatmap.vue'
 import ViewTrendChart from '@/components/dashboard/ViewTrendChart.vue'
 
 const store = useDashboardStore()
@@ -66,6 +67,8 @@ onMounted(() => {
         <CategoryRankCard />
       </el-col>
     </el-row>
+
+    <ContributionHeatmap />
   </div>
 </template>
 

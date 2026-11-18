@@ -123,7 +123,7 @@ onBeforeUnmount(() => {
   <el-card shadow="never" class="trend-card">
     <div class="trend-header">
       <span class="trend-title">文章每日浏览量</span>
-      <span class="trend-sub">近 90 天</span>
+      <span class="trend-sub">近 30 天</span>
     </div>
     <div v-loading="store.viewTrendLoading" class="chart-wrapper">
       <div ref="chartRef" class="trend-chart"></div>

@@ -3,6 +3,7 @@ package com.blog.controller.admin;
 import com.blog.common.Result;
 import com.blog.pojo.dto.admin.ArticleRankQueryDTO;
 import com.blog.pojo.dto.admin.CategoryRankQueryDTO;
+import com.blog.pojo.vo.admin.ArticleContributionVO;
 import com.blog.pojo.vo.admin.ArticleRankVO;
 import com.blog.pojo.vo.admin.CategoryRankVO;
 import com.blog.pojo.vo.admin.DashboardStatisticsVO;
@@ -51,10 +52,18 @@ public class DashboardController {
     }
 
     /**
-     * 查询文章每日浏览量趋势（最近 90 天）
+     * 查询文章每日浏览量趋势（最近 30 天）
      */
     @GetMapping("/view-trend")
     public Result<List<ViewTrendVO>> viewTrend() {
         return Result.success(dashboardService.getViewTrend());
+    }
+
+    /**
+     * 查询当前用户最近一年的文章每日贡献
+     */
+    @GetMapping("/contribution")
+    public Result<List<ArticleContributionVO>> contribution() {
+        return Result.success(dashboardService.getArticleContribution());
     }
 }

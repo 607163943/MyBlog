@@ -1,11 +1,13 @@
 package com.blog.service.admin.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.enums.DashboardExceptionEnum;
 import com.blog.exception.BusinessException;
+import com.blog.mapper.ArticleContributionMapper;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.CategoryMapper;
 import com.blog.mapper.TagMapper;
@@ -14,6 +16,7 @@ import com.blog.pojo.dto.admin.ArticleRankQueryDTO;
 import com.blog.pojo.dto.admin.CategoryRankQueryDTO;
 import com.blog.pojo.dto.PageQueryDTO;
 import com.blog.pojo.po.ViewSnapshot;
+import com.blog.pojo.vo.admin.ArticleContributionVO;
 import com.blog.pojo.vo.admin.ArticleRankVO;
 import com.blog.pojo.vo.admin.ArticleTagNameVO;
 import com.blog.pojo.vo.admin.CategoryRankVO;
@@ -45,9 +48,16 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * 趋势图展示的天数
      */
-    private static final int VIEW_TREND_DAYS = 90;
+    private static final int VIEW_TREND_DAYS = 30;
+
+    /**
+     * 贡献日历展示的天数（含今天）
+     */
+    private static final int CONTRIBUTION_DAYS = 365;
 
     private final ArticleMapper articleMapper;
+
+    private final ArticleContributionMapper articleContributionMapper;
 
     private final CategoryMapper categoryMapper;
 
@@ -99,6 +109,16 @@ public class DashboardServiceImpl implements DashboardService {
     public List<ViewTrendVO> getViewTrend() {
         return viewSnapshotMapper.selectDailyViewTrend(
                 LocalDate.now().minusDays(VIEW_TREND_DAYS - 1L));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArticleContributionVO> getArticleContribution() {
+        LocalDate today = LocalDate.now();
+        return articleContributionMapper.selectDailyContribution(
+                StpUtil.getLoginIdAsInt(),
+                today.minusDays(CONTRIBUTION_DAYS - 1L),
+                today);
     }
 
     @Override

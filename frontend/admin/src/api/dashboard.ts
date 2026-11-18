@@ -1,5 +1,6 @@
 import { request } from '@/util/request'
 import type {
+  ArticleContributionVO,
   ArticleRankQuery,
   ArticleRankVO,
   CategoryRankQuery,
@@ -35,10 +36,18 @@ export function getCategoryRankPage(params: CategoryRankQuery) {
   })
 }
 
-/** 查询文章每日浏览量趋势（最近 90 天） */
+/** 查询文章每日浏览量趋势（最近 30 天） */
 export function getViewTrend() {
   return request<ViewTrendVO[]>({
     url: '/dashboard/view-trend',
+    method: 'get',
+  })
+}
+
+/** 查询当前用户最近一年的文章每日贡献 */
+export function getArticleContribution() {
+  return request<ArticleContributionVO[]>({
+    url: '/dashboard/contribution',
     method: 'get',
   })
 }

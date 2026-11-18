@@ -10,6 +10,7 @@ import com.blog.enums.ArticleExceptionEnum;
 import com.blog.enums.CategoryExceptionEnum;
 import com.blog.enums.TagExceptionEnum;
 import com.blog.exception.BusinessException;
+import com.blog.mapper.ArticleContributionMapper;
 import com.blog.mapper.ArticleMapper;
 import com.blog.mapper.ArticleTagMapper;
 import com.blog.mapper.CategoryMapper;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -56,6 +58,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final TagMapper tagMapper;
 
     private final ArticleTagMapper articleTagMapper;
+
+    private final ArticleContributionMapper articleContributionMapper;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticlePageQueryDTO dto) {
@@ -121,6 +125,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         save(article);
         saveArticleTags(article.getId(), dto.getTagIds());
+        recordContribution();
     }
 
     @Override
@@ -182,6 +187,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (dto.getTagIds() != null) {
             replaceArticleTags(dto.getId(), dto.getTagIds());
         }
+        recordContribution();
     }
 
     @Override
@@ -245,6 +251,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         baseMapper.clearUnpublishedCategorySort(categoryId);
         baseMapper.updateTempCategorySort(categoryId, ids);
         baseMapper.updateCategorySort(categoryId, ids);
+    }
+
+    /**
+     * 记录当前用户当天的文章贡献：新增 / 编辑保存成功后次数 +1
+     */
+    private void recordContribution() {
+        articleContributionMapper.increaseDailyContribution(
+                StpUtil.getLoginIdAsInt(), LocalDate.now());
     }
 
     /**
