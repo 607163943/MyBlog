@@ -45,6 +45,11 @@ public class Article {
     private String cover;
 
     /**
+     * 封面文件 ID，关联 tb_file_asset.id
+     */
+    private Integer coverFileId;
+
+    /**
      * 所属分类 ID：0 表示无分类
      */
     private Integer categoryId;

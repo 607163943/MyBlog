@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.common.Constants;
 import com.blog.enums.ArticleExceptionEnum;
 import com.blog.enums.CategoryExceptionEnum;
+import com.blog.enums.FileExceptionEnum;
 import com.blog.enums.TagExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.ArticleContributionMapper;
@@ -24,6 +26,8 @@ import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.ArticleService;
+import com.blog.service.admin.FileRefService;
+import com.blog.service.admin.FileAssetService;
 import com.blog.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,6 +64,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleTagMapper articleTagMapper;
 
     private final ArticleContributionMapper articleContributionMapper;
+
+    private final FileAssetService fileAssetService;
+
+    private final FileRefService fileRefService;
 
     @Override
     public PageVO<ArticleVO> pageQuery(ArticlePageQueryDTO dto) {
@@ -98,11 +106,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Integer categoryId = normalizeCategory(dto.getCategoryId());
         int status = normalizeStatus(dto.getStatus() == null ? STATUS_DRAFT : dto.getStatus());
 
+        String coverUrl = normalizeOptionalText(dto.getCover());
+        Integer coverFileId = resolveCoverFileId(dto.getCoverFileId(), coverUrl);
+
         Article article = new Article();
         article.setTitle(title);
         article.setDescription(normalizeOptionalText(dto.getDescription()));
         article.setContent(content);
-        article.setCover(normalizeOptionalText(dto.getCover()));
+        article.setCover(resolveCoverUrl(coverFileId, coverUrl));
+        article.setCoverFileId(coverFileId);
         article.setCategoryId(categoryId);
         article.setAuthorId(StpUtil.getLoginIdAsInt());
         article.setStatus(status);
@@ -125,6 +137,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         save(article);
         saveArticleTags(article.getId(), dto.getTagIds());
+        replaceArticleFileRefs(article.getId(), coverFileId, content);
         recordContribution();
     }
 
@@ -141,6 +154,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         String title = normalizeTitle(dto.getTitle());
         String content = normalizeContent(dto.getContent());
+        String coverUrl = normalizeOptionalText(dto.getCover());
+        Integer coverFileId = resolveCoverFileId(dto.getCoverFileId(), coverUrl);
         Integer categoryId = normalizeCategory(
                 dto.getCategoryId() == null ? existing.getCategoryId() : dto.getCategoryId());
         int status = dto.getStatus() == null
@@ -177,7 +192,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getTitle, title)
                 .set(Article::getDescription, normalizeOptionalText(dto.getDescription()))
                 .set(Article::getContent, content)
-                .set(Article::getCover, normalizeOptionalText(dto.getCover()))
+                .set(Article::getCover, resolveCoverUrl(coverFileId, coverUrl))
+                .set(Article::getCoverFileId, coverFileId)
                 .set(Article::getCategoryId, categoryId)
                 .set(Article::getCategorySort, categorySort)
                 .set(Article::getStatus, status)
@@ -187,6 +203,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (dto.getTagIds() != null) {
             replaceArticleTags(dto.getId(), dto.getTagIds());
         }
+        replaceArticleFileRefs(dto.getId(), coverFileId, content);
         recordContribution();
     }
 
@@ -198,6 +215,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
                 .eq(ArticleTag::getArticleId, id));
+        fileRefService.deleteRefs(Constants.FILE_BIZ_TYPE_ARTICLE, id);
     }
 
     @Override
@@ -209,6 +227,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         removeByIds(ids);
         articleTagMapper.delete(new LambdaQueryWrapper<ArticleTag>()
                 .in(ArticleTag::getArticleId, ids));
+        fileRefService.deleteRefs(Constants.FILE_BIZ_TYPE_ARTICLE, ids);
     }
 
     @Override
@@ -259,6 +278,45 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private void recordContribution() {
         articleContributionMapper.increaseDailyContribution(
                 StpUtil.getLoginIdAsInt(), LocalDate.now());
+    }
+
+    /**
+     * 解析封面文件 ID：优先使用前端提交的 fileId，缺失时按本地 URL 反查
+     */
+    private Integer resolveCoverFileId(Integer requestedFileId, String coverUrl) {
+        if (requestedFileId != null) {
+            if (fileAssetService.getById(requestedFileId) == null) {
+                throw new BusinessException(FileExceptionEnum.FILE_NOT_FOUND);
+            }
+            return requestedFileId;
+        }
+        if (coverUrl == null || coverUrl.isEmpty()) {
+            return null;
+        }
+        return fileAssetService.resolveFileAssetIdByUrl(coverUrl);
+    }
+
+    /**
+     * 解析到文件 ID 时按存储配置重建 URL，避免 URL 与 file_id 不一致
+     */
+    private String resolveCoverUrl(Integer coverFileId, String fallbackUrl) {
+        if (coverFileId == null) {
+            return fallbackUrl;
+        }
+        String url = fileAssetService.buildUrl(fileAssetService.getById(coverFileId));
+        return url == null ? fallbackUrl : url;
+    }
+
+    /**
+     * 整组重建文章的文件引用：封面 + 正文中的本地图片
+     */
+    private void replaceArticleFileRefs(Integer articleId, Integer coverFileId, String content) {
+        Set<Integer> fileIds = new LinkedHashSet<>();
+        if (coverFileId != null) {
+            fileIds.add(coverFileId);
+        }
+        fileIds.addAll(fileAssetService.resolveFileAssetIdsByContent(content));
+        fileRefService.replaceRefs(Constants.FILE_BIZ_TYPE_ARTICLE, articleId, fileIds);
     }
 
     /**

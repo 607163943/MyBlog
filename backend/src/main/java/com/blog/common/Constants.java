@@ -25,6 +25,21 @@ public final class Constants {
      */
     public static final int MAX_LIMIT = 50;
 
+    /**
+     * 文件存储类型：本地存储
+     */
+    public static final int FILE_STORAGE_TYPE_LOCAL = 0;
+
+    /**
+     * 文件引用业务类型：文章
+     */
+    public static final String FILE_BIZ_TYPE_ARTICLE = "article";
+
+    /**
+     * 文件引用业务类型：用户
+     */
+    public static final String FILE_BIZ_TYPE_USER = "user";
+
     private Constants() {
     }
 }

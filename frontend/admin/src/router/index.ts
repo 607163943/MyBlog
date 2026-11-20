@@ -59,6 +59,12 @@ const router = createRouter({
           meta: { title: '评论管理' },
         },
         {
+          path: 'file-asset',
+          name: 'file-asset',
+          component: () => import('@/views/FileAssetView.vue'),
+          meta: { title: '文件管理' },
+        },
+        {
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/ProfileView.vue'),

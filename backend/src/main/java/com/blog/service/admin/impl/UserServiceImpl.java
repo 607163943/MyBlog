@@ -10,6 +10,8 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.blog.common.Constants;
+import com.blog.enums.FileExceptionEnum;
 import com.blog.enums.UserExceptionEnum;
 import com.blog.exception.BusinessException;
 import com.blog.mapper.UserMapper;
@@ -20,14 +22,21 @@ import com.blog.pojo.po.User;
 import com.blog.pojo.vo.admin.CaptchaVO;
 import com.blog.pojo.vo.admin.LoginVO;
 import com.blog.pojo.vo.admin.UserInfoVO;
+import com.blog.service.admin.FileRefService;
+import com.blog.service.admin.FileAssetService;
 import com.blog.service.admin.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 /**
  * 用户服务实现
  */
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     /**
@@ -64,6 +73,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 验证码缓存：key 为验证码标识，value 为验证码内容
      */
     private static final TimedCache<String, String> CAPTCHA_CACHE = new TimedCache<>(CAPTCHA_TIMEOUT);
+
+    private final FileAssetService fileAssetService;
+
+    private final FileRefService fileRefService;
 
     static {
         // 每分钟清理一次过期验证码
@@ -116,6 +129,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UpdateUserInfoDTO dto) {
         Integer userId = StpUtil.getLoginIdAsInt();
         if (getById(userId) == null) {
@@ -139,14 +153,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (avatar.length() > MAX_AVATAR_LENGTH) {
             throw new BusinessException(UserExceptionEnum.AVATAR_TOO_LONG);
         }
+        Integer avatarFileId = resolveAvatarFileId(dto.getAvatarFileId(), avatar);
+        if (avatarFileId != null) {
+            String url = fileAssetService.buildUrl(fileAssetService.getById(avatarFileId));
+            if (url != null) {
+                avatar = url;
+            }
+        }
 
         // updateById 默认忽略 null 字段，这里用 UpdateWrapper 以支持清空邮箱 / 头像
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<User>()
                 .eq(User::getId, userId)
                 .set(User::getNickname, nickname)
                 .set(User::getEmail, email.isEmpty() ? null : email)
-                .set(User::getAvatar, avatar.isEmpty() ? null : avatar);
+                .set(User::getAvatar, avatar.isEmpty() ? null : avatar)
+                .set(User::getAvatarFileId, avatarFileId);
         update(wrapper);
+
+        fileRefService.replaceRefs(Constants.FILE_BIZ_TYPE_USER, userId,
+                avatarFileId == null
+                        ? Collections.emptyList()
+                        : Collections.singletonList(avatarFileId));
+    }
+
+    /**
+     * 解析头像文件 ID：优先使用前端提交的 fileId，缺失时按本地 URL 反查
+     */
+    private Integer resolveAvatarFileId(Integer requestedFileId, String avatarUrl) {
+        if (requestedFileId != null) {
+            if (fileAssetService.getById(requestedFileId) == null) {
+                throw new BusinessException(FileExceptionEnum.FILE_NOT_FOUND);
+            }
+            return requestedFileId;
+        }
+        if (avatarUrl == null || avatarUrl.isEmpty()) {
+            return null;
+        }
+        return fileAssetService.resolveFileAssetIdByUrl(avatarUrl);
     }
 
     @Override

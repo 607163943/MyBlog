@@ -25,6 +25,12 @@ let crepe: Crepe | null = null
 let creating = false
 let destroyed = false
 
+/** Crepe 的 onUpload 只接收图片 URL，fileId 由后端保存文章时按 Markdown URL 反查 */
+async function handleImageUpload(file: File) {
+  const { url } = await uploadImage(file)
+  return url
+}
+
 onMounted(async () => {
   if (!editorRef.value) {
     return
@@ -36,7 +42,7 @@ onMounted(async () => {
     featureConfigs: {
       [Crepe.Feature.Placeholder]: { text: props.placeholder },
       [Crepe.Feature.ImageBlock]: {
-        onUpload: uploadImage,
+        onUpload: handleImageUpload,
         blockUploadButton: '上传图片',
         blockUploadPlaceholderText: '或粘贴图片链接',
         blockConfirmButton: '确认',

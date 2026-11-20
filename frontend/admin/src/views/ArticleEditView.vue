@@ -36,6 +36,7 @@ const form = reactive({
   description: '',
   content: '',
   cover: '',
+  coverFileId: null as number | null,
   /** 所属分类 ID，0 表示无分类 */
   categoryId: 0,
   categorySort: null as number | null,
@@ -128,6 +129,7 @@ function resetForm() {
   form.description = ''
   form.content = ''
   form.cover = ''
+  form.coverFileId = null
   form.categoryId = 0
   form.categorySort = null
   form.tagIds = []
@@ -148,6 +150,7 @@ async function loadPage() {
       form.description = article.description ?? ''
       form.content = article.content ?? ''
       form.cover = article.cover ?? ''
+      form.coverFileId = article.coverFileId ?? null
       form.categoryId = article.categoryId ?? 0
       form.categorySort = form.categoryId > 0 ? (article.categorySort ?? null) : null
       form.tagIds = article.tagIds ?? []
@@ -185,6 +188,7 @@ async function handleSubmit(status: number) {
     description: form.description.trim() || undefined,
     content: form.content,
     cover: form.cover.trim() || undefined,
+    coverFileId: form.cover ? (form.coverFileId ?? undefined) : null,
     categoryId: form.categoryId,
     categorySort: hasCategory.value ? (form.categorySort ?? undefined) : undefined,
     tagIds: form.tagIds,
@@ -315,7 +319,11 @@ onMounted(loadPage)
         </div>
 
         <el-form-item label="封面" prop="cover">
-          <CoverUpload v-model="form.cover" @uploading="handleCoverUploading" />
+          <CoverUpload
+            v-model="form.cover"
+            v-model:file-id="form.coverFileId"
+            @uploading="handleCoverUploading"
+          />
         </el-form-item>
 
         <el-form-item label="摘要" prop="description">

@@ -22,6 +22,7 @@ interface BasicForm {
   nickname: string
   email: string
   avatar: string
+  avatarFileId: number | null
 }
 
 const basicFormRef = ref<FormInstance>()
@@ -29,8 +30,11 @@ const basicForm = reactive<BasicForm>({
   nickname: '',
   email: '',
   avatar: '',
+  avatarFileId: null,
 })
 const savingBasic = ref(false)
+/** 头像上传中禁止保存，避免把旧头像当作新头像提交 */
+const avatarUploading = ref(false)
 
 const basicRules: FormRules = {
   nickname: [
@@ -101,6 +105,7 @@ function resetBasicForm() {
   basicForm.nickname = info?.nickname ?? ''
   basicForm.email = info?.email ?? ''
   basicForm.avatar = info?.avatar ?? ''
+  basicForm.avatarFileId = info?.avatarFileId ?? null
   basicFormRef.value?.clearValidate()
 }
 
@@ -142,6 +147,7 @@ async function handleSaveBasic() {
       nickname: basicForm.nickname.trim(),
       email: basicForm.email.trim() || null,
       avatar: basicForm.avatar || null,
+      avatarFileId: basicForm.avatar ? basicForm.avatarFileId : null,
     })
     ElMessage.success('基本信息已更新')
     await userStore.fetchUserInfo()
@@ -151,6 +157,10 @@ async function handleSaveBasic() {
   } finally {
     savingBasic.value = false
   }
+}
+
+function handleAvatarUploading(value: boolean) {
+  avatarUploading.value = value
 }
 
 async function handleChangePassword() {
@@ -242,7 +252,12 @@ onMounted(async () => {
             label-width="96px"
           >
             <el-form-item label="头像" prop="avatar">
-              <AvatarUpload v-model="basicForm.avatar" :fallback-text="avatarText" />
+              <AvatarUpload
+                v-model="basicForm.avatar"
+                v-model:file-id="basicForm.avatarFileId"
+                :fallback-text="avatarText"
+                @uploading="handleAvatarUploading"
+              />
             </el-form-item>
             <el-form-item label="昵称" prop="nickname">
               <el-input
@@ -259,10 +274,17 @@ onMounted(async () => {
               <el-input :model-value="userInfo?.username ?? ''" disabled />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="savingBasic" @click="handleSaveBasic">
+              <el-button
+                type="primary"
+                :loading="savingBasic"
+                :disabled="avatarUploading"
+                @click="handleSaveBasic"
+              >
                 保存修改
               </el-button>
-              <el-button :disabled="savingBasic" @click="resetBasicForm">重置</el-button>
+              <el-button :disabled="savingBasic || avatarUploading" @click="resetBasicForm">
+                重置
+              </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>

@@ -22,4 +22,9 @@ public class UpdateUserInfoDTO {
      * 头像图片地址，可为空
      */
     private String avatar;
+
+    /**
+     * 头像文件 ID，为空时按上传接口返回的 URL 反查
+     */
+    private Integer avatarFileId;
 }

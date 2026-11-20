@@ -1,5 +1,6 @@
 package com.blog.service.admin.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
@@ -8,6 +9,8 @@ import cn.hutool.core.util.StrUtil;
 import com.blog.config.UploadProperties;
 import com.blog.enums.UploadExceptionEnum;
 import com.blog.exception.BusinessException;
+import com.blog.pojo.vo.admin.FileAssetUploadVO;
+import com.blog.service.admin.FileAssetService;
 import com.blog.service.admin.UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,8 +76,10 @@ public class UploadServiceImpl implements UploadService {
 
     private final UploadProperties uploadProperties;
 
+    private final FileAssetService fileAssetService;
+
     @Override
-    public String uploadImage(MultipartFile file) {
+    public FileAssetUploadVO uploadImage(MultipartFile file) {
         // 1. 空文件 / 缺少 file 字段
         if (file == null || file.isEmpty()) {
             throw new BusinessException(UploadExceptionEnum.UPLOAD_FILE_EMPTY);
@@ -86,7 +91,8 @@ public class UploadServiceImpl implements UploadService {
         }
 
         // 3. 原始文件名与后缀
-        String extension = resolveExtension(file.getOriginalFilename());
+        String originalName = resolveOriginalName(file.getOriginalFilename());
+        String extension = resolveExtension(originalName);
 
         // 4. Content-Type
         String contentType = normalizeContentType(file.getContentType());
@@ -102,8 +108,34 @@ public class UploadServiceImpl implements UploadService {
             throw new BusinessException(UploadExceptionEnum.UPLOAD_CONTENT_MISMATCH);
         }
 
-        // 7. 落盘并返回相对 URL
-        return store(file, storedExtension);
+        // 7. 鉴权信息必须在写盘前获取，避免落库失败时留下无法归属的文件
+        Integer uploaderId = StpUtil.getLoginIdAsInt();
+
+        // 8. 落盘后登记文件资源；落库失败时补偿删除物理文件
+        String objectKey = store(file, storedExtension);
+        try {
+            FileAssetUploadVO uploadVO = fileAssetService.registerLocalFileAsset(
+                    objectKey, originalName, contentType, file.getSize(), uploaderId);
+            log.info("图片上传成功：{}（{} 字节）", uploadVO.getUrl(), file.getSize());
+            return uploadVO;
+        } catch (RuntimeException e) {
+            deleteStoredObject(objectKey);
+            throw e;
+        }
+    }
+
+    /**
+     * 原始文件名只取最后一段，避免把浏览器提交的路径写入数据库
+     */
+    private String resolveOriginalName(String originalFilename) {
+        if (StrUtil.isBlank(originalFilename)) {
+            throw new BusinessException(UploadExceptionEnum.UPLOAD_FILE_NAME_INVALID);
+        }
+        String filename = FileUtil.getName(originalFilename.trim());
+        if (StrUtil.isBlank(filename)) {
+            throw new BusinessException(UploadExceptionEnum.UPLOAD_FILE_NAME_INVALID);
+        }
+        return filename;
     }
 
     /**
@@ -202,9 +234,24 @@ public class UploadServiceImpl implements UploadService {
             throw new BusinessException(UploadExceptionEnum.UPLOAD_IO_ERROR);
         }
 
-        String relativeUrl = uploadProperties.getNormalizedRoutePrefix()
-                + "/" + relativeDir + "/" + filename;
-        log.info("图片上传成功：{}（{} 字节）", relativeUrl, file.getSize());
-        return relativeUrl;
+        return relativeDir + "/" + filename;
+    }
+
+    /**
+     * 落库失败后清理已写入的物理文件
+     */
+    private void deleteStoredObject(String objectKey) {
+        File rootDir = uploadProperties.getRootDir();
+        if (rootDir == null) {
+            return;
+        }
+        File targetFile = new File(rootDir, objectKey);
+        try {
+            if (!FileUtil.del(targetFile)) {
+                log.warn("文件登记失败后清理物理文件失败：{}", targetFile.getAbsolutePath());
+            }
+        } catch (IORuntimeException e) {
+            log.warn("文件登记失败后清理物理文件异常：{}", targetFile.getAbsolutePath(), e);
+        }
     }
 }

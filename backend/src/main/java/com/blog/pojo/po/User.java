@@ -45,6 +45,11 @@ public class User {
     private String avatar;
 
     /**
+     * 头像文件 ID，关联 tb_file_asset.id
+     */
+    private Integer avatarFileId;
+
+    /**
      * 邮箱地址
      */
     private String email;

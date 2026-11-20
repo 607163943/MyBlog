@@ -41,6 +41,11 @@ public class ArticleVO {
     private String cover;
 
     /**
+     * 封面文件 ID
+     */
+    private Integer coverFileId;
+
+    /**
      * 所属分类 ID：0 表示无分类
      */
     private Integer categoryId;

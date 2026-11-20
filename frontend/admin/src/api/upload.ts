@@ -1,5 +1,6 @@
 import { ElMessage } from 'element-plus'
 import { request } from '@/util/request'
+import type { FileAssetUploadVO } from '@/types/fileAsset'
 
 /** 与后端 UploadServiceImpl.MAX_IMAGE_SIZE 保持一致 */
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -38,10 +39,10 @@ export function validateImageFile(file: File): string | null {
 }
 
 /**
- * 上传图片，成功返回后端生成的相对 URL，如 /image/2026/11/15/uuid.png。
+ * 上传图片，成功返回文件 ID 与后端生成的相对 URL，如 /image/2026/11/15/uuid.png。
  * 不要手动设置 Content-Type，浏览器会为 FormData 自动生成 multipart boundary。
  */
-export function uploadImage(file: File): Promise<string> {
+export function uploadImage(file: File): Promise<FileAssetUploadVO> {
   const message = validateImageFile(file)
   if (message) {
     ElMessage.warning(message)
@@ -50,7 +51,7 @@ export function uploadImage(file: File): Promise<string> {
 
   const formData = new FormData()
   formData.append('file', file)
-  return request<string>({
+  return request<FileAssetUploadVO>({
     url: '/upload/image',
     method: 'post',
     data: formData,

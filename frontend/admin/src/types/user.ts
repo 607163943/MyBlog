@@ -16,6 +16,8 @@ export interface UserInfoVO {
   username: string
   nickname: string
   avatar: string | null
+  /** 头像文件 ID */
+  avatarFileId: number | null
   email: string | null
   createTime: string
   updateTime: string
@@ -26,6 +28,8 @@ export interface UpdateUserInfoDTO {
   nickname: string
   email: string | null
   avatar: string | null
+  /** 头像文件 ID，为空时后端按头像 URL 反查 */
+  avatarFileId: number | null
 }
 
 /** 修改密码参数 */

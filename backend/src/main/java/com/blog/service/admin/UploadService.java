@@ -1,5 +1,6 @@
 package com.blog.service.admin;
 
+import com.blog.pojo.vo.admin.FileAssetUploadVO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -11,7 +12,7 @@ public interface UploadService {
      * 上传图片
      *
      * @param file 图片文件
-     * @return 可直接访问的相对 URL，如 /image/2026/11/15/uuid.png
+     * @return 文件 ID 与可直接访问的相对 URL
      */
-    String uploadImage(MultipartFile file);
+    FileAssetUploadVO uploadImage(MultipartFile file);
 }

@@ -5,6 +5,7 @@ import {
   ArrowDown,
   ChatDotRound,
   Document,
+  Files,
   FolderOpened,
   Odometer,
   PriceTag,
@@ -94,6 +95,10 @@ async function handleCommand(command: string) {
           <el-menu-item index="/comment">
             <el-icon><ChatDotRound /></el-icon>
             <span>评论管理</span>
+          </el-menu-item>
+          <el-menu-item index="/file-asset">
+            <el-icon><Files /></el-icon>
+            <span>文件管理</span>
           </el-menu-item>
         </el-menu>
       </aside>

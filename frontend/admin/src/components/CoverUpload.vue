@@ -7,14 +7,17 @@ import { IMAGE_ACCEPT, uploadImage, validateImageFile } from '@/api/upload'
 const props = withDefaults(
   defineProps<{
     modelValue?: string
+    fileId?: number | null
   }>(),
   {
     modelValue: '',
+    fileId: null,
   },
 )
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  'update:fileId': [value: number | null]
   uploading: [value: boolean]
 }>()
 
@@ -42,8 +45,9 @@ async function handleUpload(options: UploadRequestOptions) {
   uploading.value = true
   emit('uploading', true)
   try {
-    const url = await uploadImage(options.file)
+    const { fileId, url } = await uploadImage(options.file)
     emit('update:modelValue', url)
+    emit('update:fileId', fileId)
     ElMessage.success('封面上传成功')
     return url
   } finally {
@@ -55,6 +59,7 @@ async function handleUpload(options: UploadRequestOptions) {
 
 function handleRemove() {
   emit('update:modelValue', '')
+  emit('update:fileId', null)
   uploadRef.value?.clearFiles()
 }
 </script>
