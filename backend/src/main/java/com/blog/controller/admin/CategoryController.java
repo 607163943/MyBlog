@@ -6,7 +6,9 @@ import com.blog.pojo.dto.admin.CategoryPageQueryDTO;
 import com.blog.pojo.vo.admin.CategoryVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.CategoryService;
+import com.blog.validation.ValidationGroups;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -48,7 +51,7 @@ public class CategoryController {
      * 新增分类
      */
     @PostMapping
-    public Result<Void> add(@RequestBody CategoryDTO dto) {
+    public Result<Void> add(@Valid @RequestBody CategoryDTO dto) {
         categoryService.addCategory(dto);
         return Result.success();
     }
@@ -57,7 +60,7 @@ public class CategoryController {
      * 修改分类
      */
     @PutMapping
-    public Result<Void> update(@RequestBody CategoryDTO dto) {
+    public Result<Void> update(@Validated(ValidationGroups.Update.class) @RequestBody CategoryDTO dto) {
         categoryService.updateCategory(dto);
         return Result.success();
     }

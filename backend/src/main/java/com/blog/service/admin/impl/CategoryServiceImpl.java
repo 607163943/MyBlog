@@ -72,9 +72,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(CategoryDTO dto) {
-        if (dto.getId() == null) {
-            throw new BusinessException(CategoryExceptionEnum.CATEGORY_ID_REQUIRED);
-        }
         Category existing = getById(dto.getId());
         if (existing == null) {
             throw new BusinessException(CategoryExceptionEnum.CATEGORY_NOT_FOUND);
@@ -107,14 +104,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     /**
-     * 去除名称首尾空格并校验非空
+     * 去除名称首尾空格
      */
     private String normalizeName(String name) {
-        String trimmed = name == null ? "" : name.trim();
-        if (trimmed.isEmpty()) {
-            throw new BusinessException(CategoryExceptionEnum.CATEGORY_NAME_REQUIRED);
-        }
-        return trimmed;
+        return name.trim();
     }
 
     /**

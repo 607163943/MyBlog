@@ -6,7 +6,9 @@ import com.blog.pojo.dto.admin.TagPageQueryDTO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.pojo.vo.admin.TagVO;
 import com.blog.service.admin.TagService;
+import com.blog.validation.ValidationGroups;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -48,7 +51,7 @@ public class TagController {
      * 新增标签
      */
     @PostMapping
-    public Result<Void> add(@RequestBody TagDTO dto) {
+    public Result<Void> add(@Valid @RequestBody TagDTO dto) {
         tagService.addTag(dto);
         return Result.success();
     }
@@ -57,7 +60,7 @@ public class TagController {
      * 修改标签
      */
     @PutMapping
-    public Result<Void> update(@RequestBody TagDTO dto) {
+    public Result<Void> update(@Validated(ValidationGroups.Update.class) @RequestBody TagDTO dto) {
         tagService.updateTag(dto);
         return Result.success();
     }

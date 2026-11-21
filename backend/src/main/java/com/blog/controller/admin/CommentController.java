@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public class CommentController {
      */
     @OperationLog(module = "comment", action = "修改评论", key = "#a0.id")
     @PutMapping
-    public Result<Void> update(@RequestBody CommentDTO dto) {
+    public Result<Void> update(@Valid @RequestBody CommentDTO dto) {
         commentService.updateComment(dto);
         return Result.success();
     }

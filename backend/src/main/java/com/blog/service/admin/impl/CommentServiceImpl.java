@@ -33,9 +33,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     private static final int NO_PARENT_ID = 0;
 
-    private static final int STATUS_PENDING = 0;
-    private static final int STATUS_APPROVED = 1;
-
     @Override
     public PageVO<CommentVO> pageQuery(CommentPageQueryDTO dto) {
         PageQueryDTO query = PageUtil.checkPage(dto);
@@ -66,9 +63,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateComment(CommentDTO dto) {
-        if (dto.getId() == null) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_ID_REQUIRED);
-        }
         Comment existing = getById(dto.getId());
         if (existing == null) {
             throw new BusinessException(CommentExceptionEnum.COMMENT_NOT_FOUND);
@@ -76,10 +70,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         String nickname = normalizeNickname(dto.getNickname());
         String email = normalizeEmail(dto.getEmail());
-        String content = normalizeContent(dto.getContent());
-        int status = dto.getStatus() == null
-                ? existing.getStatus()
-                : normalizeStatus(dto.getStatus());
+        String content = dto.getContent();
+        int status = dto.getStatus() == null ? existing.getStatus() : dto.getStatus();
 
         LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<Comment>()
                 .eq(Comment::getId, dto.getId())
@@ -145,17 +137,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     /**
-     * 去除昵称首尾空格并校验非空与长度
+     * 去除昵称首尾空格
      */
     private String normalizeNickname(String nickname) {
-        String trimmed = nickname == null ? "" : nickname.trim();
-        if (trimmed.isEmpty()) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_REQUIRED);
-        }
-        if (trimmed.length() > 50) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_TOO_LONG);
-        }
-        return trimmed;
+        return nickname.trim();
     }
 
     /**
@@ -165,30 +150,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (email == null || email.trim().isEmpty()) {
             return null;
         }
-        String trimmed = email.trim();
-        if (trimmed.length() > 100) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_TOO_LONG);
-        }
-        return trimmed;
-    }
-
-    /**
-     * 校验评论内容非空
-     */
-    private String normalizeContent(String content) {
-        if (content == null || content.trim().isEmpty()) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_REQUIRED);
-        }
-        return content;
-    }
-
-    /**
-     * 校验审核状态取值
-     */
-    private int normalizeStatus(Integer status) {
-        if (status != STATUS_PENDING && status != STATUS_APPROVED) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_STATUS_INVALID);
-        }
-        return status;
+        return email.trim();
     }
 }

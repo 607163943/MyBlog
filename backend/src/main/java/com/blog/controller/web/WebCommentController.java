@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class WebCommentController {
     @OperationLog(module = "web-comment", action = "提交评论", key = "#a0")
     @PostMapping("/{articleId}/comments")
     public Result<Void> submit(@PathVariable Integer articleId,
-                               @RequestBody WebCommentSubmitDTO dto) {
+                               @Valid @RequestBody WebCommentSubmitDTO dto) {
         webCommentService.submit(articleId, dto);
         return Result.success();
     }

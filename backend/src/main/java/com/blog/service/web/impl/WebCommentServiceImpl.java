@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * 前台评论服务实现
@@ -31,11 +30,6 @@ public class WebCommentServiceImpl implements WebCommentService {
     private static final int STATUS_PENDING = 0;
     private static final int STATUS_APPROVED = 1;
     private static final int STATUS_PUBLISHED = 1;
-    private static final int MAX_NICKNAME_LENGTH = 50;
-    private static final int MAX_EMAIL_LENGTH = 100;
-    private static final int MAX_CONTENT_LENGTH = 500;
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     private final CommentMapper commentMapper;
 
@@ -119,47 +113,26 @@ public class WebCommentServiceImpl implements WebCommentService {
     }
 
     /**
-     * 校验评论者昵称
+     * 去除评论者昵称首尾空格
      */
     private String normalizeNickname(String nickname) {
-        String trimmed = nickname == null ? "" : nickname.trim();
-        if (trimmed.isEmpty()) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_REQUIRED);
-        }
-        if (trimmed.length() > MAX_NICKNAME_LENGTH) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_NICKNAME_TOO_LONG);
-        }
-        return trimmed;
+        return nickname.trim();
     }
 
     /**
-     * 校验评论者邮箱，空值转 null
+     * 去除评论者邮箱首尾空格，空值转 null
      */
     private String normalizeEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return null;
         }
-        String trimmed = email.trim();
-        if (trimmed.length() > MAX_EMAIL_LENGTH) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_TOO_LONG);
-        }
-        if (!EMAIL_PATTERN.matcher(trimmed).matches()) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_EMAIL_INVALID);
-        }
-        return trimmed;
+        return email.trim();
     }
 
     /**
-     * 校验评论内容
+     * 去除评论内容首尾空格
      */
     private String normalizeContent(String content) {
-        String trimmed = content == null ? "" : content.trim();
-        if (trimmed.isEmpty()) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_REQUIRED);
-        }
-        if (trimmed.length() > MAX_CONTENT_LENGTH) {
-            throw new BusinessException(CommentExceptionEnum.COMMENT_CONTENT_TOO_LONG);
-        }
-        return trimmed;
+        return content.trim();
     }
 }

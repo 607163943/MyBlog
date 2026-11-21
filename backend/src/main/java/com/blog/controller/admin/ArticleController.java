@@ -8,7 +8,9 @@ import com.blog.pojo.vo.admin.ArticleSortVO;
 import com.blog.pojo.vo.admin.ArticleVO;
 import com.blog.pojo.vo.PageVO;
 import com.blog.service.admin.ArticleService;
+import com.blog.validation.ValidationGroups;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -51,7 +54,7 @@ public class ArticleController {
      */
     @OperationLog(module = "article", action = "新增文章", key = "#a0.title")
     @PostMapping
-    public Result<Void> add(@RequestBody ArticleDTO dto) {
+    public Result<Void> add(@Valid @RequestBody ArticleDTO dto) {
         articleService.addArticle(dto);
         return Result.success();
     }
@@ -61,7 +64,7 @@ public class ArticleController {
      */
     @OperationLog(module = "article", action = "修改文章", key = "#a0.id")
     @PutMapping
-    public Result<Void> update(@RequestBody ArticleDTO dto) {
+    public Result<Void> update(@Validated(ValidationGroups.Update.class) @RequestBody ArticleDTO dto) {
         articleService.updateArticle(dto);
         return Result.success();
     }

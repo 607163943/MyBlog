@@ -102,9 +102,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Transactional(rollbackFor = Exception.class)
     public void addArticle(ArticleDTO dto) {
         String title = normalizeTitle(dto.getTitle());
-        String content = normalizeContent(dto.getContent());
+        String content = dto.getContent();
         Integer categoryId = normalizeCategory(dto.getCategoryId());
-        int status = normalizeStatus(dto.getStatus() == null ? STATUS_DRAFT : dto.getStatus());
+        int status = dto.getStatus() == null ? STATUS_DRAFT : dto.getStatus();
 
         String coverUrl = normalizeOptionalText(dto.getCover());
         Integer coverFileId = resolveCoverFileId(dto.getCoverFileId(), coverUrl);
@@ -144,23 +144,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateArticle(ArticleDTO dto) {
-        if (dto.getId() == null) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_ID_REQUIRED);
-        }
         Article existing = getById(dto.getId());
         if (existing == null) {
             throw new BusinessException(ArticleExceptionEnum.ARTICLE_NOT_FOUND);
         }
 
         String title = normalizeTitle(dto.getTitle());
-        String content = normalizeContent(dto.getContent());
+        String content = dto.getContent();
         String coverUrl = normalizeOptionalText(dto.getCover());
         Integer coverFileId = resolveCoverFileId(dto.getCoverFileId(), coverUrl);
         Integer categoryId = normalizeCategory(
                 dto.getCategoryId() == null ? existing.getCategoryId() : dto.getCategoryId());
-        int status = dto.getStatus() == null
-                ? existing.getStatus()
-                : normalizeStatus(dto.getStatus());
+        int status = dto.getStatus() == null ? existing.getStatus() : dto.getStatus();
 
         // 首次发布时写入发布时间，之后编辑、重新发布均不再变更
         LocalDateTime publishTime = existing.getPublishTime();
@@ -338,12 +333,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 校验手动指定的分类内排序值：必须为正整数且同分类内唯一
+     * 校验手动指定的分类内排序值：同分类内唯一
      */
     private void validateCategorySort(Integer categoryId, Integer categorySort, Integer excludeId) {
-        if (categorySort <= 0) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CATEGORY_SORT_INVALID);
-        }
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<Article>()
                 .eq(Article::getCategoryId, categoryId)
                 .eq(Article::getCategorySort, categorySort)
@@ -408,27 +400,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 去除标题首尾空格并校验非空与长度
+     * 去除标题首尾空格
      */
     private String normalizeTitle(String title) {
-        String trimmed = title == null ? "" : title.trim();
-        if (trimmed.isEmpty()) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_TITLE_REQUIRED);
-        }
-        if (trimmed.length() > 200) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_TITLE_TOO_LONG);
-        }
-        return trimmed;
-    }
-
-    /**
-     * 校验正文非空
-     */
-    private String normalizeContent(String content) {
-        if (content == null || content.trim().isEmpty()) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_CONTENT_REQUIRED);
-        }
-        return content;
+        return title.trim();
     }
 
     /**
@@ -442,16 +417,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BusinessException(CategoryExceptionEnum.CATEGORY_SELECTED_NOT_FOUND);
         }
         return categoryId;
-    }
-
-    /**
-     * 校验文章状态取值
-     */
-    private int normalizeStatus(Integer status) {
-        if (status != STATUS_DRAFT && status != STATUS_PUBLISHED) {
-            throw new BusinessException(ArticleExceptionEnum.ARTICLE_STATUS_INVALID);
-        }
-        return status;
     }
 
     /**

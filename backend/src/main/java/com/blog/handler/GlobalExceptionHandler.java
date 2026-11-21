@@ -8,11 +8,21 @@ import com.blog.enums.UploadExceptionEnum;
 import com.blog.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+
+import javax.validation.ConstraintViolationException;
+import java.util.Objects;
 
 /**
  * 全局异常处理
@@ -53,6 +63,67 @@ public class GlobalExceptionHandler {
         }
         log.warn("上传请求解析失败：{}", e.getMessage(), e);
         return buildResponse(UploadExceptionEnum.UPLOAD_MULTIPART_INVALID);
+    }
+
+    /**
+     * 请求体参数校验失败
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse("参数校验失败");
+        return Result.error(msg);
+    }
+
+    /**
+     * 方法参数校验失败
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
+        String msg = e.getConstraintViolations().stream()
+                .map(violation -> violation.getMessage())
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse("参数校验失败");
+        return Result.error(msg);
+    }
+
+    /**
+     * 查询参数绑定失败（如 page=abc）
+     */
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleBindException(BindException e) {
+        String msg = e.getBindingResult().getFieldErrors().stream()
+                .filter(error -> !error.isBindingFailure())
+                .map(FieldError::getDefaultMessage)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse("参数格式不正确");
+        return Result.error(msg);
+    }
+
+    /**
+     * 请求体缺失或 JSON 格式不正确
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return Result.error("请求体格式不正确");
+    }
+
+    /**
+     * 请求参数类型不匹配
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        return Result.error("参数格式不正确");
     }
 
     @ExceptionHandler(Exception.class)
