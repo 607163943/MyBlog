@@ -43,7 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
             location = location + "/";
         }
 
-        registry.addResourceHandler(uploadProperties.getNormalizedRoutePrefix() + "/**")
+        registry.addResourceHandler(UploadProperties.ROUTE_PREFIX + "/**")
                 .addResourceLocations(location);
     }
 }

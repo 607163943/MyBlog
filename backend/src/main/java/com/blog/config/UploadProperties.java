@@ -19,36 +19,15 @@ import java.io.File;
 @ConfigurationProperties(prefix = "upload")
 public class UploadProperties {
 
-    public static final String DEFAULT_ROUTE_PREFIX = "/image";
-
     /**
      * 图片访问路由前缀，同时作为静态资源映射路径
      */
-    private String routePrefix = DEFAULT_ROUTE_PREFIX;
+    public static final String ROUTE_PREFIX = "/image";
 
     /**
      * 图片存储根目录
      */
     private String dir;
-
-    /**
-     * 归一化路由前缀：保证以 / 开头、不以 / 结尾；空值或 / 回退为 /image
-     */
-    public String getNormalizedRoutePrefix() {
-        String prefix = StrUtil.trim(routePrefix);
-        if (StrUtil.isEmpty(prefix)) {
-            return DEFAULT_ROUTE_PREFIX;
-        }
-        if (!prefix.startsWith("/")) {
-            prefix = "/" + prefix;
-        }
-        // 去除末尾斜杠
-        while (prefix.length() > 1 && prefix.endsWith("/")) {
-            prefix = prefix.substring(0, prefix.length() - 1);
-        }
-        // 避免只有斜杠
-        return "/".equals(prefix) ? DEFAULT_ROUTE_PREFIX : prefix;
-    }
 
     /**
      * 存储根目录的绝对路径；未配置时返回 null
@@ -73,9 +52,10 @@ public class UploadProperties {
             return;
         }
         try {
+            // 返回的就是rootDir本身
             File created = FileUtil.mkdir(rootDir);
-            if (created == null || !created.isDirectory()) {
-                log.warn("图片存储目录创建失败：{}", rootDir.getAbsolutePath());
+            if (!created.isDirectory()) {
+                throw new RuntimeException("图片存储目录创建失败");
             }
         } catch (Exception e) {
             log.warn("图片存储目录创建失败：{}", rootDir.getAbsolutePath(), e);

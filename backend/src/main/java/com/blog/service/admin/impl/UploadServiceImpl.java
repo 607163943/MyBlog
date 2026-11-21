@@ -218,7 +218,7 @@ public class UploadServiceImpl implements UploadService {
             log.error("图片目录创建失败：{}", targetDir.getAbsolutePath(), e);
             throw new BusinessException(UploadExceptionEnum.UPLOAD_IO_ERROR);
         }
-        if (createdDir == null || !createdDir.isDirectory()) {
+        if (!createdDir.isDirectory()) {
             log.error("图片目录创建失败：{}", targetDir.getAbsolutePath());
             throw new BusinessException(UploadExceptionEnum.UPLOAD_IO_ERROR);
         }

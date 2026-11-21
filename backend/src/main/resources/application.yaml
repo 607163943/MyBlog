@@ -54,8 +54,6 @@ logging:
 
 # 图片上传
 upload:
-  # 图片访问路由前缀，同时作为静态资源映射路径；不要以 / 结尾
-  route-prefix: /image
   # 默认存储目录，相对 JVM 工作目录；dev 环境由 application-dev.yaml 覆盖
   dir: D:/VScodefile/Web/Blog/MyBlog/upload
 

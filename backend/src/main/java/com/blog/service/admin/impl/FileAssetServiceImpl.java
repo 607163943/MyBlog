@@ -190,7 +190,7 @@ public class FileAssetServiceImpl extends ServiceImpl<FileAssetMapper, FileAsset
                 || StrUtil.isBlank(fileAsset.getObjectKey())) {
             return null;
         }
-        return uploadProperties.getNormalizedRoutePrefix() + "/" + fileAsset.getObjectKey();
+        return UploadProperties.ROUTE_PREFIX + "/" + fileAsset.getObjectKey();
     }
 
     @Override
@@ -215,11 +215,11 @@ public class FileAssetServiceImpl extends ServiceImpl<FileAssetMapper, FileAsset
     }
 
     /**
-     * 提取本地存储对象键：仅接受配置的 /image 前缀，去掉查询串与锚点
+     * 提取本地存储对象键：仅接受固定的 /image 前缀，去掉查询串与锚点
      */
     private String extractLocalObjectKey(String url) {
         String trimmed = url == null ? "" : url.trim();
-        String prefix = uploadProperties.getNormalizedRoutePrefix() + "/";
+        String prefix = UploadProperties.ROUTE_PREFIX + "/";
         if (!trimmed.startsWith(prefix)) {
             return null;
         }
